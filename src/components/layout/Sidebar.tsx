@@ -72,7 +72,7 @@ export function Sidebar({ }: SidebarProps) {
             </div>
 
             {/* Navigation */}
-            <nav className="flex-1 py-8 px-4 space-y-2">
+            <nav className="flex-1 mt-14 px-4 space-y-2">
                 {NAV_ITEMS.map((item) => {
                     const isActive = location.pathname === item.path;
 

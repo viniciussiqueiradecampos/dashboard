@@ -4,9 +4,9 @@ import { Outlet } from 'react-router-dom';
 
 export function MainLayout() {
     return (
-        <div className="flex min-h-screen bg-neutral-200 font-sans">
+        <div className="flex h-screen overflow-hidden bg-neutral-200 font-sans">
             {/* Sidebar Desktop (Visible >= 1024px) */}
-            <aside className="hidden lg:block shrink-0 sticky top-0 h-screen z-40">
+            <aside className="hidden lg:block shrink-0 h-screen z-40">
                 <Sidebar />
             </aside>
 
@@ -14,7 +14,7 @@ export function MainLayout() {
             <HeaderMobile />
 
             {/* Main Content Area */}
-            <main className="flex-1 w-full min-w-0 overflow-x-hidden pt-16 lg:pt-0">
+            <main className="flex-1 w-full min-w-0 overflow-x-hidden overflow-y-auto pt-16 lg:pt-0">
                 {/* 
            pt-16 creates space for fixed mobile header (h-16).
            lg:pt-0 removes it on desktop where sidebar handles navigation.

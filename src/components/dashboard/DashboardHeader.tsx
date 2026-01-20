@@ -20,25 +20,25 @@ export function DashboardHeader() {
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between w-full mb-8">
             <div className="flex items-center gap-2 flex-1 min-w-0">
                 {/* Search Input */}
-                <div className="relative flex-1 max-w-md">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400" size={18} />
+                <div className="relative flex-1 max-w-md group">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[#080B12]" size={18} />
                     <input
                         type="text"
                         placeholder="Pesquisar..."
                         value={filters.searchText}
                         onChange={handleSearchChange}
-                        className="w-full h-12 pl-12 pr-4 bg-white/50 backdrop-blur-sm border border-neutral-200 rounded-full text-neutral-900 placeholder:text-neutral-400 focus:ring-2 focus:ring-black transition-all outline-none"
+                        className="w-full h-12 pl-12 pr-4 bg-transparent border border-[#9CA3AF] rounded-full text-[#080B12] placeholder:text-neutral-500 focus:ring-2 focus:ring-black transition-all outline-none"
                     />
                 </div>
 
                 {/* Filter Trigger */}
                 <Popover>
                     <PopoverTrigger asChild>
-                        <button className="h-12 w-12 flex items-center justify-center rounded-full bg-white border border-neutral-200 text-neutral-500 hover:bg-neutral-50 transition-colors shrink-0">
+                        <button className="h-12 w-12 flex items-center justify-center rounded-full bg-transparent border border-[#9CA3AF] text-[#080B12] hover:bg-neutral-100 transition-colors shrink-0">
                             <SlidersHorizontal size={20} />
                         </button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-56 p-2" align="start">
+                    <PopoverContent className="w-56 p-2 bg-[#080B12] border-neutral-800" align="start">
                         <div className="space-y-1">
                             <p className="text-xs font-semibold text-neutral-400 px-3 py-2 uppercase tracking-wider">Tipo de Transação</p>
                             {(['all', 'income', 'expense'] as const).map((type) => (
@@ -46,10 +46,10 @@ export function DashboardHeader() {
                                     key={type}
                                     onClick={() => handleTypeChange(type)}
                                     className={cn(
-                                        "w-full flex items-center px-3 py-2.5 rounded-xl text-sm font-medium transition-colors",
+                                        "w-full flex items-center px-3 py-2.5 rounded-xl text-sm font-medium transition-colors hover:text-white",
                                         filters.transactionType === type
-                                            ? "bg-neutral-1100 text-white"
-                                            : "text-neutral-600 hover:bg-neutral-50"
+                                            ? "bg-[#D7FF00] text-[#080B12]"
+                                            : "text-neutral-300 hover:bg-neutral-800"
                                     )}
                                 >
                                     {type === 'all' ? 'Todos' : type === 'income' ? 'Receitas' : 'Despesas'}

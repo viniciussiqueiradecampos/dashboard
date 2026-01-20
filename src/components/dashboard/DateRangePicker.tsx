@@ -42,8 +42,8 @@ export function DateRangePicker() {
     return (
         <Popover>
             <PopoverTrigger asChild>
-                <button className="h-12 px-5 flex items-center gap-3 rounded-full border border-neutral-200 bg-white text-neutral-900 font-medium hover:border-neutral-300 hover:bg-neutral-50 transition-all outline-none">
-                    <CalendarIcon size={18} className="text-neutral-400" />
+                <button className="h-12 px-5 flex items-center gap-3 rounded-full border border-[#9CA3AF] bg-transparent text-[#080B12] font-medium hover:bg-neutral-100 transition-all outline-none">
+                    <CalendarIcon size={18} className="text-[#080B12]" />
                     <span className="text-sm whitespace-nowrap">
                         {range?.from ? (
                             range.to ? (
@@ -57,7 +57,7 @@ export function DateRangePicker() {
                             "Selecionar período"
                         )}
                     </span>
-                    <ChevronDown size={14} className="text-neutral-400 ml-1" />
+                    <ChevronDown size={14} className="text-[#080B12] ml-1" />
                 </button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0 flex flex-col md:flex-row bg-white border-neutral-200 shadow-2xl rounded-3xl overflow-hidden" align="end">
