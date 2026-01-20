@@ -56,3 +56,11 @@ export interface Goal {
     category: string;
     imageUrl?: string;
 }
+
+export interface Category {
+    id: string;
+    name: string;
+    type: TransactionType;
+    icon?: string;
+    color?: string;
+}

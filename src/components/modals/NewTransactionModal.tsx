@@ -1,4 +1,4 @@
-import { X, ArrowUpCircle, ArrowDownCircle } from 'lucide-react';
+import { X, ArrowUpCircle, ArrowDownCircle, Plus, Trash2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useFinance } from '@/contexts/FinanceContext';
 import { cn } from '@/utils/cn';
@@ -11,17 +11,34 @@ interface NewTransactionModalProps {
 }
 
 export function NewTransactionModal({ isOpen, onClose, defaultCardId }: NewTransactionModalProps) {
-    const { addTransaction, familyMembers, bankAccounts, creditCards } = useFinance();
+    const {
+        addTransaction,
+        familyMembers,
+        bankAccounts,
+        creditCards,
+        categories,
+        addCategory,
+        deleteCategory,
+        addAccount
+    } = useFinance();
 
     const [type, setType] = useState<TransactionType>('expense');
     const [amount, setAmount] = useState('');
     const [description, setDescription] = useState('');
-    const [category, setCategory] = useState('');
+
+    // Category Management
+    const [categoryInput, setCategoryInput] = useState('');
+    const [isCreatingCategory, setIsCreatingCategory] = useState(false);
+
     const [memberId, setMemberId] = useState('');
     const [accountId, setAccountId] = useState(defaultCardId || '');
     const [installments, setInstallments] = useState(1);
     const [isRecurring, setIsRecurring] = useState(false);
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+
+    // New Account Management
+    const [isCreatingAccount, setIsCreatingAccount] = useState(false);
+    const [newAccountName, setNewAccountName] = useState('');
 
     const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -32,14 +49,35 @@ export function NewTransactionModal({ isOpen, onClose, defaultCardId }: NewTrans
         }
     }, [isOpen, defaultCardId]);
 
-    const expenseCategories = ['Alimentação', 'Transporte', 'Moradia', 'Saúde', 'Lazer', 'Educação'];
-    const incomeCategories = ['Salário', 'Freelance', 'Investimentos', 'Outros'];
-
-    const categories = type === 'income' ? incomeCategories : expenseCategories;
-
+    const filteredCategories = categories.filter(c => c.type === type);
     const isCard = creditCards.some(c => c.id === accountId);
     const isAccount = bankAccounts.some(a => a.id === accountId);
     const showInstallments = isCard && type === 'expense';
+
+    const handleCreateAccount = async () => {
+        if (!newAccountName.trim()) return;
+        await addAccount({
+            name: newAccountName,
+            bankName: 'Outros', // Default bank name
+            balance: 0,
+            color: '#000000'
+        });
+        setNewAccountName('');
+        setIsCreatingAccount(false);
+        // User needs to select the newly created account manually or we could select it automatically if addAccount returned ID
+    };
+
+    const handleCreateCategory = async () => {
+        if (!categoryInput.trim()) return;
+        await addCategory({
+            name: categoryInput,
+            type: type, // income or expense
+            icon: '🏷️',
+            color: '#333'
+        });
+        setCategoryInput(''); // Select logic handles selection by name
+        setIsCreatingCategory(false);
+    };
 
     const validate = () => {
         const newErrors: Record<string, string> = {};
@@ -53,12 +91,12 @@ export function NewTransactionModal({ isOpen, onClose, defaultCardId }: NewTrans
             newErrors.description = 'Descrição deve ter pelo menos 3 caracteres';
         }
 
-        if (!category) {
+        if (!categoryInput) {
             newErrors.category = 'Selecione uma categoria';
         }
 
-        if (!accountId) {
-            newErrors.accountId = 'Selecione uma conta ou cartão';
+        if (!accountId && !isCreatingAccount) {
+            newErrors.accountId = 'Selecione uma conta, cartão ou método';
         }
 
         setErrors(newErrors);
@@ -72,7 +110,7 @@ export function NewTransactionModal({ isOpen, onClose, defaultCardId }: NewTrans
             description,
             amount: parseFloat(amount),
             type,
-            category,
+            category: categoryInput,
             date,
             status: 'completed',
             accountId: isAccount ? accountId : undefined,
@@ -84,7 +122,7 @@ export function NewTransactionModal({ isOpen, onClose, defaultCardId }: NewTrans
         // Reset form
         setAmount('');
         setDescription('');
-        setCategory('');
+        setCategoryInput('');
         setAccountId('');
         setInstallments(1);
         setIsRecurring(false);
@@ -116,7 +154,7 @@ export function NewTransactionModal({ isOpen, onClose, defaultCardId }: NewTrans
                         </div>
                         <div>
                             <h2 className="text-2xl font-bold text-neutral-1100">Nova Transação</h2>
-                            <p className="text-sm text-neutral-500">Registre entradas e saídas para manter seu controle</p>
+                            <p className="text-sm text-neutral-500">Registre entradas e saídas</p>
                         </div>
                     </div>
                     <button
@@ -133,7 +171,7 @@ export function NewTransactionModal({ isOpen, onClose, defaultCardId }: NewTrans
                         {/* Type Toggle */}
                         <div className="bg-neutral-200 p-1 rounded-full flex gap-1">
                             <button
-                                onClick={() => setType('income')}
+                                onClick={() => { setType('income'); setCategoryInput(''); }}
                                 className={cn(
                                     "flex-1 py-3 rounded-full font-medium transition-all",
                                     type === 'income' ? 'bg-white shadow-sm text-neutral-1100' : 'text-neutral-500'
@@ -142,7 +180,7 @@ export function NewTransactionModal({ isOpen, onClose, defaultCardId }: NewTrans
                                 Receita
                             </button>
                             <button
-                                onClick={() => setType('expense')}
+                                onClick={() => { setType('expense'); setCategoryInput(''); }}
                                 className={cn(
                                     "flex-1 py-3 rounded-full font-medium transition-all",
                                     type === 'expense' ? 'bg-white shadow-sm text-neutral-1100' : 'text-neutral-500'
@@ -156,7 +194,7 @@ export function NewTransactionModal({ isOpen, onClose, defaultCardId }: NewTrans
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-sm font-medium text-neutral-700 mb-2">
-                                    Valor da Transação
+                                    Valor
                                 </label>
                                 <div className="relative">
                                     <span className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500">R$</span>
@@ -197,31 +235,72 @@ export function NewTransactionModal({ isOpen, onClose, defaultCardId }: NewTrans
                                     "w-full h-14 px-4 bg-white border rounded-2xl text-neutral-1100 focus:ring-2 focus:ring-black focus:border-transparent transition-all outline-none",
                                     errors.description ? 'border-red-500' : 'border-neutral-300'
                                 )}
-                                placeholder="Ex: Supermercado Semanal"
+                                placeholder="Ex: Mercado"
                             />
                             {errors.description && <p className="text-red-500 text-xs mt-1">{errors.description}</p>}
                         </div>
 
-                        {/* Category */}
+                        {/* Category with Add/Remove */}
                         <div>
                             <label className="block text-sm font-medium text-neutral-700 mb-2">Categoria</label>
-                            <select
-                                value={category}
-                                onChange={(e) => setCategory(e.target.value)}
-                                className={cn(
-                                    "w-full h-14 px-4 bg-white border rounded-2xl text-neutral-1100 focus:ring-2 focus:ring-black focus:border-transparent transition-all outline-none",
-                                    errors.category ? 'border-red-500' : 'border-neutral-300'
+                            <div className="flex gap-2">
+                                {isCreatingCategory ? (
+                                    <div className="flex-1 flex gap-2">
+                                        <input
+                                            type="text"
+                                            value={categoryInput}
+                                            onChange={(e) => setCategoryInput(e.target.value)}
+                                            className="flex-1 h-14 px-4 bg-white border border-neutral-300 rounded-2xl outline-none"
+                                            placeholder="Nome da categoria"
+                                            autoFocus
+                                        />
+                                        <button onClick={handleCreateCategory} className="px-4 bg-black text-white rounded-2xl">OK</button>
+                                        <button onClick={() => setIsCreatingCategory(false)} className="px-4 border rounded-2xl">Can</button>
+                                    </div>
+                                ) : (
+                                    <div className="relative flex-1">
+                                        <select
+                                            value={categoryInput}
+                                            onChange={(e) => {
+                                                if (e.target.value === 'NEW') setIsCreatingCategory(true);
+                                                else setCategoryInput(e.target.value);
+                                            }}
+                                            className={cn(
+                                                "w-full h-14 px-4 bg-white border rounded-2xl text-neutral-1100 focus:ring-2 focus:ring-black focus:border-transparent transition-all outline-none appearance-none",
+                                                errors.category ? 'border-red-500' : 'border-neutral-300'
+                                            )}
+                                        >
+                                            <option value="">Selecione...</option>
+                                            {filteredCategories.map(cat => (
+                                                <option key={cat.id} value={cat.name}>{cat.name}</option>
+                                            ))}
+                                            <option value="NEW" className="font-bold">+ Nova Categoria</option>
+                                        </select>
+                                        {categoryInput && categories.some(c => c.name === categoryInput) && (
+                                            <button
+                                                onClick={() => {
+                                                    const c = categories.find(c => c.name === categoryInput);
+                                                    if (c) {
+                                                        deleteCategory(c.id);
+                                                        setCategoryInput('');
+                                                    }
+                                                }}
+                                                className="absolute right-10 top-1/2 -translate-y-1/2 text-red-500 hover:text-red-700 p-2"
+                                                title="Deletar Categoria"
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
+                                        )}
+                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                                            <ArrowDownCircle size={16} className="text-neutral-500" />
+                                        </div>
+                                    </div>
                                 )}
-                            >
-                                <option value="">Selecione a categoria</option>
-                                {categories.map(cat => (
-                                    <option key={cat} value={cat}>{cat}</option>
-                                ))}
-                            </select>
+                            </div>
                             {errors.category && <p className="text-red-500 text-xs mt-1">{errors.category}</p>}
                         </div>
 
-                        {/* Member & Account */}
+                        {/* Account Select with Add Custom */}
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-sm font-medium text-neutral-700 mb-2">Membro</label>
@@ -238,32 +317,49 @@ export function NewTransactionModal({ isOpen, onClose, defaultCardId }: NewTrans
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-neutral-700 mb-2">Conta / Cartão</label>
-                                <select
-                                    value={accountId}
-                                    onChange={(e) => setAccountId(e.target.value)}
-                                    className={cn(
-                                        "w-full h-14 px-4 bg-white border rounded-2xl text-neutral-1100 focus:ring-2 focus:ring-black focus:border-transparent transition-all outline-none",
-                                        errors.accountId ? 'border-red-500' : 'border-neutral-300'
-                                    )}
-                                >
-                                    <option value="">Selecione</option>
-                                    <optgroup label="Contas Bancárias">
-                                        {bankAccounts.map(acc => (
-                                            <option key={acc.id} value={acc.id}>{acc.name}</option>
-                                        ))}
-                                    </optgroup>
-                                    <optgroup label="Cartões de Crédito">
-                                        {creditCards.map(card => (
-                                            <option key={card.id} value={card.id}>{card.brand} {card.name}</option>
-                                        ))}
-                                    </optgroup>
-                                </select>
+                                <label className="block text-sm font-medium text-neutral-700 mb-2">Conta / Método</label>
+                                {isCreatingAccount ? (
+                                    <div className="flex gap-1">
+                                        <input
+                                            value={newAccountName}
+                                            onChange={e => setNewAccountName(e.target.value)}
+                                            placeholder="Nome (Ex: Pix)"
+                                            className="flex-1 h-14 px-2 border rounded-l-2xl outline-none text-sm"
+                                        />
+                                        <button onClick={handleCreateAccount} className="px-2 bg-black text-white text-xs rounded-r-2xl">Criar</button>
+                                        <button onClick={() => setIsCreatingAccount(false)} className="px-2 border rounded-2xl text-xs"><X size={14} /></button>
+                                    </div>
+                                ) : (
+                                    <select
+                                        value={accountId}
+                                        onChange={(e) => {
+                                            if (e.target.value === 'NEW_ACCOUNT') setIsCreatingAccount(true);
+                                            else setAccountId(e.target.value);
+                                        }}
+                                        className={cn(
+                                            "w-full h-14 px-4 bg-white border rounded-2xl text-neutral-1100 focus:ring-2 focus:ring-black focus:border-transparent transition-all outline-none",
+                                            errors.accountId ? 'border-red-500' : 'border-neutral-300'
+                                        )}
+                                    >
+                                        <option value="">Selecione...</option>
+                                        <optgroup label="Contas / Métodos">
+                                            {bankAccounts.map(acc => (
+                                                <option key={acc.id} value={acc.id}>{acc.name}</option>
+                                            ))}
+                                            <option value="NEW_ACCOUNT">+ Adicionar Modo/Conta</option>
+                                        </optgroup>
+                                        <optgroup label="Cartões de Crédito">
+                                            {creditCards.map(card => (
+                                                <option key={card.id} value={card.id}>{card.brand} {card.name}</option>
+                                            ))}
+                                        </optgroup>
+                                    </select>
+                                )}
                                 {errors.accountId && <p className="text-red-500 text-xs mt-1">{errors.accountId}</p>}
                             </div>
                         </div>
 
-                        {/* Installments (conditional) */}
+                        {/* Installments & Recurring */}
                         {showInstallments && (
                             <div className="animate-in slide-in-from-top-2 duration-300">
                                 <label className="block text-sm font-medium text-neutral-700 mb-2">Parcelamento</label>
@@ -271,19 +367,15 @@ export function NewTransactionModal({ isOpen, onClose, defaultCardId }: NewTrans
                                     value={installments}
                                     onChange={(e) => setInstallments(parseInt(e.target.value))}
                                     disabled={isRecurring}
-                                    className="w-full h-14 px-4 bg-white border border-neutral-300 rounded-2xl text-neutral-1100 focus:ring-2 focus:ring-black focus:border-transparent transition-all outline-none disabled:opacity-50"
+                                    className="w-full h-14 px-4 bg-white border border-neutral-300 rounded-2xl outline-none disabled:opacity-50"
                                 >
                                     {Array.from({ length: 12 }, (_, i) => i + 1).map(n => (
                                         <option key={n} value={n}>{n}x</option>
                                     ))}
                                 </select>
-                                {isRecurring && (
-                                    <p className="text-xs text-neutral-500 italic mt-1">Parcelamento desabilitado para despesas recorrentes</p>
-                                )}
                             </div>
                         )}
 
-                        {/* Recurring (conditional) */}
                         {type === 'expense' && (
                             <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4">
                                 <label className="flex items-start gap-3 cursor-pointer">
@@ -300,9 +392,7 @@ export function NewTransactionModal({ isOpen, onClose, defaultCardId }: NewTrans
                                     <div>
                                         <p className="font-bold text-neutral-1100">Despesa Recorrente</p>
                                         <p className="text-xs text-neutral-600 mt-1">
-                                            {installments > 1
-                                                ? 'Não disponível para compras parceladas'
-                                                : 'Contas que se repetem todo mês (Netflix, Spotify, Academia, etc.)'}
+                                            Contas mensais (Netflix, Internet, Aluguel)
                                         </p>
                                     </div>
                                 </label>

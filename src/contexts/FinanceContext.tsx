@@ -1,8 +1,7 @@
-
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
 import {
     Transaction, Goal, CreditCard, BankAccount, FamilyMember,
-    TransactionType
+    TransactionType, Category
 } from '@/types';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from './AuthContext';
@@ -20,6 +19,7 @@ interface FinanceContextType {
     creditCards: CreditCard[];
     bankAccounts: BankAccount[];
     familyMembers: FamilyMember[];
+    categories: Category[];
     isLoading: boolean;
 
     // Filters
@@ -58,6 +58,10 @@ interface FinanceContextType {
     updateMember: (id: string, m: Partial<FamilyMember>) => Promise<void>;
     deleteMember: (id: string) => Promise<void>;
 
+    // CRUD Categories
+    addCategory: (c: Omit<Category, 'id'>) => Promise<void>;
+    deleteCategory: (id: string) => Promise<void>;
+
     // Calculations
     filteredTransactions: Transaction[];
     getFilteredTransactions: () => Transaction[];
@@ -81,6 +85,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     const [creditCards, setCreditCards] = useState<CreditCard[]>([]);
     const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);
     const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([]);
+    const [categories, setCategories] = useState<Category[]>([]);
 
     const [filters, setFilters] = useState<FinanceContextType['filters']>({
         selectedMember: null,
@@ -128,12 +133,14 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
                 { data: transData },
                 { data: membersData },
                 { data: accountsData },
-                { data: goalsData }
+                { data: goalsData },
+                { data: categoriesData }
             ] = await Promise.all([
                 supabase.from('transactions').select('*, categories(name)').order('date', { ascending: false }),
                 supabase.from('family_members').select('*'),
                 supabase.from('accounts').select('*'),
-                supabase.from('goals').select('*')
+                supabase.from('goals').select('*'),
+                supabase.from('categories').select('*').eq('is_active', true)
             ]);
 
             // Goals table logic
@@ -146,6 +153,17 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
                     deadline: g.deadline,
                     category: g.category,
                     imageUrl: g.image_url
+                })));
+            }
+
+            // Categories logic
+            if (categoriesData) {
+                setCategories(categoriesData.map((c: any) => ({
+                    id: c.id,
+                    name: c.name,
+                    type: c.type?.toLowerCase() as TransactionType,
+                    icon: c.icon,
+                    color: c.color
                 })));
             }
 
@@ -177,9 +195,6 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
                 })));
             }
 
-            // Mock goals if table missing or fetch failed
-            // Note: The provided SQL V2 schema did NOT include goals table. I will assume empty if fetch fails.
-
         } catch (error) {
             console.error('Error loading data:', error);
         } finally {
@@ -191,11 +206,9 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         if (user) refreshData();
     }, [user, refreshData]);
 
-    // Helpers for category ID lookup (simplified)
     const getCategoryIdByName = async (name: string) => {
         const { data } = await supabase.from('categories').select('id').eq('name', name).single();
         if (data) return data.id;
-        // Create if not exists? Or default to null.
         return null;
     };
 
@@ -206,8 +219,6 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
 
         let catId = null;
         if (t.category) {
-            // Try to find category, or recreate. Simplified:
-            // Optimization: In real app, cache categories.
             const { data: cat } = await supabase.from('categories').select('id').eq('name', t.category).eq('user_id', user.id).single();
             if (cat) catId = cat.id;
             else {
@@ -242,7 +253,6 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         if (t.description !== undefined) payload.description = t.description;
         if (t.amount !== undefined) payload.amount = t.amount;
         if (t.status !== undefined) payload.status = t.status.toUpperCase();
-        // ... map other fields
 
         const { error } = await supabase.from('transactions').update(payload).eq('id', id);
         if (!error) refreshData();
@@ -253,16 +263,24 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         if (!error) refreshData();
     };
 
-    // Implement others similarly...
-    // For brevity, using generic refresher for now. 
-    // In production, optimistic updates are better.
-
-    const addGoal = async (g: Omit<Goal, 'id'>) => { /* To implement with goals table */ };
+    const addGoal = async (g: Omit<Goal, 'id'>) => {
+        if (!user) return;
+        const { error } = await supabase.from('goals').insert({
+            user_id: user.id,
+            name: g.name,
+            target_amount: g.targetAmount,
+            current_amount: g.currentAmount,
+            deadline: g.deadline,
+            category: g.category
+        });
+        if (!error) refreshData();
+    };
     const updateGoal = async (id: string, g: Partial<Goal>) => { };
     const deleteGoal = async (id: string) => { };
 
     const addCard = async (c: Omit<CreditCard, 'id'>) => {
         if (!user) return;
+        const holderId = await getFirstMemberId();
         const payload = {
             user_id: user.id,
             type: 'CREDIT_CARD',
@@ -274,11 +292,8 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
             due_day: c.dueDay,
             last_digits: c.last4Digits,
             theme: c.theme,
-            holder_id: (await getFirstMemberId()) // Fallback
+            holder_id: holderId
         };
-        // Need holder_id! The UI doesn't always provide it in "addCard". 
-        // We might need to fix AddCardModal to provide holder. 
-        // For now, defaulting to first member found.
 
         const { error } = await supabase.from('accounts').insert(payload);
         if (!error) refreshData();
@@ -294,7 +309,6 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         const payload: any = {};
         if (c.name) payload.name = c.name;
         if (c.limit) payload.credit_limit = c.limit;
-        // ...
         const { error } = await supabase.from('accounts').update(payload).eq('id', id);
         if (!error) refreshData();
     };
@@ -306,14 +320,15 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
 
     const addAccount = async (a: Omit<BankAccount, 'id'>) => {
         if (!user) return;
+        const holderId = await getFirstMemberId();
         await supabase.from('accounts').insert({
             user_id: user.id,
-            type: 'CHECKING', // Default
+            type: 'CHECKING',
             name: a.name,
             bank: a.bankName,
             balance: a.balance,
             color: a.color,
-            holder_id: await getFirstMemberId()
+            holder_id: holderId
         });
         refreshData();
     };
@@ -345,7 +360,6 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         const payload: any = {};
         if (m.name) payload.name = m.name;
         if (m.income) payload.monthly_income = m.income;
-        // ...
         await supabase.from('family_members').update(payload).eq('id', id);
         refreshData();
     };
@@ -354,8 +368,24 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         refreshData();
     };
 
-    // Calculations (Memoized based on transactions state)
-    // Copied from previous logic
+    const addCategory = async (c: Omit<Category, 'id'>) => {
+        if (!user) return;
+        await supabase.from('categories').insert({
+            user_id: user.id,
+            name: c.name,
+            type: c.type.toUpperCase(),
+            icon: c.icon,
+            color: c.color
+        });
+        refreshData();
+    };
+
+    const deleteCategory = async (id: string) => {
+        await supabase.from('categories').update({ is_active: false }).eq('id', id);
+        refreshData();
+    };
+
+    // Calculations
     const filteredTransactions = useMemo(() => {
         return transactions.filter(t => {
             const matchesMember = !filters.selectedMember || t.memberId === filters.selectedMember;
@@ -396,7 +426,8 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         const grouped = filteredTransactions
             .filter(t => t.type === 'expense')
             .reduce((acc, curr) => {
-                acc[curr.category] = (acc[curr.category] || 0) + curr.amount;
+                const cat = curr.category || 'Outros';
+                acc[cat] = (acc[cat] || 0) + curr.amount;
                 return acc;
             }, {} as Record<string, number>);
 
@@ -423,6 +454,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         creditCards,
         bankAccounts,
         familyMembers,
+        categories,
         isLoading,
         filters,
         setFilters,
@@ -431,6 +463,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         addCard, updateCard, deleteCard,
         addAccount, updateAccount, deleteAccount,
         addMember, updateMember, deleteMember,
+        addCategory, deleteCategory, // Expose category actions
         filteredTransactions,
         getFilteredTransactions: () => filteredTransactions,
         totalBalance,
