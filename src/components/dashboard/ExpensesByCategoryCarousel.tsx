@@ -129,7 +129,7 @@ export function ExpensesByCategoryCarousel() {
     if (!expensesByCategory.length) return null;
 
     return (
-        <div className="relative group/carousel w-full overflow-hidden mb-2">
+        <div className="relative group/carousel w-full overflow-hidden mb-4">
             {/* Navigation Arrows */}
             {showLeftArrow && (
                 <button
@@ -156,7 +156,7 @@ export function ExpensesByCategoryCarousel() {
                 onMouseUp={handleMouseUp}
                 onMouseLeave={handleMouseUp}
                 className={cn(
-                    "flex gap-5 overflow-x-auto no-scrollbar py-6 px-1 scroll-smooth",
+                    "flex gap-5 overflow-x-auto no-scrollbar pb-10 pt-2 px-1 scroll-smooth",
                     isDragging ? "cursor-grabbing" : "cursor-grab"
                 )}
             >
