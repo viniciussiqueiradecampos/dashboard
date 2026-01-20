@@ -27,7 +27,7 @@ function CategoryDonutCard({ category, value, percentage, color }: CategoryDonut
     const offset = circumference - (percentage / 100) * circumference;
 
     return (
-        <div className="flex flex-col items-center bg-white border border-neutral-300 rounded-[32px] w-[180px] p-6 shrink-0 transition-all duration-300 hover:border-[#D7FF00] hover:shadow-md group cursor-default">
+        <div className="flex flex-col items-center bg-white border border-neutral-300 rounded-[32px] w-[170px] p-6 shrink-0 transition-all duration-300 hover:border-[#D7FF00] shadow-sm hover:shadow-md group cursor-default">
             {/* Donut Chart */}
             <div className="relative flex items-center justify-center mb-3"> {/* space/12 gap */}
                 <svg width={size} height={size} className="transform -rotate-90">
@@ -156,7 +156,7 @@ export function ExpensesByCategoryCarousel() {
                 onMouseUp={handleMouseUp}
                 onMouseLeave={handleMouseUp}
                 className={cn(
-                    "flex gap-4 overflow-x-auto no-scrollbar py-2 px-0.5 scroll-smooth",
+                    "flex gap-5 overflow-x-auto no-scrollbar py-6 px-1 scroll-smooth",
                     isDragging ? "cursor-grabbing" : "cursor-grab"
                 )}
             >
