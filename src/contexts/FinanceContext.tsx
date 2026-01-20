@@ -143,6 +143,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
                 });
                 if (syncError) {
                     console.error('User sync error:', syncError);
+                    alert(`Erro de Perfil: Não foi possível sincronizar seu usuário no banco (${syncError.message}). Por favor, execute o script SQL de permissões.`);
                 }
             }
 
