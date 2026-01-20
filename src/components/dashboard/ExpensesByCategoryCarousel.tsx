@@ -78,8 +78,6 @@ export function ExpensesByCategoryCarousel() {
     const [startX, setStartX] = useState(0);
     const [scrollLeft, setScrollLeft] = useState(0);
 
-    // Dynamic colors for donuts based on the requested rotation
-    const colors = ['#D7FF00', '#080B12', '#94A3B8', '#64748B'];
 
     const checkArrows = () => {
         if (scrollRef.current) {
@@ -170,13 +168,13 @@ export function ExpensesByCategoryCarousel() {
                     isDragging ? "cursor-grabbing" : "cursor-grab"
                 )}
             >
-                {expensesByCategory.map((item, index) => (
+                {expensesByCategory.map((item) => (
                     <CategoryDonutCard
                         key={item.category}
                         category={item.category}
                         value={item.value}
                         percentage={getCategoryPercentage(item.category)}
-                        color={colors[index % colors.length]}
+                        color="#D7FF00"
                     />
                 ))}
             </div>
