@@ -35,9 +35,10 @@ export function AddMemberModal({ isOpen, onClose }: AddMemberModalProps) {
 
             const url = await uploadFile('avatars', path, file);
             setAvatarUrl(url);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error uploading avatar:', error);
-            alert('Erro ao fazer upload da imagem. Certifique-se que o bucket "avatars" existe e é público.');
+            const msg = error.message || 'Erro desconhecido';
+            alert(`Erro no upload: ${msg}. Verifique se o bucket "avatars" é público e tem permissões de escrita.`);
         } finally {
             setIsUploading(false);
         }
