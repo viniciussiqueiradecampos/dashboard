@@ -72,7 +72,7 @@ export function CreditCardsWidget() {
     const prevPage = () => setCurrentPage((prev) => (prev > 0 ? prev - 1 : prev));
 
     return (
-        <div className="bg-[#F8F9FA] border border-neutral-300 rounded-[32px] p-8 h-full flex flex-col shadow-sm min-h-[460px]">
+        <div className="bg-white border border-neutral-300 rounded-[32px] p-8 h-full flex flex-col shadow-sm min-h-[460px]">
             {/* Header */}
             <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-3">

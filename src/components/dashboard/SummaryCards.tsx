@@ -45,7 +45,7 @@ export function SummaryCards() {
     const { totalBalance, incomeForPeriod, expensesForPeriod } = useFinance();
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8 w-full max-w-[794px]">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-4 w-full">
             <SummaryCard
                 title="Saldo Total"
                 value={totalBalance}

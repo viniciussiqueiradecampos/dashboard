@@ -27,7 +27,7 @@ function CategoryDonutCard({ category, value, percentage, color }: CategoryDonut
     const offset = circumference - (percentage / 100) * circumference;
 
     return (
-        <div className="flex flex-col items-center p-6 bg-white border border-neutral-200 rounded-[32px] w-[185px] h-[190px] shrink-0 transition-all duration-300 hover:border-[#D7FF00] group cursor-default shadow-sm hover:shadow-md">
+        <div className="flex flex-col items-center p-6 bg-white border border-neutral-300 rounded-[32px] w-[185px] h-[190px] shrink-0 transition-all duration-300 hover:border-[#D7FF00] group cursor-default shadow-sm hover:shadow-md">
             {/* Donut Chart */}
             <div className="relative flex items-center justify-center mb-4">
                 <svg width={size} height={size} className="transform -rotate-90">
