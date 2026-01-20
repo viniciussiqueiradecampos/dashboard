@@ -1,67 +1,67 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { MainLayout } from '@/components/layout/MainLayout';
-import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
-import { SummaryCards } from '@/components/dashboard/SummaryCards';
-import { ExpensesByCategoryCarousel } from '@/components/dashboard/ExpensesByCategoryCarousel';
-import { FinancialFlowChart } from '@/components/dashboard/FinancialFlowChart';
-import { CreditCardsWidget } from '@/components/dashboard/CreditCardsWidget';
-import { UpcomingExpensesWidget } from '@/components/dashboard/UpcomingExpensesWidget';
-import { TransactionsTable } from '@/components/dashboard/TransactionsTable';
 
-// Placeholder Pages - To be real components soon
-const DashboardMock = () => (
-    <div className="flex flex-col w-full">
-        <DashboardHeader />
+import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
+import { SidebarProvider } from '@/contexts/SidebarContext';
+import { FinanceProvider } from '@/contexts/FinanceContext';
+import { AuthProvider, useAuth } from '@/contexts/AuthContext';
+import { Sidebar } from '@/components/layout/Sidebar';
+import { Dashboard } from '@/pages/Dashboard';
+import { Transactions } from '@/pages/Transactions';
+import { Cards } from '@/pages/Cards';
+import { Goals } from '@/pages/Goals';
+import { Profile } from '@/pages/Profile';
+import { Login } from '@/pages/auth/Login';
+import { Register } from '@/pages/auth/Register';
+import { Loader2 } from 'lucide-react';
 
-        {/* Main Grid Layout - Matching FIGMA exactly */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Left Column (Main Content - 2/3) */}
-            <div className="lg:col-span-2 space-y-8 flex flex-col">
-                {/* Category Carousel (Prompt 7) */}
-                <ExpensesByCategoryCarousel />
+function ProtectedLayout() {
+    const { user, loading } = useAuth();
 
-                {/* Summary Cards (Prompt 5) */}
-                <SummaryCards />
-
-                {/* Financial Flow Section (Prompt 8) */}
-                <FinancialFlowChart />
+    if (loading) {
+        return (
+            <div className="h-screen w-full flex items-center justify-center bg-[#F1F5F9]">
+                <Loader2 className="animate-spin text-neutral-400" size={40} />
             </div>
+        );
+    }
 
-            {/* Right Column (Side Widgets - 1/3) - Aligned to top */}
-            <div className="flex flex-col gap-8 self-start">
-                {/* Cards Widget (Prompt 09) */}
-                <CreditCardsWidget />
+    if (!user) {
+        return <Navigate to="/login" replace />;
+    }
 
-                {/* Upcoming Expenses Widget (Prompt 10) */}
-                <UpcomingExpensesWidget />
-            </div>
-        </div>
-
-        {/* Bottom Section - Full Width Table (Prompt 11) */}
-        <div className="mt-8 mb-8 w-full">
-            <TransactionsTable />
-        </div>
-    </div>
-);
-
-const GoalsMock = () => <div className="text-2xl font-bold p-8">Objetivos</div>;
-const CardsMock = () => <div className="text-2xl font-bold p-8">Cartões</div>;
-const TransactionsMock = () => <div className="text-2xl font-bold p-8">Transações</div>;
-const ProfileMock = () => <div className="text-2xl font-bold p-8">Perfil</div>;
+    return (
+        <FinanceProvider>
+            <SidebarProvider>
+                <div className="flex h-screen bg-[#F1F5F9] overflow-hidden">
+                    <Sidebar />
+                    <main className="flex-1 overflow-y-auto p-4 lg:p-8 ml-0 lg:ml-20 transition-all duration-300">
+                        <div className="max-w-7xl mx-auto h-full">
+                            <Outlet />
+                        </div>
+                    </main>
+                </div>
+            </SidebarProvider>
+        </FinanceProvider>
+    );
+}
 
 function App() {
     return (
         <Router>
-            <Routes>
-                <Route element={<MainLayout />}>
-                    <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                    <Route path="/dashboard" element={<DashboardMock />} />
-                    <Route path="/goals" element={<GoalsMock />} />
-                    <Route path="/cards" element={<CardsMock />} />
-                    <Route path="/transactions" element={<TransactionsMock />} />
-                    <Route path="/profile" element={<ProfileMock />} />
-                </Route>
-            </Routes>
+            <AuthProvider>
+                <Routes>
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/register" element={<Register />} />
+
+                    <Route element={<ProtectedLayout />}>
+                        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                        <Route path="/dashboard" element={<Dashboard />} />
+                        <Route path="/transactions" element={<Transactions />} />
+                        <Route path="/goals" element={<Goals />} />
+                        <Route path="/cards" element={<Cards />} />
+                        <Route path="/profile" element={<Profile />} />
+                    </Route>
+                </Routes>
+            </AuthProvider>
         </Router>
     );
 }

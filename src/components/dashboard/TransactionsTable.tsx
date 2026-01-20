@@ -3,6 +3,7 @@ import { useState, useMemo } from 'react';
 import { useFinance } from '@/contexts/FinanceContext';
 import { cn } from '@/utils/cn';
 import { Transaction } from '@/types';
+import { EditTransactionModal } from '@/components/modals/EditTransactionModal';
 
 const ITEMS_PER_PAGE = 5;
 
@@ -11,6 +12,13 @@ export function TransactionsTable() {
     const [localSearch, setLocalSearch] = useState('');
     const [localTypeFilter, setLocalTypeFilter] = useState<'all' | 'income' | 'expense'>('all');
     const [currentPage, setCurrentPage] = useState(1);
+    const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
+    const handleTransactionClick = (transaction: Transaction) => {
+        setSelectedTransaction(transaction);
+        setIsEditModalOpen(true);
+    };
 
     // Get globally filtered transactions and apply local filters
     const filteredTransactions = useMemo(() => {
@@ -132,192 +140,201 @@ export function TransactionsTable() {
     };
 
     return (
-        <div className="bg-white rounded-[20px] border border-neutral-300 p-8 shadow-sm w-full">
-            {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-                <h2 className="text-xl font-bold text-neutral-1100 tracking-tight">
-                    Extrato detalhado
-                </h2>
+        <>
+            <div className="bg-white rounded-[20px] border border-neutral-300 p-8 shadow-sm w-full">
+                {/* Header */}
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+                    <h2 className="text-xl font-bold text-neutral-1100 tracking-tight">
+                        Extrato detalhado
+                    </h2>
 
-                <div className="flex flex-col sm:flex-row gap-3">
-                    {/* Search */}
-                    <div className="relative w-full sm:w-64">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" size={18} />
-                        <input
-                            type="text"
-                            placeholder="Buscar lançamentos..."
-                            value={localSearch}
-                            onChange={(e) => setLocalSearch(e.target.value)}
-                            className="w-full h-10 pl-10 pr-4 bg-white border border-neutral-200 rounded-full text-sm text-neutral-900 placeholder:text-neutral-400 focus:ring-2 focus:ring-black focus:border-transparent transition-all outline-none"
-                        />
-                    </div>
-
-                    {/* Type Filter */}
-                    <select
-                        value={localTypeFilter}
-                        onChange={(e) => setLocalTypeFilter(e.target.value as 'all' | 'income' | 'expense')}
-                        className="w-full sm:w-[140px] h-10 px-4 bg-white border border-neutral-200 rounded-full text-sm text-neutral-900 focus:ring-2 focus:ring-black focus:border-transparent transition-all outline-none cursor-pointer"
-                    >
-                        <option value="all">Todos</option>
-                        <option value="income">Receitas</option>
-                        <option value="expense">Despesas</option>
-                    </select>
-                </div>
-            </div>
-
-            {/* Table */}
-            <div className="overflow-x-auto -mx-8 px-8">
-                <table className="w-full">
-                    <thead>
-                        <tr className="border-b border-neutral-200 bg-neutral-50">
-                            <th className="text-left py-4 px-4 text-xs font-bold text-neutral-600 uppercase tracking-wider w-[50px]">
-                                Membro
-                            </th>
-                            <th className="text-left py-4 px-4 text-xs font-bold text-neutral-600 uppercase tracking-wider">
-                                Datas
-                            </th>
-                            <th className="text-left py-4 px-4 text-xs font-bold text-neutral-600 uppercase tracking-wider">
-                                Descrição
-                            </th>
-                            <th className="text-left py-4 px-4 text-xs font-bold text-neutral-600 uppercase tracking-wider">
-                                Categorias
-                            </th>
-                            <th className="text-left py-4 px-4 text-xs font-bold text-neutral-600 uppercase tracking-wider">
-                                Conta/cartão
-                            </th>
-                            <th className="text-left py-4 px-4 text-xs font-bold text-neutral-600 uppercase tracking-wider">
-                                Parcelas
-                            </th>
-                            <th className="text-right py-4 px-4 text-xs font-bold text-neutral-600 uppercase tracking-wider">
-                                Valor
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {currentTransactions.length > 0 ? (
-                            currentTransactions.map((transaction: Transaction, index: number) => (
-                                <tr
-                                    key={transaction.id}
-                                    className={cn(
-                                        'border-b border-neutral-100 last:border-b-0 transition-colors hover:bg-neutral-50',
-                                        index % 2 === 1 && 'bg-neutral-25'
-                                    )}
-                                >
-                                    {/* Avatar */}
-                                    <td className="py-4 px-4">
-                                        {getMemberAvatar(transaction.memberId) ? (
-                                            <img
-                                                src={getMemberAvatar(transaction.memberId)}
-                                                alt="Member"
-                                                className="w-6 h-6 rounded-full object-cover"
-                                            />
-                                        ) : (
-                                            <div className="w-6 h-6 rounded-full bg-neutral-200 flex items-center justify-center">
-                                                <User size={14} className="text-neutral-500" />
-                                            </div>
-                                        )}
-                                    </td>
-
-                                    {/* Date */}
-                                    <td className="py-4 px-4 text-sm text-neutral-600">
-                                        {formatDate(transaction.date)}
-                                    </td>
-
-                                    {/* Description */}
-                                    <td className="py-4 px-4">
-                                        <div className="flex items-center gap-2">
-                                            <div
-                                                className={cn(
-                                                    'w-8 h-8 rounded-full flex items-center justify-center shrink-0',
-                                                    transaction.type === 'income' ? 'bg-green-50' : 'bg-red-50'
-                                                )}
-                                            >
-                                                {transaction.type === 'income' ? (
-                                                    <ArrowDownCircle size={16} className="text-green-600" />
-                                                ) : (
-                                                    <ArrowUpCircle size={16} className="text-red-600" />
-                                                )}
-                                            </div>
-                                            <span className="text-sm font-bold text-neutral-1100 truncate">
-                                                {transaction.description}
-                                            </span>
-                                        </div>
-                                    </td>
-
-                                    {/* Category */}
-                                    <td className="py-4 px-4">
-                                        <span className="inline-block px-3 py-1 bg-neutral-100 text-neutral-600 text-xs font-medium rounded-full">
-                                            {transaction.category}
-                                        </span>
-                                    </td>
-
-                                    {/* Account/Card */}
-                                    <td className="py-4 px-4 text-sm text-neutral-600">
-                                        {getAccountName(transaction)}
-                                    </td>
-
-                                    {/* Installments */}
-                                    <td className="py-4 px-4 text-sm text-neutral-600 text-center">
-                                        {getInstallmentText(transaction)}
-                                    </td>
-
-                                    {/* Value */}
-                                    <td className="py-4 px-4 text-right">
-                                        <span
-                                            className={cn(
-                                                'text-sm font-bold',
-                                                transaction.type === 'income' ? 'text-green-600' : 'text-neutral-1100'
-                                            )}
-                                        >
-                                            {transaction.type === 'income' ? '+' : '-'} {formatCurrency(transaction.amount)}
-                                        </span>
-                                    </td>
-                                </tr>
-                            ))
-                        ) : (
-                            <tr>
-                                <td colSpan={7} className="py-12 text-center">
-                                    <p className="text-neutral-400 font-medium">
-                                        Nenhum lançamento encontrado.
-                                    </p>
-                                </td>
-                            </tr>
-                        )}
-                    </tbody>
-                </table>
-            </div>
-
-            {/* Pagination */}
-            {filteredTransactions.length > 0 && (
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 pt-6 border-t border-neutral-200">
-                    <p className="text-sm text-neutral-600">
-                        Mostrando {startIndex + 1} a {Math.min(endIndex, filteredTransactions.length)} de{' '}
-                        {filteredTransactions.length}
-                    </p>
-
-                    <div className="flex items-center gap-2">
-                        <button
-                            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                            disabled={currentPage === 1}
-                            className="p-2 rounded-lg border border-neutral-200 text-neutral-600 hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                        >
-                            <ChevronLeft size={16} />
-                        </button>
-
-                        <div className="flex items-center gap-1">
-                            {renderPageNumbers()}
+                    <div className="flex flex-col sm:flex-row gap-3">
+                        {/* Search */}
+                        <div className="relative w-full sm:w-64">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" size={18} />
+                            <input
+                                type="text"
+                                placeholder="Buscar lançamentos..."
+                                value={localSearch}
+                                onChange={(e) => setLocalSearch(e.target.value)}
+                                className="w-full h-10 pl-10 pr-4 bg-white border border-neutral-200 rounded-full text-sm text-neutral-900 placeholder:text-neutral-400 focus:ring-2 focus:ring-black focus:border-transparent transition-all outline-none"
+                            />
                         </div>
 
-                        <button
-                            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                            disabled={currentPage === totalPages}
-                            className="p-2 rounded-lg border border-neutral-200 text-neutral-600 hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        {/* Type Filter */}
+                        <select
+                            value={localTypeFilter}
+                            onChange={(e) => setLocalTypeFilter(e.target.value as 'all' | 'income' | 'expense')}
+                            className="w-full sm:w-[140px] h-10 px-4 bg-white border border-neutral-200 rounded-full text-sm text-neutral-900 focus:ring-2 focus:ring-black focus:border-transparent transition-all outline-none cursor-pointer"
                         >
-                            <ChevronRight size={16} />
-                        </button>
+                            <option value="all">Todos</option>
+                            <option value="income">Receitas</option>
+                            <option value="expense">Despesas</option>
+                        </select>
                     </div>
                 </div>
-            )}
-        </div>
+
+                {/* Table */}
+                <div className="overflow-x-auto -mx-8 px-8">
+                    <table className="w-full">
+                        <thead>
+                            <tr className="border-b border-neutral-200 bg-neutral-50">
+                                <th className="text-left py-4 px-4 text-xs font-bold text-neutral-600 uppercase tracking-wider w-[50px]">
+                                    Membro
+                                </th>
+                                <th className="text-left py-4 px-4 text-xs font-bold text-neutral-600 uppercase tracking-wider">
+                                    Datas
+                                </th>
+                                <th className="text-left py-4 px-4 text-xs font-bold text-neutral-600 uppercase tracking-wider">
+                                    Descrição
+                                </th>
+                                <th className="text-left py-4 px-4 text-xs font-bold text-neutral-600 uppercase tracking-wider">
+                                    Categorias
+                                </th>
+                                <th className="text-left py-4 px-4 text-xs font-bold text-neutral-600 uppercase tracking-wider">
+                                    Conta/cartão
+                                </th>
+                                <th className="text-left py-4 px-4 text-xs font-bold text-neutral-600 uppercase tracking-wider">
+                                    Parcelas
+                                </th>
+                                <th className="text-right py-4 px-4 text-xs font-bold text-neutral-600 uppercase tracking-wider">
+                                    Valor
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {currentTransactions.length > 0 ? (
+                                currentTransactions.map((transaction: Transaction, index: number) => (
+                                    <tr
+                                        key={transaction.id}
+                                        onClick={() => handleTransactionClick(transaction)}
+                                        className={cn(
+                                            'border-b border-neutral-100 last:border-b-0 transition-colors hover:bg-neutral-50 cursor-pointer group',
+                                            index % 2 === 1 && 'bg-neutral-25'
+                                        )}
+                                    >
+                                        {/* Avatar */}
+                                        <td className="py-4 px-4">
+                                            {getMemberAvatar(transaction.memberId) ? (
+                                                <img
+                                                    src={getMemberAvatar(transaction.memberId)}
+                                                    alt="Member"
+                                                    className="w-6 h-6 rounded-full object-cover"
+                                                />
+                                            ) : (
+                                                <div className="w-6 h-6 rounded-full bg-neutral-200 flex items-center justify-center">
+                                                    <User size={14} className="text-neutral-500" />
+                                                </div>
+                                            )}
+                                        </td>
+
+                                        {/* Date */}
+                                        <td className="py-4 px-4 text-sm text-neutral-600">
+                                            {formatDate(transaction.date)}
+                                        </td>
+
+                                        {/* Description */}
+                                        <td className="py-4 px-4">
+                                            <div className="flex items-center gap-2">
+                                                <div
+                                                    className={cn(
+                                                        'w-8 h-8 rounded-full flex items-center justify-center shrink-0',
+                                                        transaction.type === 'income' ? 'bg-green-50' : 'bg-red-50'
+                                                    )}
+                                                >
+                                                    {transaction.type === 'income' ? (
+                                                        <ArrowDownCircle size={16} className="text-green-600" />
+                                                    ) : (
+                                                        <ArrowUpCircle size={16} className="text-red-600" />
+                                                    )}
+                                                </div>
+                                                <span className="text-sm font-bold text-neutral-1100 truncate">
+                                                    {transaction.description}
+                                                </span>
+                                            </div>
+                                        </td>
+
+                                        {/* Category */}
+                                        <td className="py-4 px-4">
+                                            <span className="inline-block px-3 py-1 bg-neutral-100 text-neutral-600 text-xs font-medium rounded-full">
+                                                {transaction.category}
+                                            </span>
+                                        </td>
+
+                                        {/* Account/Card */}
+                                        <td className="py-4 px-4 text-sm text-neutral-600">
+                                            {getAccountName(transaction)}
+                                        </td>
+
+                                        {/* Installments */}
+                                        <td className="py-4 px-4 text-sm text-neutral-600 text-center">
+                                            {getInstallmentText(transaction)}
+                                        </td>
+
+                                        {/* Value */}
+                                        <td className="py-4 px-4 text-right">
+                                            <span
+                                                className={cn(
+                                                    'text-sm font-bold',
+                                                    transaction.type === 'income' ? 'text-green-600' : 'text-neutral-1100'
+                                                )}
+                                            >
+                                                {transaction.type === 'income' ? '+' : '-'} {formatCurrency(transaction.amount)}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan={7} className="py-12 text-center">
+                                        <p className="text-neutral-400 font-medium">
+                                            Nenhum lançamento encontrado.
+                                        </p>
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+
+                {/* Pagination */}
+                {filteredTransactions.length > 0 && (
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 pt-6 border-t border-neutral-200">
+                        <p className="text-sm text-neutral-600">
+                            Mostrando {startIndex + 1} a {Math.min(endIndex, filteredTransactions.length)} de{' '}
+                            {filteredTransactions.length}
+                        </p>
+
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                                disabled={currentPage === 1}
+                                className="p-2 rounded-lg border border-neutral-200 text-neutral-600 hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            >
+                                <ChevronLeft size={16} />
+                            </button>
+
+                            <div className="flex items-center gap-1">
+                                {renderPageNumbers()}
+                            </div>
+
+                            <button
+                                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                                disabled={currentPage === totalPages}
+                                className="p-2 rounded-lg border border-neutral-200 text-neutral-600 hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            >
+                                <ChevronRight size={16} />
+                            </button>
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            <EditTransactionModal
+                isOpen={isEditModalOpen}
+                onClose={() => setIsEditModalOpen(false)}
+                transaction={selectedTransaction}
+            />
+        </>
     );
 }

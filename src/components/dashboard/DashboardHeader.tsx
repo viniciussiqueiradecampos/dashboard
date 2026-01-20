@@ -5,11 +5,13 @@ import { MemberFilter } from './MemberFilter';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { DateRangePicker } from './DateRangePicker';
 import { NewTransactionModal } from '@/components/modals/NewTransactionModal';
+import { FiltersMobileModal } from '@/components/modals/FiltersMobileModal';
 import { useState } from 'react';
 
 export function DashboardHeader() {
     const { filters, setFilters } = useFinance();
     const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
+    const [isFiltersMobileOpen, setIsFiltersMobileOpen] = useState(false);
 
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFilters(prev => ({ ...prev, searchText: e.target.value }));
@@ -35,10 +37,19 @@ export function DashboardHeader() {
                         />
                     </div>
 
-                    {/* Filter Trigger */}
+                    {/* Filter Trigger - Desktop: Popover, Mobile: Modal */}
+                    {/* Mobile Filter Button */}
+                    <button
+                        onClick={() => setIsFiltersMobileOpen(true)}
+                        className="lg:hidden h-12 w-12 flex items-center justify-center rounded-full bg-transparent border border-[#9CA3AF] text-[#080B12] hover:bg-neutral-100 transition-colors shrink-0"
+                    >
+                        <SlidersHorizontal size={20} />
+                    </button>
+
+                    {/* Desktop Filter Popover */}
                     <Popover>
                         <PopoverTrigger asChild>
-                            <button className="h-12 w-12 flex items-center justify-center rounded-full bg-transparent border border-[#9CA3AF] text-[#080B12] hover:bg-neutral-100 transition-colors shrink-0">
+                            <button className="hidden lg:flex h-12 w-12 items-center justify-center rounded-full bg-transparent border border-[#9CA3AF] text-[#080B12] hover:bg-neutral-100 transition-colors shrink-0">
                                 <SlidersHorizontal size={20} />
                             </button>
                         </PopoverTrigger>
@@ -85,6 +96,11 @@ export function DashboardHeader() {
             <NewTransactionModal
                 isOpen={isTransactionModalOpen}
                 onClose={() => setIsTransactionModalOpen(false)}
+            />
+
+            <FiltersMobileModal
+                isOpen={isFiltersMobileOpen}
+                onClose={() => setIsFiltersMobileOpen(false)}
             />
         </>
     );

@@ -1,95 +1,19 @@
-import { Wallet, Plus, Check } from 'lucide-react';
-import { useState } from 'react';
+import { Wallet, Plus, Check, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { useFinance } from '@/contexts/FinanceContext';
+import { NewTransactionModal } from '@/components/modals/NewTransactionModal';
 import { cn } from '@/utils/cn';
+import { Transaction } from '@/types';
 
-interface UpcomingExpense {
-    id: string;
-    description: string;
-    amount: number;
-    dueDate: string;
-    paymentSource: {
-        type: 'account' | 'card';
-        name: string;
-        last4?: string;
-    };
-    isRecurring?: boolean;
-    installment?: {
-        current: number;
-        total: number;
-    };
-}
 
-// Mock data - will be replaced with real data from context
-const mockExpenses: UpcomingExpense[] = [
-    {
-        id: '1',
-        description: 'Conta de Luz',
-        amount: 154.00,
-        dueDate: '2026-01-21',
-        paymentSource: {
-            type: 'card',
-            name: 'Nubank',
-            last4: '5897'
-        },
-        isRecurring: true
-    },
-    {
-        id: '2',
-        description: 'Internet Fibra',
-        amount: 99.90,
-        dueDate: '2026-01-25',
-        paymentSource: {
-            type: 'account',
-            name: 'Nubank'
-        },
-        isRecurring: true
-    },
-    {
-        id: '3',
-        description: 'Spotify Premium',
-        amount: 21.90,
-        dueDate: '2026-01-28',
-        paymentSource: {
-            type: 'card',
-            name: 'Inter',
-            last4: '5897'
-        },
-        isRecurring: true
-    },
-    {
-        id: '4',
-        description: 'Notebook Dell',
-        amount: 450.00,
-        dueDate: '2026-02-05',
-        paymentSource: {
-            type: 'card',
-            name: 'Picpay',
-            last4: '5897'
-        },
-        installment: {
-            current: 3,
-            total: 12
-        }
-    },
-    {
-        id: '5',
-        description: 'Academia SmartFit',
-        amount: 89.90,
-        dueDate: '2026-02-10',
-        paymentSource: {
-            type: 'account',
-            name: 'Inter'
-        },
-        isRecurring: true
-    }
-];
 
 interface ExpenseItemProps {
-    expense: UpcomingExpense;
+    expense: Transaction;
     onMarkAsPaid: (id: string) => void;
+    getAccountName: (transaction: Transaction) => string;
 }
 
-function ExpenseItem({ expense, onMarkAsPaid }: ExpenseItemProps) {
+function ExpenseItem({ expense, onMarkAsPaid, getAccountName }: ExpenseItemProps) {
     const [isHovered, setIsHovered] = useState(false);
     const [isPaying, setIsPaying] = useState(false);
 
@@ -107,16 +31,9 @@ function ExpenseItem({ expense, onMarkAsPaid }: ExpenseItemProps) {
         return `Vence dia ${day}/${month}`;
     };
 
-    const formatPaymentSource = () => {
-        if (expense.paymentSource.type === 'account') {
-            return `${expense.paymentSource.name} conta`;
-        }
-        return `Crédito ${expense.paymentSource.name} **** ${expense.paymentSource.last4}`;
-    };
-
     const handleMarkAsPaid = async () => {
         setIsPaying(true);
-        // Simulate API call
+        // Simulate minor delay for UX
         await new Promise(resolve => setTimeout(resolve, 300));
         onMarkAsPaid(expense.id);
     };
@@ -129,10 +46,10 @@ function ExpenseItem({ expense, onMarkAsPaid }: ExpenseItemProps) {
                     {expense.description}
                 </h4>
                 <p className="text-[13px] text-neutral-600 font-medium mb-0.5">
-                    {formatDueDate(expense.dueDate)}
+                    {formatDueDate(expense.date)}
                 </p>
                 <p className="text-[11px] text-neutral-400 font-medium">
-                    {formatPaymentSource()}
+                    {getAccountName(expense)}
                 </p>
             </div>
 
@@ -165,63 +82,124 @@ function ExpenseItem({ expense, onMarkAsPaid }: ExpenseItemProps) {
 }
 
 export function UpcomingExpensesWidget() {
-    const [expenses, setExpenses] = useState<UpcomingExpense[]>(
-        mockExpenses.sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
+    const { transactions, updateTransaction, bankAccounts, creditCards } = useFinance();
+    const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
+    const [currentPage, setCurrentPage] = useState(0);
+    const itemsPerPage = 2;
+
+    const allUpcomingExpenses = useMemo(() => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        return transactions
+            .filter(t => t.type === 'expense' && t.status === 'pending')
+            .filter(t => {
+                const dueDate = new Date(t.date);
+                return dueDate >= today;
+            })
+            .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    }, [transactions]);
+
+    const totalPages = Math.ceil(allUpcomingExpenses.length / itemsPerPage);
+    const currentExpenses = allUpcomingExpenses.slice(
+        currentPage * itemsPerPage,
+        (currentPage + 1) * itemsPerPage
     );
 
+    const nextPage = () => setCurrentPage((prev) => (prev + 1 < totalPages ? prev + 1 : prev));
+    const prevPage = () => setCurrentPage((prev) => (prev > 0 ? prev - 1 : prev));
+
     const handleMarkAsPaid = (id: string) => {
-        // Animate removal
-        setExpenses(prev => prev.filter(exp => exp.id !== id));
+        updateTransaction(id, { status: 'completed' });
+    };
 
-        // Show success message (you can implement a toast notification here)
-        console.log('Despesa marcada como paga!');
-
-        // TODO: Update backend, handle recurring/installment logic
+    const getAccountName = (transaction: Transaction) => {
+        if (transaction.accountId) {
+            const account = bankAccounts.find((a) => a.id === transaction.accountId);
+            return account ? `${account.bankName} - ${account.name}` : 'Conta';
+        }
+        if (transaction.cardId) {
+            const card = creditCards.find((c) => c.id === transaction.cardId);
+            return card ? `${card.brand} ${card.name}` : 'Cartão';
+        }
+        return 'N/A';
     };
 
     return (
-        <div className="bg-white border border-neutral-300 rounded-[32px] p-8 h-full flex flex-col shadow-sm">
-            {/* Header */}
-            <div className="flex items-center justify-between mb-8 shrink-0">
-                <div className="flex items-center gap-3">
-                    <div className="p-2.5 bg-neutral-100 rounded-xl">
-                        <Wallet size={20} className="text-neutral-1100" />
+        <>
+            <div className="bg-white border border-neutral-300 rounded-[32px] p-6 h-full flex flex-col shadow-sm">
+                {/* Header */}
+                <div className="flex items-center justify-between mb-8 shrink-0">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2.5 bg-neutral-100 rounded-xl">
+                            <Wallet size={20} className="text-neutral-1100" />
+                        </div>
+                        <h2 className="text-xl font-bold text-neutral-1100 tracking-tight">
+                            Próximas despesas
+                        </h2>
                     </div>
-                    <h2 className="text-xl font-bold text-neutral-1100 tracking-tight">
-                        Próximas despesas
-                    </h2>
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={() => setIsTransactionModalOpen(true)}
+                            className="w-10 h-10 flex items-center justify-center rounded-full bg-white border border-neutral-200 text-neutral-1100 hover:bg-neutral-50 hover:scale-110 transition-all shadow-sm"
+                            title="Adicionar despesa"
+                        >
+                            <Plus size={20} />
+                        </button>
+                        {totalPages > 1 && (
+                            <div className="flex items-center ml-2 border border-neutral-200 rounded-full bg-white p-1 shadow-sm">
+                                <button
+                                    onClick={prevPage}
+                                    disabled={currentPage === 0}
+                                    className="p-1.5 text-neutral-400 hover:text-black disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                                >
+                                    <ChevronLeft size={16} />
+                                </button>
+                                <span className="text-[11px] font-bold text-neutral-600 px-1">
+                                    {currentPage + 1}/{totalPages}
+                                </span>
+                                <button
+                                    onClick={nextPage}
+                                    disabled={currentPage === totalPages - 1}
+                                    className="p-1.5 text-neutral-400 hover:text-black disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                                >
+                                    <ChevronRight size={16} />
+                                </button>
+                            </div>
+                        )}
+                    </div>
                 </div>
-                <button
-                    className="w-10 h-10 flex items-center justify-center rounded-full bg-white border border-neutral-200 text-neutral-1100 hover:bg-neutral-50 hover:scale-110 transition-all shadow-sm"
-                    title="Adicionar despesa"
-                >
-                    <Plus size={20} />
-                </button>
+
+                {/* Expenses List */}
+                <div className="flex-1 overflow-y-auto px-1">
+                    {currentExpenses.length > 0 ? (
+                        <div className="space-y-0">
+                            {currentExpenses.map((expense) => (
+                                <ExpenseItem
+                                    key={expense.id}
+                                    expense={expense}
+                                    onMarkAsPaid={handleMarkAsPaid}
+                                    getAccountName={getAccountName}
+                                />
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="flex flex-col items-center justify-center h-full border-2 border-dashed border-neutral-200 rounded-3xl py-12">
+                            <div className="w-16 h-16 rounded-full bg-green-50 border-2 border-green-600 flex items-center justify-center mb-4">
+                                <Check size={32} className="text-green-600" />
+                            </div>
+                            <p className="text-sm text-neutral-400 font-medium">
+                                Nenhuma despesa pendente
+                            </p>
+                        </div>
+                    )}
+                </div>
             </div>
 
-            {/* Expenses List */}
-            <div className="flex-1 overflow-y-auto -mx-8 px-8 max-h-[500px]">
-                {expenses.length > 0 ? (
-                    <div className="space-y-0">
-                        {expenses.map((expense) => (
-                            <ExpenseItem
-                                key={expense.id}
-                                expense={expense}
-                                onMarkAsPaid={handleMarkAsPaid}
-                            />
-                        ))}
-                    </div>
-                ) : (
-                    <div className="flex flex-col items-center justify-center h-full border-2 border-dashed border-neutral-200 rounded-3xl py-12">
-                        <div className="w-16 h-16 rounded-full bg-green-50 border-2 border-green-600 flex items-center justify-center mb-4">
-                            <Check size={32} className="text-green-600" />
-                        </div>
-                        <p className="text-sm text-neutral-400 font-medium">
-                            Nenhuma despesa pendente
-                        </p>
-                    </div>
-                )}
-            </div>
-        </div>
+            <NewTransactionModal
+                isOpen={isTransactionModalOpen}
+                onClose={() => setIsTransactionModalOpen(false)}
+            />
+        </>
     );
 }

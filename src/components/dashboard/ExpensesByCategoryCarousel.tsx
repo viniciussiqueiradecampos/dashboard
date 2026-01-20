@@ -27,7 +27,7 @@ function CategoryDonutCard({ category, value, percentage, color }: CategoryDonut
     const offset = circumference - (percentage / 100) * circumference;
 
     return (
-        <div className="flex flex-col items-center bg-white border border-neutral-300 rounded-[32px] w-[184px] min-h-[185px] p-6 shrink-0 transition-all duration-300 hover:border-[#D7FF00] shadow-sm hover:shadow-md group cursor-default">
+        <div className="flex flex-col items-center bg-white border border-neutral-300 rounded-[24px] w-[160px] min-h-[160px] p-4 shrink-0 transition-all duration-300 hover:border-[#D7FF00] shadow-sm hover:shadow-md group cursor-default">
             {/* Donut Chart */}
             <div className="relative flex items-center justify-center mb-3"> {/* space/12 gap */}
                 <svg width={size} height={size} className="transform -rotate-90">
@@ -54,16 +54,16 @@ function CategoryDonutCard({ category, value, percentage, color }: CategoryDonut
                         className="transition-all duration-700 ease-out"
                     />
                 </svg>
-                <span className="absolute text-[13px] font-bold text-neutral-1100">
+                <span className="absolute text-[12px] font-bold text-neutral-1100">
                     {percentage.toFixed(0)}%
                 </span>
             </div>
 
             <div className="flex flex-col items-center text-center w-full">
-                <p className="text-[14px] text-neutral-500 font-medium mb-1 truncate w-full">
+                <p className="text-[13px] text-neutral-500 font-medium mb-1 truncate w-full">
                     {category}
                 </p>
-                <h3 className="text-[18px] font-bold text-neutral-1100 whitespace-nowrap">
+                <h3 className="text-[16px] font-bold text-neutral-1100 whitespace-nowrap">
                     {formatCurrency(value)}
                 </h3>
             </div>
@@ -103,7 +103,7 @@ export function ExpensesByCategoryCarousel() {
 
     const scroll = (direction: 'left' | 'right') => {
         if (scrollRef.current) {
-            const scrollAmount = direction === 'left' ? -196 : 196;
+            const scrollAmount = direction === 'left' ? -170 : 170;
             scrollRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
         }
     };
@@ -134,7 +134,7 @@ export function ExpensesByCategoryCarousel() {
             {showLeftArrow && (
                 <button
                     onClick={() => scroll('left')}
-                    className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 shadow-sm border border-neutral-200 z-20 flex items-center justify-center text-neutral-400 hover:text-black transition-all opacity-0 group-hover/carousel:opacity-100 hidden lg:flex"
+                    className="absolute left-0 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 shadow-sm border border-neutral-200 z-20 flex items-center justify-center text-neutral-400 hover:text-black transition-all opacity-0 group-hover/carousel:opacity-100 hidden lg:flex"
                 >
                     <ChevronLeft size={16} />
                 </button>
@@ -142,7 +142,7 @@ export function ExpensesByCategoryCarousel() {
             {showRightArrow && (
                 <button
                     onClick={() => scroll('right')}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 shadow-sm border border-neutral-200 z-20 flex items-center justify-center text-neutral-400 hover:text-black transition-all opacity-0 group-hover/carousel:opacity-100 hidden lg:flex"
+                    className="absolute right-0 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 shadow-sm border border-neutral-200 z-20 flex items-center justify-center text-neutral-400 hover:text-black transition-all opacity-0 group-hover/carousel:opacity-100 hidden lg:flex"
                 >
                     <ChevronRight size={16} />
                 </button>
@@ -156,7 +156,7 @@ export function ExpensesByCategoryCarousel() {
                 onMouseUp={handleMouseUp}
                 onMouseLeave={handleMouseUp}
                 className={cn(
-                    "flex gap-5 overflow-x-auto no-scrollbar pb-10 pt-2 px-1 scroll-smooth",
+                    "flex gap-4 overflow-x-auto no-scrollbar pb-2 pt-2 px-1 scroll-smooth mb-[155px]",
                     isDragging ? "cursor-grabbing" : "cursor-grab"
                 )}
             >

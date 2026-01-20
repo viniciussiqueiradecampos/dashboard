@@ -1,5 +1,5 @@
 import { X, ArrowUpCircle, ArrowDownCircle } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useFinance } from '@/contexts/FinanceContext';
 import { cn } from '@/utils/cn';
 import { TransactionType } from '@/types';
@@ -7,9 +7,10 @@ import { TransactionType } from '@/types';
 interface NewTransactionModalProps {
     isOpen: boolean;
     onClose: () => void;
+    defaultCardId?: string;
 }
 
-export function NewTransactionModal({ isOpen, onClose }: NewTransactionModalProps) {
+export function NewTransactionModal({ isOpen, onClose, defaultCardId }: NewTransactionModalProps) {
     const { addTransaction, familyMembers, bankAccounts, creditCards } = useFinance();
 
     const [type, setType] = useState<TransactionType>('expense');
@@ -17,12 +18,19 @@ export function NewTransactionModal({ isOpen, onClose }: NewTransactionModalProp
     const [description, setDescription] = useState('');
     const [category, setCategory] = useState('');
     const [memberId, setMemberId] = useState('');
-    const [accountId, setAccountId] = useState('');
+    const [accountId, setAccountId] = useState(defaultCardId || '');
     const [installments, setInstallments] = useState(1);
     const [isRecurring, setIsRecurring] = useState(false);
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
 
     const [errors, setErrors] = useState<Record<string, string>>({});
+
+    // Update accountId when modal opens with defaultCardId
+    useEffect(() => {
+        if (isOpen && defaultCardId) {
+            setAccountId(defaultCardId);
+        }
+    }, [isOpen, defaultCardId]);
 
     const expenseCategories = ['Alimentação', 'Transporte', 'Moradia', 'Saúde', 'Lazer', 'Educação'];
     const incomeCategories = ['Salário', 'Freelance', 'Investimentos', 'Outros'];
@@ -30,6 +38,7 @@ export function NewTransactionModal({ isOpen, onClose }: NewTransactionModalProp
     const categories = type === 'income' ? incomeCategories : expenseCategories;
 
     const isCard = creditCards.some(c => c.id === accountId);
+    const isAccount = bankAccounts.some(a => a.id === accountId);
     const showInstallments = isCard && type === 'expense';
 
     const validate = () => {
@@ -66,7 +75,8 @@ export function NewTransactionModal({ isOpen, onClose }: NewTransactionModalProp
             category,
             date,
             status: 'completed',
-            accountId,
+            accountId: isAccount ? accountId : undefined,
+            cardId: isCard ? accountId : undefined,
             memberId,
             installments: showInstallments ? { current: 1, total: installments } : undefined,
         });
