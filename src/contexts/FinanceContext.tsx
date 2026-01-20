@@ -44,12 +44,12 @@ interface FinanceContextType {
     deleteGoal: (id: string) => Promise<void>;
 
     // CRUD Cards
-    addCard: (c: Omit<CreditCard, 'id'>) => Promise<void>;
+    addCard: (c: Omit<CreditCard, 'id'> & { holderId?: string }) => Promise<void>;
     updateCard: (id: string, c: Partial<CreditCard>) => Promise<void>;
     deleteCard: (id: string) => Promise<void>;
 
     // CRUD Accounts
-    addAccount: (a: Omit<BankAccount, 'id'>) => Promise<void>;
+    addAccount: (a: Omit<BankAccount, 'id'> & { holderId?: string }) => Promise<void>;
     updateAccount: (id: string, a: Partial<BankAccount>) => Promise<void>;
     deleteAccount: (id: string) => Promise<void>;
 
@@ -131,19 +131,19 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         if (!user) return;
         setIsLoading(true);
         try {
-            // Ensure public.users entry exists (Safety check)
-            try {
-                const { data: publicUser, error: userCheckError } = await sb.from('users').select('id').eq('id', user.id).single();
-                if (!publicUser && !userCheckError) {
-                    console.log('Public user profile not found, creating...');
-                    await sb.from('users').insert({
-                        id: user.id,
-                        email: user.email,
-                        name: user.user_metadata?.name || 'Agravity User'
-                    });
+            // Ensure public.users entry exists (Safety check) - MUST finish before loading other data
+            const { data: publicUser } = await sb.from('users').select('id').eq('id', user.id).maybeSingle();
+
+            if (!publicUser) {
+                console.log('Synchronizing user profile...');
+                const { error: syncError } = await sb.from('users').upsert({
+                    id: user.id,
+                    email: user.email,
+                    name: user.user_metadata?.display_name || user.user_metadata?.name || 'Usuário'
+                });
+                if (syncError) {
+                    console.error('User sync error:', syncError);
                 }
-            } catch (uErr) {
-                console.warn('Silent failure ensuring public user profile:', uErr);
             }
 
             const [
@@ -228,12 +228,6 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         if (user) refreshData();
     }, [user, refreshData]);
 
-    const getFirstMemberId = async () => {
-        if (familyMembers.length > 0) return familyMembers[0].id;
-        const { data } = await sb.from('family_members').select('id').limit(1).single();
-        return (data as any)?.id;
-    }
-
     // --- CRUD ACTIONS ---
 
     const addTransaction = async (t: Omit<Transaction, 'id'>) => {
@@ -316,9 +310,8 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     const updateGoal = async (_id: string, _g: Partial<Goal>) => { };
     const deleteGoal = async (_id: string) => { };
 
-    const addCard = async (c: Omit<CreditCard, 'id'>) => {
+    const addCard = async (c: Omit<CreditCard, 'id'> & { holderId?: string }) => {
         if (!user) return;
-        const holderId = await getFirstMemberId();
         const payload = {
             user_id: user.id,
             type: 'CREDIT_CARD',
@@ -330,7 +323,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
             due_day: c.dueDay,
             last_digits: c.last4Digits,
             theme: c.theme,
-            holder_id: holderId
+            holder_id: c.holderId || null
         };
 
         const { error } = await sb.from('accounts').insert(payload);
@@ -362,9 +355,8 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         await refreshData();
     };
 
-    const addAccount = async (a: Omit<BankAccount, 'id'>) => {
+    const addAccount = async (a: Omit<BankAccount, 'id'> & { holderId?: string }) => {
         if (!user) return;
-        const holderId = await getFirstMemberId();
         const { error } = await sb.from('accounts').insert({
             user_id: user.id,
             type: 'CHECKING',
@@ -372,7 +364,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
             bank: a.bankName,
             balance: a.balance,
             color: a.color,
-            holder_id: holderId
+            holder_id: a.holderId || null
         });
         if (error) {
             console.error('Error adding account:', error);
@@ -489,9 +481,9 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     }, [filteredTransactions]);
 
     const getCategoryPercentage = (category: string) => {
-        if (incomeForPeriod === 0) return 0;
+        if (expensesForPeriod === 0) return 0;
         const catTotal = expensesByCategory.find(c => c.category === category)?.value || 0;
-        return (catTotal / incomeForPeriod) * 100;
+        return (catTotal / expensesForPeriod) * 100;
     };
 
     const savingsRate = useMemo(() => {

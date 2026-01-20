@@ -36,7 +36,7 @@ export function AddAccountModal({ isOpen, onClose }: AddAccountModalProps) {
             newErrors.name = 'Nome deve ter pelo menos 3 caracteres';
         }
 
-        if (!holderId) {
+        if (accountType === 'card' && !holderId) {
             newErrors.holderId = 'Selecione o titular';
         }
 
@@ -76,18 +76,20 @@ export function AddAccountModal({ isOpen, onClose }: AddAccountModalProps) {
             addAccount({
                 name,
                 balance: parseFloat(balance),
-                bankName: holderId, // Using member name as bank name for now
+                bankName: 'Outros',
+                holderId: holderId || undefined
             });
         } else {
             addCard({
                 name,
-                brand,
+                brand: brand || 'Outros',
                 last4Digits: last4Digits || '0000',
                 limit: parseFloat(limit),
                 currentInvoice: 0,
                 closingDay: parseInt(closingDay),
                 dueDay: parseInt(dueDay),
                 theme,
+                holderId
             });
         }
 
@@ -173,7 +175,9 @@ export function AddAccountModal({ isOpen, onClose }: AddAccountModalProps) {
 
                     {/* Holder */}
                     <div>
-                        <label className="block text-sm font-medium text-neutral-700 mb-2">Titular</label>
+                        <label className="block text-sm font-medium text-neutral-700 mb-2">
+                            Titular {accountType === 'card' && <span className="text-red-500">*</span>}
+                        </label>
                         <select
                             value={holderId}
                             onChange={(e) => setHolderId(e.target.value)}
@@ -182,11 +186,16 @@ export function AddAccountModal({ isOpen, onClose }: AddAccountModalProps) {
                                 errors.holderId ? 'border-red-500' : 'border-neutral-300'
                             )}
                         >
-                            <option value="">Selecione o titular</option>
+                            <option value="">{familyMembers.length > 0 ? "Selecione o titular" : "Nenhum membro cadastrado"}</option>
                             {familyMembers.map(member => (
                                 <option key={member.id} value={member.id}>{member.name}</option>
                             ))}
                         </select>
+                        {familyMembers.length === 0 && (
+                            <p className="text-amber-600 text-[11px] mt-1 font-medium">
+                                Você precisa adicionar um membro da família no Perfil antes de criar um cartão.
+                            </p>
+                        )}
                         {errors.holderId && <p className="text-red-500 text-xs mt-1">{errors.holderId}</p>}
                     </div>
 

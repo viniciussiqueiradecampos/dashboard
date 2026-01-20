@@ -109,7 +109,7 @@ CREATE TABLE accounts (
   name TEXT NOT NULL,
   bank TEXT NOT NULL,
   last_digits TEXT,
-  holder_id UUID NOT NULL REFERENCES family_members(id),
+  holder_id UUID REFERENCES family_members(id),
   
   -- Campos Checking/Savings
   balance DECIMAL(12, 2) DEFAULT 0,
