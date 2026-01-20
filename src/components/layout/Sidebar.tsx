@@ -17,6 +17,8 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { useAuth } from '@/contexts/AuthContext';
+import { useSidebar } from '@/contexts/SidebarContext';
 
 interface SidebarProps {
 
@@ -31,10 +33,11 @@ const NAV_ITEMS = [
 ];
 
 export function Sidebar({ }: SidebarProps) {
-    const [isCollapsed, setIsCollapsed] = React.useState(false);
+    const { isCollapsed, toggleSidebar } = useSidebar();
+    const { user, signOut } = useAuth();
     const location = useLocation();
 
-    const toggleSidebar = () => setIsCollapsed(!isCollapsed);
+    // const toggleSidebar = () => setIsCollapsed(!isCollapsed); // Removido pois vem do context agora
 
     const SidebarContent = (
         <div className={cn(
@@ -121,29 +124,35 @@ export function Sidebar({ }: SidebarProps) {
                 })}
             </nav>
 
-            {/* Profile Section */}
+            {/* Logout Section */}
             <div className="p-4 border-t border-neutral-100">
-                <div className={cn(
-                    "flex items-center gap-3 p-2 rounded-2xl transition-colors hover:bg-neutral-100 cursor-pointer overflow-hidden border border-transparent hover:border-neutral-200",
-                    isCollapsed ? "justify-center" : ""
-                )}>
-                    <img
-                        src="https://github.com/viniciussiqueiradecampos.png"
-                        alt="User"
-                        className="w-10 h-10 rounded-full border-2 border-white shadow-sm shrink-0"
-                    />
+                <button
+                    onClick={signOut}
+                    className={cn(
+                        "w-full flex items-center gap-3 p-2 rounded-2xl transition-colors hover:bg-red-50 hover:text-red-600 cursor-pointer overflow-hidden border border-transparent hover:border-red-100 text-neutral-600",
+                        isCollapsed ? "justify-center" : ""
+                    )}
+                >
+                    <div className="relative shrink-0">
+                        {/* Avatar placeholder or user avatar if available */}
+                        <div className="w-10 h-10 rounded-full bg-neutral-200 flex items-center justify-center text-neutral-500 font-bold border-2 border-white shadow-sm">
+                            {user?.user_metadata?.name?.[0]?.toUpperCase() || 'U'}
+                        </div>
+                    </div>
 
                     {!isCollapsed && (
-                        <div className="flex flex-col min-w-0">
-                            <span className="text-sm font-bold text-neutral-900 truncate">Vinicius Campos</span>
-                            <span className="text-xs text-neutral-500 truncate">Admin Family</span>
+                        <div className="flex flex-col min-w-0 text-left">
+                            <span className="text-sm font-bold text-neutral-900 truncate">
+                                {user?.user_metadata?.name || 'Usuário'}
+                            </span>
+                            <span className="text-xs text-neutral-500 truncate">Sair da conta</span>
                         </div>
                     )}
 
                     {!isCollapsed && (
-                        <LogOut size={18} className="ml-auto text-neutral-400 hover:text-red-500 transition-colors" />
+                        <LogOut size={18} className="ml-auto opacity-70" />
                     )}
-                </div>
+                </button>
             </div>
         </div>
     );
