@@ -1,26 +1,43 @@
 import { X, Upload, Camera, Loader2 } from 'lucide-react';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useFinance } from '@/contexts/FinanceContext';
 import { cn } from '@/utils/cn';
 import { uploadFile } from '@/lib/supabase';
+import { FamilyMember } from '@/types';
 
 interface AddMemberModalProps {
     isOpen: boolean;
     onClose: () => void;
+    editingMember?: FamilyMember | null;
 }
 
 const ROLE_SUGGESTIONS = ['Pai', 'Mãe', 'Filho', 'Filha', 'Avô', 'Avó', 'Tio', 'Tia'];
 
-export function AddMemberModal({ isOpen, onClose }: AddMemberModalProps) {
-    const { addMember } = useFinance();
+export function AddMemberModal({ isOpen, onClose, editingMember }: AddMemberModalProps) {
+    const { addMember, updateMember } = useFinance();
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const [name, setName] = useState('');
     const [role, setRole] = useState('');
     const [avatarUrl, setAvatarUrl] = useState('');
     const [income, setIncome] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
+
+    useEffect(() => {
+        if (editingMember) {
+            setName(editingMember.name);
+            setRole(editingMember.role);
+            setAvatarUrl(editingMember.avatarUrl || '');
+            setIncome(editingMember.income?.toString() || '');
+        } else {
+            setName('');
+            setRole('');
+            setAvatarUrl('');
+            setIncome('');
+        }
+    }, [editingMember, isOpen]);
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -62,21 +79,33 @@ export function AddMemberModal({ isOpen, onClose }: AddMemberModalProps) {
     const handleSubmit = async () => {
         if (!validate()) return;
 
-        await addMember({
-            name,
-            role,
-            avatarUrl: avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=D7FF00&color=080B12`,
-            income: income ? parseFloat(income) : 0,
-        });
+        setIsSubmitting(true);
+        try {
+            const memberData = {
+                name,
+                role,
+                avatarUrl: avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=D7FF00&color=080B12`,
+                income: income ? parseFloat(income) : 0,
+            };
 
-        // Reset form
-        setName('');
-        setRole('');
-        setAvatarUrl('');
-        setIncome('');
-        setErrors({});
+            if (editingMember) {
+                await updateMember(editingMember.id, memberData);
+            } else {
+                await addMember(memberData);
+            }
 
-        onClose();
+            // Reset form
+            setName('');
+            setRole('');
+            setAvatarUrl('');
+            setIncome('');
+            setErrors({});
+            onClose();
+        } catch (error) {
+            console.error('Error saving member:', error);
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     if (!isOpen) return null;
@@ -89,7 +118,9 @@ export function AddMemberModal({ isOpen, onClose }: AddMemberModalProps) {
             >
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b border-neutral-200">
-                    <h2 className="text-xl font-bold text-neutral-1100">Adicionar Membro da Família</h2>
+                    <h2 className="text-xl font-bold text-neutral-1100">
+                        {editingMember ? 'Editar Membro' : 'Adicionar Membro da Família'}
+                    </h2>
                     <button
                         onClick={onClose}
                         className="w-10 h-10 rounded-full hover:bg-neutral-100 flex items-center justify-center transition-colors"
@@ -99,7 +130,7 @@ export function AddMemberModal({ isOpen, onClose }: AddMemberModalProps) {
                 </div>
 
                 {/* Content */}
-                <div className="p-6 space-y-5">
+                <div className="p-6 space-y-5 overflow-y-auto max-h-[70vh]">
                     {/* Avatar Upload */}
                     <div className="flex flex-col items-center justify-center mb-4">
                         <div
@@ -199,11 +230,11 @@ export function AddMemberModal({ isOpen, onClose }: AddMemberModalProps) {
                     </button>
                     <button
                         onClick={handleSubmit}
-                        disabled={isUploading}
+                        disabled={isSubmitting || isUploading}
                         className="px-6 py-2.5 rounded-full bg-neutral-1100 text-white font-medium hover:bg-neutral-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                     >
-                        {isUploading && <Loader2 size={18} className="animate-spin" />}
-                        Adicionar Membro
+                        {(isSubmitting || isUploading) && <Loader2 size={18} className="animate-spin" />}
+                        {editingMember ? 'Salvar Alterações' : 'Adicionar Membro'}
                     </button>
                 </div>
             </div>

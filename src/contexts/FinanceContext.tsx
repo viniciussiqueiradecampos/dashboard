@@ -307,8 +307,31 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         }
         await refreshData();
     };
-    const updateGoal = async (_id: string, _g: Partial<Goal>) => { };
-    const deleteGoal = async (_id: string) => { };
+    const updateGoal = async (id: string, g: Partial<Goal>) => {
+        const payload: any = {};
+        if (g.name !== undefined) payload.name = g.name;
+        if (g.targetAmount !== undefined) payload.target_amount = g.targetAmount;
+        if (g.currentAmount !== undefined) payload.current_amount = g.currentAmount;
+        if (g.deadline !== undefined) payload.deadline = g.deadline;
+        if (g.category !== undefined) payload.category = g.category;
+        if (g.imageUrl !== undefined) payload.image_url = g.imageUrl;
+
+        const { error } = await sb.from('goals').update(payload).eq('id', id);
+        if (error) {
+            console.error('Error updating goal:', error);
+            alert(`Erro ao atualizar objetivo: ${error.message}`);
+        }
+        await refreshData();
+    };
+
+    const deleteGoal = async (id: string) => {
+        const { error } = await sb.from('goals').delete().eq('id', id);
+        if (error) {
+            console.error('Error deleting goal:', error);
+            alert(`Erro ao excluir objetivo: ${error.message}`);
+        }
+        await refreshData();
+    };
 
     const addCard = async (c: Omit<CreditCard, 'id'> & { holderId?: string }) => {
         if (!user) return;
@@ -400,13 +423,22 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         }
         await refreshData();
     };
+
     const updateMember = async (id: string, m: Partial<FamilyMember>) => {
         const payload: any = {};
-        if (m.name) payload.name = m.name;
-        if (m.income !== undefined) payload.monthly_income = m.income;
+        if (m.name !== undefined) payload.name = m.name;
+        if (m.role !== undefined) payload.role = m.role;
+        if (m.avatarUrl !== undefined) payload.avatar_url = m.avatarUrl;
+        if (m.income !== undefined) payload.income = m.income;
+
         const { error } = await sb.from('family_members').update(payload).eq('id', id);
-        if (!error) await refreshData();
+        if (error) {
+            console.error('Error updating member:', error);
+            alert(`Erro ao atualizar membro: ${error.message}`);
+        }
+        await refreshData();
     };
+
     const deleteMember = async (id: string) => {
         const { error } = await sb.from('family_members').delete().eq('id', id);
         if (!error) await refreshData();

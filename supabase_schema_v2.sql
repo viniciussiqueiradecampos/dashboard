@@ -175,6 +175,7 @@ CREATE TABLE transactions (
   date DATE NOT NULL,
   category_id UUID REFERENCES categories(id) ON DELETE SET NULL,
   account_id UUID REFERENCES accounts(id) ON DELETE SET NULL,
+  card_id UUID REFERENCES accounts(id) ON DELETE SET NULL,
   member_id UUID REFERENCES family_members(id) ON DELETE SET NULL,
   
   -- Parcelamento

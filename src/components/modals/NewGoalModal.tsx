@@ -1,25 +1,69 @@
-import { X, Target, Calendar, Loader2 } from 'lucide-react';
-import { useState } from 'react';
+import { X, Target, Calendar, Loader2, Upload, Camera } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
 import { useFinance } from '@/contexts/FinanceContext';
 import { cn } from '@/utils/cn';
+import { Goal } from '@/types';
+import { uploadFile } from '@/lib/supabase';
 
 interface NewGoalModalProps {
     isOpen: boolean;
     onClose: () => void;
+    editingGoal?: Goal | null;
 }
 
 const CATEGORY_SUGGESTIONS = ['Viagem', 'Carro', 'Casa', 'Reserva de Emergência', 'Investimentos', 'Estudos', 'Eletrônicos'];
 
-export function NewGoalModal({ isOpen, onClose }: NewGoalModalProps) {
-    const { addGoal } = useFinance();
+export function NewGoalModal({ isOpen, onClose, editingGoal }: NewGoalModalProps) {
+    const { addGoal, updateGoal } = useFinance();
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const [name, setName] = useState('');
     const [targetAmount, setTargetAmount] = useState('');
     const [currentAmount, setCurrentAmount] = useState('');
     const [deadline, setDeadline] = useState('');
     const [category, setCategory] = useState('');
+    const [imageUrl, setImageUrl] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
+
+    useEffect(() => {
+        if (editingGoal) {
+            setName(editingGoal.name);
+            setTargetAmount(editingGoal.targetAmount.toString());
+            setCurrentAmount(editingGoal.currentAmount.toString());
+            setDeadline(editingGoal.deadline);
+            setCategory(editingGoal.category);
+            setImageUrl(editingGoal.imageUrl || '');
+        } else {
+            setName('');
+            setTargetAmount('');
+            setCurrentAmount('');
+            setDeadline('');
+            setCategory('');
+            setImageUrl('');
+        }
+    }, [editingGoal, isOpen]);
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setIsUploading(true);
+        try {
+            const fileExt = file.name.split('.').pop();
+            const fileName = `goal_${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
+            const path = `goals/${fileName}`;
+
+            const url = await uploadFile('avatars', path, file); // Reusing avatars bucket or create goals bucket
+            setImageUrl(url);
+        } catch (error: any) {
+            console.error('Error uploading goal image:', error);
+            alert(`Erro no upload: ${error.message}`);
+        } finally {
+            setIsUploading(false);
+        }
+    };
 
     const validate = () => {
         const newErrors: Record<string, string> = {};
@@ -46,24 +90,24 @@ export function NewGoalModal({ isOpen, onClose }: NewGoalModalProps) {
 
         setIsSubmitting(true);
         try {
-            await addGoal({
+            const goalData = {
                 name,
                 targetAmount: parseFloat(targetAmount),
                 currentAmount: currentAmount ? parseFloat(currentAmount) : 0,
                 deadline,
                 category,
-            });
+                imageUrl,
+            };
 
-            // Reset form
-            setName('');
-            setTargetAmount('');
-            setCurrentAmount('');
-            setDeadline('');
-            setCategory('');
-            setErrors({});
+            if (editingGoal) {
+                await updateGoal(editingGoal.id, goalData);
+            } else {
+                await addGoal(goalData);
+            }
+
             onClose();
         } catch (error) {
-            console.error('Error adding goal:', error);
+            console.error('Error saving goal:', error);
         } finally {
             setIsSubmitting(false);
         }
@@ -83,7 +127,9 @@ export function NewGoalModal({ isOpen, onClose }: NewGoalModalProps) {
                         <div className="p-2 bg-neutral-900 rounded-lg">
                             <Target className="text-white" size={20} />
                         </div>
-                        <h2 className="text-xl font-bold text-neutral-1100">Novo Objetivo</h2>
+                        <h2 className="text-xl font-bold text-neutral-1100">
+                            {editingGoal ? 'Editar Objetivo' : 'Novo Objetivo'}
+                        </h2>
                     </div>
                     <button
                         onClick={onClose}
@@ -94,7 +140,37 @@ export function NewGoalModal({ isOpen, onClose }: NewGoalModalProps) {
                 </div>
 
                 {/* Content */}
-                <div className="p-6 space-y-5">
+                <div className="p-6 space-y-5 overflow-y-auto max-h-[70vh]">
+                    {/* Image Upload */}
+                    <div className="flex flex-col items-center justify-center mb-4">
+                        <div
+                            className="relative w-full h-32 rounded-2xl bg-neutral-100 border-2 border-dashed border-neutral-300 flex items-center justify-center overflow-hidden group cursor-pointer"
+                            onClick={() => fileInputRef.current?.click()}
+                        >
+                            {isUploading ? (
+                                <Loader2 className="w-8 h-8 text-neutral-400 animate-spin" />
+                            ) : imageUrl ? (
+                                <img src={imageUrl} alt="Preview" className="w-full h-full object-cover" />
+                            ) : (
+                                <div className="text-center">
+                                    <Camera className="w-8 h-8 text-neutral-400 mx-auto mb-1 group-hover:text-neutral-600 transition-colors" />
+                                    <p className="text-xs text-neutral-500 font-medium">Foto do Objetivo</p>
+                                </div>
+                            )}
+
+                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                <Upload className="w-6 h-6 text-white" />
+                            </div>
+                        </div>
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={handleFileChange}
+                            accept="image/*"
+                            className="hidden"
+                        />
+                    </div>
+
                     {/* Name */}
                     <div>
                         <label className="block text-sm font-medium text-neutral-700 mb-2">
