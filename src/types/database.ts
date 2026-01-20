@@ -180,6 +180,7 @@ export interface Database {
                     date: string
                     category_id: string | null
                     account_id: string | null
+                    card_id: string | null
                     member_id: string | null
                     installment_number: number | null
                     total_installments: number
@@ -200,6 +201,7 @@ export interface Database {
                     date: string
                     category_id?: string | null
                     account_id?: string | null
+                    card_id?: string | null
                     member_id?: string | null
                     installment_number?: number | null
                     total_installments?: number
@@ -220,6 +222,7 @@ export interface Database {
                     date?: string
                     category_id?: string | null
                     account_id?: string | null
+                    card_id?: string | null
                     member_id?: string | null
                     installment_number?: number | null
                     total_installments?: number
