@@ -1,0 +1,5 @@
+﻿src/components/layout/Sidebar.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/components/modals/NewTransactionModal.tsx(1,45): error TS6133: 'Plus' is declared but its value is never read.
+src/contexts/FinanceContext.tsx(282,31): error TS6133: 'id' is declared but its value is never read.
+src/contexts/FinanceContext.tsx(282,43): error TS6133: 'g' is declared but its value is never read.
+src/contexts/FinanceContext.tsx(283,31): error TS6133: 'id' is declared but its value is never read.

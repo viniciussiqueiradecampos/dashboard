@@ -5,7 +5,7 @@ export type CreditCardTheme = 'black' | 'white' | 'lime';
 export interface FamilyMember {
     id: string;
     name: string;
-    role: 'admin' | 'member';
+    role: string;
     avatarUrl: string;
     income?: number;
 }

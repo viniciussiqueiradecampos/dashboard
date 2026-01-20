@@ -1,7 +1,8 @@
-import { X } from 'lucide-react';
-import { useState } from 'react';
+import { X, Upload, Camera, Loader2 } from 'lucide-react';
+import { useState, useRef } from 'react';
 import { useFinance } from '@/contexts/FinanceContext';
 import { cn } from '@/utils/cn';
+import { uploadFile } from '@/lib/supabase';
 
 interface AddMemberModalProps {
     isOpen: boolean;
@@ -12,12 +13,35 @@ const ROLE_SUGGESTIONS = ['Pai', 'Mãe', 'Filho', 'Filha', 'Avô', 'Avó', 'Tio'
 
 export function AddMemberModal({ isOpen, onClose }: AddMemberModalProps) {
     const { addMember } = useFinance();
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const [name, setName] = useState('');
     const [role, setRole] = useState('');
     const [avatarUrl, setAvatarUrl] = useState('');
     const [income, setIncome] = useState('');
+    const [isUploading, setIsUploading] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setIsUploading(true);
+        try {
+            // Create a unique path for the avatar
+            const fileExt = file.name.split('.').pop();
+            const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
+            const path = `members/${fileName}`;
+
+            const url = await uploadFile('avatars', path, file);
+            setAvatarUrl(url);
+        } catch (error) {
+            console.error('Error uploading avatar:', error);
+            alert('Erro ao fazer upload da imagem. Certifique-se que o bucket "avatars" existe e é público.');
+        } finally {
+            setIsUploading(false);
+        }
+    };
 
     const validate = () => {
         const newErrors: Record<string, string> = {};
@@ -34,14 +58,14 @@ export function AddMemberModal({ isOpen, onClose }: AddMemberModalProps) {
         return Object.keys(newErrors).length === 0;
     };
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         if (!validate()) return;
 
-        addMember({
+        await addMember({
             name,
-            role: role as any,
+            role,
             avatarUrl: avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=D7FF00&color=080B12`,
-            income: income ? parseFloat(income) : undefined,
+            income: income ? parseFloat(income) : 0,
         });
 
         // Reset form
@@ -75,6 +99,34 @@ export function AddMemberModal({ isOpen, onClose }: AddMemberModalProps) {
 
                 {/* Content */}
                 <div className="p-6 space-y-5">
+                    {/* Avatar Upload */}
+                    <div className="flex flex-col items-center justify-center mb-4">
+                        <div
+                            className="relative w-24 h-24 rounded-full bg-neutral-100 border-2 border-dashed border-neutral-300 flex items-center justify-center overflow-hidden group cursor-pointer"
+                            onClick={() => fileInputRef.current?.click()}
+                        >
+                            {isUploading ? (
+                                <Loader2 className="w-8 h-8 text-neutral-400 animate-spin" />
+                            ) : avatarUrl ? (
+                                <img src={avatarUrl} alt="Preview" className="w-full h-full object-cover" />
+                            ) : (
+                                <Camera className="w-8 h-8 text-neutral-400 group-hover:text-neutral-600 transition-colors" />
+                            )}
+
+                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                <Upload className="w-6 h-6 text-white" />
+                            </div>
+                        </div>
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={handleFileChange}
+                            accept="image/*"
+                            className="hidden"
+                        />
+                        <p className="text-xs text-neutral-500 mt-2">Clique para carregar uma foto</p>
+                    </div>
+
                     {/* Name */}
                     <div>
                         <label className="block text-sm font-medium text-neutral-700 mb-2">
@@ -117,23 +169,6 @@ export function AddMemberModal({ isOpen, onClose }: AddMemberModalProps) {
                         {errors.role && <p className="text-red-500 text-xs mt-1">{errors.role}</p>}
                     </div>
 
-                    {/* Avatar URL */}
-                    <div>
-                        <label className="block text-sm font-medium text-neutral-700 mb-2">
-                            Avatar (Opcional)
-                        </label>
-                        <input
-                            type="url"
-                            value={avatarUrl}
-                            onChange={(e) => setAvatarUrl(e.target.value)}
-                            className="w-full h-12 px-4 bg-white border border-neutral-300 rounded-xl text-neutral-1100 focus:ring-2 focus:ring-black focus:border-transparent transition-all outline-none"
-                            placeholder="https://exemplo.com/foto.jpg"
-                        />
-                        <p className="text-xs text-neutral-500 mt-1">
-                            Cole a URL de uma imagem ou deixe em branco para usar avatar padrão
-                        </p>
-                    </div>
-
                     {/* Income */}
                     <div>
                         <label className="block text-sm font-medium text-neutral-700 mb-2">
@@ -163,8 +198,10 @@ export function AddMemberModal({ isOpen, onClose }: AddMemberModalProps) {
                     </button>
                     <button
                         onClick={handleSubmit}
-                        className="px-6 py-2.5 rounded-full bg-neutral-1100 text-white font-medium hover:bg-neutral-900 transition-colors"
+                        disabled={isUploading}
+                        className="px-6 py-2.5 rounded-full bg-neutral-1100 text-white font-medium hover:bg-neutral-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                     >
+                        {isUploading && <Loader2 size={18} className="animate-spin" />}
                         Adicionar Membro
                     </button>
                 </div>

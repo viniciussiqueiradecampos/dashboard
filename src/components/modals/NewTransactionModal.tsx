@@ -1,4 +1,4 @@
-import { X, ArrowUpCircle, ArrowDownCircle, Plus, Trash2 } from 'lucide-react';
+import { X, ArrowUpCircle, ArrowDownCircle, Trash2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useFinance } from '@/contexts/FinanceContext';
 import { cn } from '@/utils/cn';
