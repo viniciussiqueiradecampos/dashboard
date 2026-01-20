@@ -132,14 +132,18 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         setIsLoading(true);
         try {
             // Ensure public.users entry exists (Safety check)
-            const { data: publicUser } = await sb.from('users').select('id').eq('id', user.id).single();
-            if (!publicUser) {
-                console.log('Public user profile not found, creating...');
-                await sb.from('users').insert({
-                    id: user.id,
-                    email: user.email,
-                    name: user.user_metadata?.name || 'Agravity User'
-                });
+            try {
+                const { data: publicUser, error: userCheckError } = await sb.from('users').select('id').eq('id', user.id).single();
+                if (!publicUser && !userCheckError) {
+                    console.log('Public user profile not found, creating...');
+                    await sb.from('users').insert({
+                        id: user.id,
+                        email: user.email,
+                        name: user.user_metadata?.name || 'Agravity User'
+                    });
+                }
+            } catch (uErr) {
+                console.warn('Silent failure ensuring public user profile:', uErr);
             }
 
             const [
@@ -257,13 +261,16 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
             date: t.date,
             status: t.status.toUpperCase(),
             category_id: catId,
-            account_id: t.accountId,
-            card_id: t.cardId,
-            member_id: t.memberId,
+            account_id: t.accountId || null,
+            card_id: t.cardId || null,
+            member_id: t.memberId || null,
         };
 
         const { error } = await sb.from('transactions').insert(payload);
-        if (error) console.error('Error adding transaction:', error);
+        if (error) {
+            console.error('Error adding transaction:', error);
+            alert(`Erro ao salvar transação: ${error.message}`);
+        }
         await refreshData();
     };
 
@@ -274,12 +281,20 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         if (t.status !== undefined) payload.status = t.status.toUpperCase();
 
         const { error } = await sb.from('transactions').update(payload).eq('id', id);
-        if (!error) await refreshData();
+        if (error) {
+            console.error('Error updating transaction:', error);
+            alert(`Erro ao atualizar transação: ${error.message}`);
+        }
+        await refreshData();
     };
 
     const deleteTransaction = async (id: string) => {
         const { error } = await sb.from('transactions').delete().eq('id', id);
-        if (!error) await refreshData();
+        if (error) {
+            console.error('Error deleting transaction:', error);
+            alert(`Erro ao deletar transação: ${error.message}`);
+        }
+        await refreshData();
     };
 
     const addGoal = async (g: Omit<Goal, 'id'>) => {
@@ -292,7 +307,10 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
             deadline: g.deadline,
             category: g.category
         });
-        if (error) console.error('Error adding goal:', error);
+        if (error) {
+            console.error('Error adding goal:', error);
+            alert(`Erro ao salvar objetivo: ${error.message}`);
+        }
         await refreshData();
     };
     const updateGoal = async (_id: string, _g: Partial<Goal>) => { };
@@ -316,7 +334,10 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         };
 
         const { error } = await sb.from('accounts').insert(payload);
-        if (error) console.error('Error adding card:', error);
+        if (error) {
+            console.error('Error adding card:', error);
+            alert(`Erro ao salvar cartão: ${error.message}`);
+        }
         await refreshData();
     };
 
@@ -325,12 +346,20 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         if (c.name) payload.name = c.name;
         if (c.limit) payload.credit_limit = c.limit;
         const { error } = await sb.from('accounts').update(payload).eq('id', id);
-        if (!error) await refreshData();
+        if (error) {
+            console.error('Error updating card:', error);
+            alert(`Erro ao atualizar cartão: ${error.message}`);
+        }
+        await refreshData();
     };
 
     const deleteCard = async (id: string) => {
         const { error } = await sb.from('accounts').delete().eq('id', id);
-        if (!error) await refreshData();
+        if (error) {
+            console.error('Error deleting card:', error);
+            alert(`Erro ao deletar cartão: ${error.message}`);
+        }
+        await refreshData();
     };
 
     const addAccount = async (a: Omit<BankAccount, 'id'>) => {
@@ -345,7 +374,10 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
             color: a.color,
             holder_id: holderId
         });
-        if (error) console.error('Error adding account:', error);
+        if (error) {
+            console.error('Error adding account:', error);
+            alert(`Erro ao salvar conta: ${error.message}`);
+        }
         await refreshData();
     };
     const updateAccount = async (id: string, a: Partial<BankAccount>) => {
@@ -370,7 +402,10 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
             monthly_income: m.income || 0,
             avatar_url: m.avatarUrl
         });
-        if (error) console.error("Error adding member:", error);
+        if (error) {
+            console.error("Error adding member:", error);
+            alert(`Erro ao salvar membro: ${error.message}`);
+        }
         await refreshData();
     };
     const updateMember = async (id: string, m: Partial<FamilyMember>) => {
