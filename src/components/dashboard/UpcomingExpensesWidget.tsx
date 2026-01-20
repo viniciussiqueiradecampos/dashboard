@@ -122,7 +122,7 @@ function ExpenseItem({ expense, onMarkAsPaid }: ExpenseItemProps) {
     };
 
     return (
-        <div className="flex items-center justify-between py-6 border-b border-neutral-200 last:border-b-0 group/item">
+        <div className="flex items-center justify-between py-4 border-b border-neutral-200 last:border-b-0 group/item">
             {/* Left: Expense Info */}
             <div className="flex-1 min-w-0 pr-4">
                 <h4 className="text-[15px] font-bold text-neutral-1100 mb-1 truncate">
@@ -200,7 +200,7 @@ export function UpcomingExpensesWidget() {
             </div>
 
             {/* Expenses List */}
-            <div className="flex-1 overflow-y-auto -mx-8 px-8">
+            <div className="flex-1 overflow-y-auto -mx-8 px-8 max-h-[500px]">
                 {expenses.length > 0 ? (
                     <div className="space-y-0">
                         {expenses.map((expense) => (

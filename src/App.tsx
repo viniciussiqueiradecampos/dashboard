@@ -6,6 +6,7 @@ import { ExpensesByCategoryCarousel } from '@/components/dashboard/ExpensesByCat
 import { FinancialFlowChart } from '@/components/dashboard/FinancialFlowChart';
 import { CreditCardsWidget } from '@/components/dashboard/CreditCardsWidget';
 import { UpcomingExpensesWidget } from '@/components/dashboard/UpcomingExpensesWidget';
+import { TransactionsTable } from '@/components/dashboard/TransactionsTable';
 
 // Placeholder Pages - To be real components soon
 const DashboardMock = () => (
@@ -26,8 +27,8 @@ const DashboardMock = () => (
                 <FinancialFlowChart />
             </div>
 
-            {/* Right Column (Side Widgets - 1/3) */}
-            <div className="flex flex-col gap-8">
+            {/* Right Column (Side Widgets - 1/3) - Aligned to top */}
+            <div className="flex flex-col gap-8 self-start">
                 {/* Cards Widget (Prompt 09) */}
                 <CreditCardsWidget />
 
@@ -36,16 +37,9 @@ const DashboardMock = () => (
             </div>
         </div>
 
-        {/* Bottom Section - Full Width Table */}
+        {/* Bottom Section - Full Width Table (Prompt 11) */}
         <div className="mt-8 mb-8 w-full">
-            <div className="bg-white rounded-[32px] shadow-sm border border-neutral-300 p-8 flex flex-col min-h-[400px]">
-                <div className="flex items-center justify-between mb-8">
-                    <h2 className="text-xl font-bold text-neutral-1100 tracking-tight">Extrato detalhado</h2>
-                </div>
-                <div className="flex-1 border-2 border-dashed border-neutral-100 rounded-3xl flex items-center justify-center text-neutral-400 font-medium">
-                    Tabela de Transações Completa (Próximo Passo)
-                </div>
-            </div>
+            <TransactionsTable />
         </div>
     </div>
 );

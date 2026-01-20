@@ -29,7 +29,7 @@ export function HeaderMobile() {
                     <img
                         src="https://github.com/viniciussiqueiradecampos.png"
                         alt="User Profile"
-                        className="w-10 h-10 rounded-full border-2 border-neutral-100 object-cover shadow-sm group-active:scale-95 transition-transform"
+                        className="w-10 h-10 rounded-full border-2 border-neutral-100 object-cover aspect-square shadow-sm group-active:scale-95 transition-transform"
                     />
                     <div className="absolute -bottom-1 -right-1 bg-neutral-1100 text-white p-1 rounded-full border-2 border-white">
                         <Menu size={10} />

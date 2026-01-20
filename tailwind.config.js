@@ -26,6 +26,7 @@ export default {
                 },
                 neutral: {
                     0: '#FFFFFF',
+                    25: '#FCFCFD',
                     100: '#F9FAFB',
                     200: '#F3F4F6', // Page BG
                     300: '#E5E7EB',

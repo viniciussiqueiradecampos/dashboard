@@ -60,6 +60,7 @@ interface FinanceContextType {
 
     // Calculations
     filteredTransactions: Transaction[];
+    getFilteredTransactions: () => Transaction[];
     totalBalance: number;
     incomeForPeriod: number;
     expensesForPeriod: number;
@@ -227,6 +228,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         updateMember,
         deleteMember,
         filteredTransactions,
+        getFilteredTransactions: () => filteredTransactions,
         totalBalance,
         incomeForPeriod,
         expensesForPeriod,

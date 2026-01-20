@@ -68,7 +68,7 @@ export function FinancialFlowChart() {
                 </div>
             </div>
 
-            <div className="flex-1 min-h-[300px] w-full">
+            <div className="flex-1 min-h-[240px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
                     <AreaChart
                         data={mockData}
