@@ -3,6 +3,7 @@ import { MainLayout } from '@/components/layout/MainLayout';
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
 import { SummaryCards } from '@/components/dashboard/SummaryCards';
 import { ExpensesByCategoryCarousel } from '@/components/dashboard/ExpensesByCategoryCarousel';
+import { FinancialFlowChart } from '@/components/dashboard/FinancialFlowChart';
 
 // Placeholder Pages - To be real components soon
 const DashboardMock = () => (
@@ -15,10 +16,20 @@ const DashboardMock = () => (
         {/* Summary Cards (Prompt 5) */}
         <SummaryCards />
 
-        {/* Large placeholder for chart/list area */}
-        <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 h-[400px] bg-white rounded-3xl shadow-sm border border-neutral-200 p-6">Gráfico de Evolução</div>
-            <div className="h-[400px] bg-white rounded-3xl shadow-sm border border-neutral-200 p-6">Transações Recentes</div>
+        {/* Financial Flow Section (Prompt 8) */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-4">
+            <div className="lg:col-span-2">
+                <FinancialFlowChart />
+            </div>
+            <div className="h-full bg-white rounded-[32px] shadow-sm border border-neutral-300 p-8">
+                <h2 className="text-xl font-bold text-neutral-1100 mb-6">Transações Recentes</h2>
+                <div className="space-y-4">
+                    {/* Placeholder for Recent Transactions (Prompt 9) */}
+                    <div className="h-20 bg-neutral-50 rounded-2xl animate-pulse" />
+                    <div className="h-20 bg-neutral-50 rounded-2xl animate-pulse" />
+                    <div className="h-20 bg-neutral-50 rounded-2xl animate-pulse" />
+                </div>
+            </div>
         </div>
     </div>
 );
