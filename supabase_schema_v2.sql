@@ -262,3 +262,95 @@ CREATE POLICY "user_full_access" ON public.users
 FOR ALL TO authenticated 
 USING (auth.uid() = id) 
 WITH CHECK (auth.uid() = id);
+
+-- ============================================
+-- 🔄 TRIGGERS: ATUALIZAÇÃO AUTOMÁTICA DE SALDOS
+-- ============================================
+
+CREATE OR REPLACE FUNCTION public.update_balances()
+RETURNS TRIGGER AS $$
+BEGIN
+  -- 1. Se for INSERT, adiciona o valor
+  IF (TG_OP = 'INSERT') THEN
+    -- Transação em Conta Bancária
+    IF NEW.account_id IS NOT NULL THEN
+      IF NEW.type = 'INCOME' THEN
+        UPDATE public.accounts SET balance = balance + NEW.amount WHERE id = NEW.account_id;
+      ELSIF NEW.type = 'EXPENSE' THEN
+        UPDATE public.accounts SET balance = balance - NEW.amount WHERE id = NEW.account_id;
+      END IF;
+    END IF;
+
+    -- Transação em Cartão de Crédito
+    IF NEW.card_id IS NOT NULL THEN
+      IF NEW.type = 'EXPENSE' THEN
+        UPDATE public.accounts SET current_bill = current_bill + NEW.amount WHERE id = NEW.card_id;
+      ELSIF NEW.type = 'INCOME' THEN
+        -- Pagamento de fatura: reduz o valor da fatura atual
+        UPDATE public.accounts SET current_bill = current_bill - NEW.amount WHERE id = NEW.card_id;
+      END IF;
+    END IF;
+
+  -- 2. Se for DELETE, reverte o valor
+  ELSIF (TG_OP = 'DELETE') THEN
+    -- Conta Bancária
+    IF OLD.account_id IS NOT NULL THEN
+      IF OLD.type = 'INCOME' THEN
+        UPDATE public.accounts SET balance = balance - OLD.amount WHERE id = OLD.account_id;
+      ELSIF OLD.type = 'EXPENSE' THEN
+        UPDATE public.accounts SET balance = balance + OLD.amount WHERE id = OLD.account_id;
+      END IF;
+    END IF;
+
+    -- Cartão de Crédito
+    IF OLD.card_id IS NOT NULL THEN
+      IF OLD.type = 'EXPENSE' THEN
+        UPDATE public.accounts SET current_bill = current_bill - OLD.amount WHERE id = OLD.card_id;
+      ELSIF OLD.type = 'INCOME' THEN
+        UPDATE public.accounts SET current_bill = current_bill + OLD.amount WHERE id = OLD.card_id;
+      END IF;
+    END IF;
+
+  -- 3. Se for UPDATE, faz o diff (reverte OLD e aplica NEW)
+  ELSIF (TG_OP = 'UPDATE') THEN
+    -- Reverte OLD (Lógica do DELETE)
+    IF OLD.account_id IS NOT NULL THEN
+      IF OLD.type = 'INCOME' THEN
+        UPDATE public.accounts SET balance = balance - OLD.amount WHERE id = OLD.account_id;
+      ELSIF OLD.type = 'EXPENSE' THEN
+        UPDATE public.accounts SET balance = balance + OLD.amount WHERE id = OLD.account_id;
+      END IF;
+    END IF;
+    IF OLD.card_id IS NOT NULL THEN
+      IF OLD.type = 'EXPENSE' THEN
+        UPDATE public.accounts SET current_bill = current_bill - OLD.amount WHERE id = OLD.card_id;
+      ELSIF OLD.type = 'INCOME' THEN
+        UPDATE public.accounts SET current_bill = current_bill + OLD.amount WHERE id = OLD.card_id;
+      END IF;
+    END IF;
+
+    -- Aplica NEW (Lógica do INSERT)
+    IF NEW.account_id IS NOT NULL THEN
+      IF NEW.type = 'INCOME' THEN
+        UPDATE public.accounts SET balance = balance + NEW.amount WHERE id = NEW.account_id;
+      ELSIF NEW.type = 'EXPENSE' THEN
+        UPDATE public.accounts SET balance = balance - NEW.amount WHERE id = NEW.account_id;
+      END IF;
+    END IF;
+    IF NEW.card_id IS NOT NULL THEN
+      IF NEW.type = 'EXPENSE' THEN
+        UPDATE public.accounts SET current_bill = current_bill + NEW.amount WHERE id = NEW.card_id;
+      ELSIF NEW.type = 'INCOME' THEN
+        UPDATE public.accounts SET current_bill = current_bill - NEW.amount WHERE id = NEW.card_id;
+      END IF;
+    END IF;
+  END IF;
+
+  RETURN NULL;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS on_transaction_change ON transactions;
+CREATE TRIGGER on_transaction_change
+  AFTER INSERT OR UPDATE OR DELETE ON transactions
+  FOR EACH ROW EXECUTE PROCEDURE public.update_balances();

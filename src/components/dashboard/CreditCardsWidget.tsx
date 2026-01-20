@@ -2,9 +2,10 @@ import { CreditCard as CardIcon, Plus, ChevronLeft, ChevronRight, LayoutDashboar
 import { useState } from 'react';
 import { useFinance } from '@/contexts/FinanceContext';
 import { cn } from '@/utils/cn';
-import { CreditCard } from '@/types';
+import { CreditCard, BankAccount } from '@/types';
 import { CardDetailsModal } from '@/components/modals/CardDetailsModal';
 import { AddAccountModal } from '@/components/modals/AddAccountModal';
+import { EditAccountModal } from '@/components/modals/EditAccountModal';
 
 interface CreditCardItemProps {
     card: CreditCard;
@@ -13,6 +14,7 @@ interface CreditCardItemProps {
 
 function CreditCardItem({ card, onClick }: CreditCardItemProps) {
     const usagePercentage = Math.round((card.currentInvoice / card.limit) * 100);
+    const isOverLimit = usagePercentage >= 70;
 
     const formatCurrency = (value: number) => {
         return new Intl.NumberFormat('pt-BR', {
@@ -50,7 +52,10 @@ function CreditCardItem({ card, onClick }: CreditCardItemProps) {
             <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between mb-1">
                     <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400">{card.brand} {card.name}</p>
-                    <span className={cn("text-[10px] font-bold px-1.5 py-0.5 rounded-md", theme.badge)}>
+                    <span className={cn(
+                        "text-[10px] font-bold px-1.5 py-0.5 rounded-md transition-colors",
+                        isOverLimit ? "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400" : theme.badge
+                    )}>
                         {usagePercentage}%
                     </span>
                 </div>
@@ -63,7 +68,9 @@ function CreditCardItem({ card, onClick }: CreditCardItemProps) {
                     <div
                         className={cn(
                             "h-full rounded-full transition-all duration-500",
-                            card.theme === 'lime' ? 'bg-[#080B12] dark:bg-white' : 'bg-[#D7FF00]'
+                            isOverLimit
+                                ? "bg-red-500"
+                                : card.theme === 'lime' ? 'bg-[#080B12] dark:bg-white' : 'bg-[#D7FF00]'
                         )}
                         style={{ width: `${Math.min(usagePercentage, 100)}%` }}
                     />
@@ -84,9 +91,10 @@ function CreditCardItem({ card, onClick }: CreditCardItemProps) {
 interface AccountItemProps {
     account: any;
     isCash?: boolean;
+    onClick: () => void;
 }
 
-function AccountItem({ account, isCash }: AccountItemProps) {
+function AccountItem({ account, isCash, onClick }: AccountItemProps) {
     const formatCurrency = (value: number) => {
         return new Intl.NumberFormat('pt-BR', {
             style: 'currency', currency: 'BRL',
@@ -94,7 +102,10 @@ function AccountItem({ account, isCash }: AccountItemProps) {
     };
 
     return (
-        <div className="group bg-white dark:bg-neutral-900 p-5 rounded-3xl shadow-sm border border-neutral-100 dark:border-neutral-800 flex items-center gap-4 transition-all duration-300 hover:-translate-y-2 hover:shadow-xl cursor-default">
+        <div
+            onClick={onClick}
+            className="group bg-white dark:bg-neutral-900 p-5 rounded-3xl shadow-sm border border-neutral-100 dark:border-neutral-800 flex items-center gap-4 transition-all duration-300 hover:-translate-y-2 hover:shadow-xl cursor-pointer"
+        >
             <div className={cn(
                 "w-14 h-14 rounded-2xl flex items-center justify-center shrink-0",
                 isCash ? "bg-[#D7FF00] text-[#080B12]" : "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
@@ -122,8 +133,12 @@ export function CreditCardsWidget() {
     const { creditCards, bankAccounts, transactions } = useFinance();
     const [currentPage, setCurrentPage] = useState(0);
     const [selectedCard, setSelectedCard] = useState<CreditCard | null>(null);
+    const [selectedAccount, setSelectedAccount] = useState<BankAccount | null>(null);
+
     const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+    const [isEditAccountOpen, setIsEditAccountOpen] = useState(false);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+
     const itemsPerPage = 6;
 
     const allItems = [
@@ -157,6 +172,11 @@ export function CreditCardsWidget() {
     const handleCardClick = (card: CreditCard) => {
         setSelectedCard(card);
         setIsDetailsModalOpen(true);
+    };
+
+    const handleAccountClick = (account: BankAccount) => {
+        setSelectedAccount(account);
+        setIsEditAccountOpen(true);
     };
 
     return (
@@ -205,7 +225,7 @@ export function CreditCardsWidget() {
                     {currentItems.map((item) => (
                         item.type === 'CARD'
                             ? <CreditCardItem key={item.id} card={item as any} onClick={() => handleCardClick(item as any)} />
-                            : <AccountItem key={item.id} account={item} isCash={item.name.toLowerCase() === 'dinheiro'} />
+                            : <AccountItem key={item.id} account={item} isCash={item.name.toLowerCase() === 'dinheiro'} onClick={() => handleAccountClick(item as any)} />
                     ))}
                     {enrichedItems.length === 0 && (
                         <div className="flex flex-col items-center justify-center h-full border-2 border-dashed border-neutral-200 rounded-3xl min-h-[200px]">
@@ -238,6 +258,12 @@ export function CreditCardsWidget() {
             <AddAccountModal
                 isOpen={isAddModalOpen}
                 onClose={() => setIsAddModalOpen(false)}
+            />
+
+            <EditAccountModal
+                isOpen={isEditAccountOpen}
+                onClose={() => setIsEditAccountOpen(false)}
+                account={selectedAccount}
             />
         </>
     );

@@ -1,6 +1,7 @@
-import { X, Camera } from 'lucide-react';
-import { useState } from 'react';
+import { X, Camera, Loader2 } from 'lucide-react';
+import { useState, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { uploadFile } from '@/lib/supabase';
 
 interface EditProfileModalProps {
     isOpen: boolean;
@@ -12,7 +13,27 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
     const [name, setName] = useState(user?.user_metadata?.name || '');
     const [avatarUrl, setAvatarUrl] = useState(user?.user_metadata?.avatar_url || '');
     const [isLoading, setIsLoading] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
     const [error, setError] = useState('');
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setIsUploading(true);
+        try {
+            const fileName = `${user?.id}_${Date.now()}.${file.name.split('.').pop()}`;
+            const path = `profiles/${fileName}`;
+            const url = await uploadFile('avatars', path, file);
+            setAvatarUrl(url);
+        } catch (error: any) {
+            console.error('Error uploading avatar:', error);
+            setError(`Erro no upload: ${error.message}`);
+        } finally {
+            setIsUploading(false);
+        }
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -52,9 +73,14 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
 
                 <form onSubmit={handleSubmit} className="p-6 space-y-6">
                     <div className="flex flex-col items-center">
-                        <div className="relative group">
-                            <div className="w-24 h-24 rounded-full bg-neutral-100 dark:bg-neutral-800 overflow-hidden border-4 border-white dark:border-neutral-900 shadow-md">
-                                {avatarUrl ? (
+                        <div
+                            className="relative group cursor-pointer"
+                            onClick={() => fileInputRef.current?.click()}
+                        >
+                            <div className="w-24 h-24 rounded-full bg-neutral-100 dark:bg-neutral-800 overflow-hidden border-4 border-white dark:border-neutral-900 shadow-md flex items-center justify-center">
+                                {isUploading ? (
+                                    <Loader2 className="w-8 h-8 text-neutral-400 animate-spin" />
+                                ) : avatarUrl ? (
                                     <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center text-3xl font-bold text-neutral-400">
@@ -62,11 +88,18 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
                                     </div>
                                 )}
                             </div>
-                            <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                            <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                                 <Camera size={24} className="text-white" />
                             </div>
                         </div>
-                        <p className="text-sm text-neutral-500 mt-2">Clique para alterar (URL)</p>
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={handleFileChange}
+                            accept="image/*"
+                            className="hidden"
+                        />
+                        <p className="text-sm text-neutral-500 mt-2">Clique na foto para alterar</p>
                     </div>
 
                     <div className="space-y-4">
@@ -83,7 +116,7 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">URL do Avatar</label>
+                            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">URL do Avatar (Opcional)</label>
                             <input
                                 type="text"
                                 value={avatarUrl}
@@ -106,10 +139,11 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
                         </button>
                         <button
                             type="submit"
-                            disabled={isLoading}
-                            className="flex-1 h-12 rounded-full bg-neutral-1100 dark:bg-[#D7FF00] text-white dark:text-[#080B12] font-bold hover:opacity-90 transition-all disabled:opacity-50"
+                            disabled={isLoading || isUploading}
+                            className="flex-1 h-12 rounded-full bg-neutral-1100 dark:bg-[#D7FF00] text-white dark:text-[#080B12] font-bold hover:opacity-90 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                         >
-                            {isLoading ? 'Salvando...' : 'Salvar'}
+                            {isLoading && <Loader2 size={18} className="animate-spin" />}
+                            Salvar
                         </button>
                     </div>
                 </form>
