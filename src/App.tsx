@@ -1,11 +1,11 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { Plus, CreditCard as CardIcon } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
 import { SummaryCards } from '@/components/dashboard/SummaryCards';
 import { ExpensesByCategoryCarousel } from '@/components/dashboard/ExpensesByCategoryCarousel';
 import { FinancialFlowChart } from '@/components/dashboard/FinancialFlowChart';
 import { CreditCardsWidget } from '@/components/dashboard/CreditCardsWidget';
+import { UpcomingExpensesWidget } from '@/components/dashboard/UpcomingExpensesWidget';
 
 // Placeholder Pages - To be real components soon
 const DashboardMock = () => (
@@ -31,21 +31,8 @@ const DashboardMock = () => (
                 {/* Cards Widget (Prompt 09) */}
                 <CreditCardsWidget />
 
-                {/* Proximas Despesas Placeholder (Prompt 10) */}
-                <div className="bg-white border border-neutral-300 rounded-[32px] p-8 min-h-[460px] flex flex-col shadow-sm">
-                    <div className="flex items-center justify-between mb-8">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2.5 bg-neutral-100 rounded-xl">
-                                <CardIcon size={22} className="text-neutral-1100" />
-                            </div>
-                            <h2 className="text-xl font-bold text-neutral-1100 tracking-tight">Próximas despesas</h2>
-                        </div>
-                        <Plus className="text-neutral-400 cursor-pointer hover:text-black transition-colors" size={24} />
-                    </div>
-                    <div className="flex-1 border-2 border-dashed border-neutral-100 rounded-3xl flex items-center justify-center text-neutral-400 font-medium text-sm text-center px-4">
-                        Lista de Despesas Futuras (Implementação Prompt 10)
-                    </div>
-                </div>
+                {/* Upcoming Expenses Widget (Prompt 10) */}
+                <UpcomingExpensesWidget />
             </div>
         </div>
 
