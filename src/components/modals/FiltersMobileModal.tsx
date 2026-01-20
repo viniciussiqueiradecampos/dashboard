@@ -48,29 +48,29 @@ export function FiltersMobileModal({ isOpen, onClose }: FiltersMobileModalProps)
 
     return (
         <div
-            className="fixed inset-0 z-50 bg-black/50"
+            className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
             onClick={handleCancel}
         >
             <div
-                className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-2xl animate-in slide-in-from-bottom duration-300 max-h-[90vh] flex flex-col"
+                className="absolute bottom-0 left-0 right-0 bg-white dark:bg-neutral-950 rounded-t-[32px] shadow-2xl animate-in slide-in-from-bottom duration-300 max-h-[90vh] flex flex-col border-t border-transparent dark:border-neutral-800"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header - Fixed */}
-                <div className="flex items-center justify-between p-6 border-b border-neutral-200 shrink-0">
-                    <h2 className="text-2xl font-bold text-neutral-1100">Filtros</h2>
+                <div className="flex items-center justify-between p-6 border-b border-neutral-200 dark:border-neutral-800 shrink-0">
+                    <h2 className="text-2xl font-bold text-neutral-1100 dark:text-white transition-colors">Filtros</h2>
                     <button
                         onClick={handleCancel}
-                        className="w-12 h-12 rounded-full hover:bg-neutral-100 flex items-center justify-center transition-colors active:scale-95"
+                        className="w-12 h-12 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center justify-center transition-colors active:scale-95 dark:text-white"
                     >
                         <X size={24} />
                     </button>
                 </div>
 
                 {/* Content - Scrollable */}
-                <div className="flex-1 overflow-y-auto p-6 space-y-8">
+                <div className="flex-1 overflow-y-auto p-6 space-y-8 bg-white dark:bg-neutral-950">
                     {/* Transaction Type */}
                     <div>
-                        <label className="block text-base font-bold text-neutral-1100 mb-3">
+                        <label className="block text-base font-bold text-neutral-1100 dark:text-white mb-3 transition-colors">
                             Tipo de Transação
                         </label>
                         <div className="grid grid-cols-3 gap-3">
@@ -81,8 +81,8 @@ export function FiltersMobileModal({ isOpen, onClose }: FiltersMobileModalProps)
                                     className={cn(
                                         "h-12 rounded-xl font-medium transition-all active:scale-95",
                                         tempType === type
-                                            ? 'bg-neutral-1100 text-white'
-                                            : 'bg-white border-2 border-neutral-300 text-neutral-600'
+                                            ? 'bg-neutral-1100 dark:bg-[#D7FF00] text-white dark:text-[#080B12] shadow-sm'
+                                            : 'bg-white dark:bg-neutral-900 border-2 border-neutral-300 dark:border-neutral-800 text-neutral-600 dark:text-neutral-400'
                                     )}
                                 >
                                     {type === 'all' ? 'Todos' : type === 'income' ? 'Receitas' : 'Despesas'}
@@ -93,7 +93,7 @@ export function FiltersMobileModal({ isOpen, onClose }: FiltersMobileModalProps)
 
                     {/* Family Member */}
                     <div>
-                        <label className="block text-base font-bold text-neutral-1100 mb-3">
+                        <label className="block text-base font-bold text-neutral-1100 dark:text-white mb-3 transition-colors">
                             Membro da Família
                         </label>
                         <div className="flex flex-wrap gap-3">
@@ -102,8 +102,8 @@ export function FiltersMobileModal({ isOpen, onClose }: FiltersMobileModalProps)
                                 className={cn(
                                     "h-12 px-6 rounded-full font-medium transition-all active:scale-95",
                                     tempMember === null
-                                        ? 'bg-neutral-1100 text-white'
-                                        : 'bg-white border-2 border-neutral-300 text-neutral-600'
+                                        ? 'bg-neutral-1100 dark:bg-[#D7FF00] text-white dark:text-[#080B12] shadow-sm'
+                                        : 'bg-white dark:bg-neutral-900 border-2 border-neutral-300 dark:border-neutral-800 text-neutral-600 dark:text-neutral-400'
                                 )}
                             >
                                 Todos
@@ -115,8 +115,8 @@ export function FiltersMobileModal({ isOpen, onClose }: FiltersMobileModalProps)
                                     className={cn(
                                         "h-12 px-4 rounded-full font-medium transition-all flex items-center gap-2 active:scale-95",
                                         tempMember === member.id
-                                            ? 'bg-neutral-1100 text-white'
-                                            : 'bg-white border-2 border-neutral-300 text-neutral-600'
+                                            ? 'bg-neutral-1100 dark:bg-[#D7FF00] text-white dark:text-[#080B12] shadow-sm'
+                                            : 'bg-white dark:bg-neutral-900 border-2 border-neutral-300 dark:border-neutral-800 text-neutral-600 dark:text-neutral-400'
                                     )}
                                 >
                                     <img
@@ -124,7 +124,7 @@ export function FiltersMobileModal({ isOpen, onClose }: FiltersMobileModalProps)
                                         alt={member.name}
                                         className={cn(
                                             "w-8 h-8 rounded-full object-cover",
-                                            tempMember === member.id && 'ring-2 ring-white'
+                                            tempMember === member.id && 'ring-2 ring-white dark:ring-[#080B12]'
                                         )}
                                     />
                                     <span>{member.name}</span>
@@ -135,7 +135,7 @@ export function FiltersMobileModal({ isOpen, onClose }: FiltersMobileModalProps)
 
                     {/* Period - Quick Presets */}
                     <div>
-                        <label className="block text-base font-bold text-neutral-1100 mb-3">
+                        <label className="block text-base font-bold text-neutral-1100 dark:text-white mb-3 transition-colors">
                             Período
                         </label>
                         <div className="grid grid-cols-2 gap-3">
@@ -144,7 +144,7 @@ export function FiltersMobileModal({ isOpen, onClose }: FiltersMobileModalProps)
                                     startDate: format(startOfMonth(new Date()), 'yyyy-MM-dd'),
                                     endDate: format(endOfMonth(new Date()), 'yyyy-MM-dd'),
                                 })}
-                                className="h-12 rounded-xl border-2 border-neutral-300 text-neutral-700 font-medium hover:bg-neutral-50 transition-colors active:scale-95"
+                                className="h-12 rounded-xl border-2 border-neutral-300 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 font-medium hover:bg-neutral-50 dark:hover:bg-neutral-900 transition-all active:scale-95"
                             >
                                 Este Mês
                             </button>
@@ -157,7 +157,7 @@ export function FiltersMobileModal({ isOpen, onClose }: FiltersMobileModalProps)
                                         endDate: format(endOfMonth(lastMonth), 'yyyy-MM-dd'),
                                     });
                                 }}
-                                className="h-12 rounded-xl border-2 border-neutral-300 text-neutral-700 font-medium hover:bg-neutral-50 transition-colors active:scale-95"
+                                className="h-12 rounded-xl border-2 border-neutral-300 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 font-medium hover:bg-neutral-50 dark:hover:bg-neutral-900 transition-all active:scale-95"
                             >
                                 Mês Passado
                             </button>
@@ -166,21 +166,21 @@ export function FiltersMobileModal({ isOpen, onClose }: FiltersMobileModalProps)
                         {/* Custom Date Range */}
                         <div className="mt-4 grid grid-cols-2 gap-3">
                             <div>
-                                <label className="block text-xs text-neutral-500 font-medium mb-2">Data Inicial</label>
+                                <label className="block text-xs text-neutral-500 dark:text-neutral-400 font-medium mb-2">Data Inicial</label>
                                 <input
                                     type="date"
                                     value={tempDateRange.startDate}
                                     onChange={(e) => setTempDateRange(prev => ({ ...prev, startDate: e.target.value }))}
-                                    className="w-full h-12 px-4 bg-white border-2 border-neutral-300 rounded-xl text-neutral-1100 focus:ring-2 focus:ring-black focus:border-transparent transition-all outline-none"
+                                    className="w-full h-12 px-4 bg-white dark:bg-neutral-900 border-2 border-neutral-300 dark:border-neutral-800 rounded-xl text-neutral-1100 dark:text-white focus:ring-2 focus:ring-black dark:focus:ring-[#D7FF00] focus:border-transparent transition-all outline-none"
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs text-neutral-500 font-medium mb-2">Data Final</label>
+                                <label className="block text-xs text-neutral-500 dark:text-neutral-400 font-medium mb-2">Data Final</label>
                                 <input
                                     type="date"
                                     value={tempDateRange.endDate}
                                     onChange={(e) => setTempDateRange(prev => ({ ...prev, endDate: e.target.value }))}
-                                    className="w-full h-12 px-4 bg-white border-2 border-neutral-300 rounded-xl text-neutral-1100 focus:ring-2 focus:ring-black focus:border-transparent transition-all outline-none"
+                                    className="w-full h-12 px-4 bg-white dark:bg-neutral-900 border-2 border-neutral-300 dark:border-neutral-800 rounded-xl text-neutral-1100 dark:text-white focus:ring-2 focus:ring-black dark:focus:ring-[#D7FF00] focus:border-transparent transition-all outline-none"
                                 />
                             </div>
                         </div>
@@ -188,10 +188,10 @@ export function FiltersMobileModal({ isOpen, onClose }: FiltersMobileModalProps)
                 </div>
 
                 {/* Footer - Fixed */}
-                <div className="p-6 border-t border-neutral-200 bg-white shrink-0">
+                <div className="p-6 border-t border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950 shrink-0 transition-colors">
                     <button
                         onClick={handleApply}
-                        className="w-full h-14 bg-neutral-1100 text-white rounded-full font-bold text-lg hover:bg-neutral-900 active:scale-[0.98] transition-all"
+                        className="w-full h-14 bg-neutral-1100 dark:bg-[#D7FF00] text-white dark:text-[#080B12] rounded-full font-bold text-lg hover:opacity-90 active:scale-[0.98] transition-all shadow-sm"
                     >
                         Aplicar Filtros
                     </button>

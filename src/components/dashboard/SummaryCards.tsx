@@ -20,20 +20,20 @@ function SummaryCard({ title, value, icon: Icon, iconColor, bgColor = "bg-white"
 
     return (
         <div className={cn(
-            "flex flex-col p-8 rounded-[20px] border border-neutral-300 shadow-sm transition-all hover:shadow-md h-[206px] justify-between",
-            bgColor
+            "flex flex-col p-8 rounded-[20px] border border-neutral-300 dark:border-neutral-800 shadow-sm transition-all hover:shadow-md h-[206px] justify-between",
+            bgColor === "bg-white" ? "bg-white dark:bg-neutral-900" : bgColor
         )}>
             <div className={cn(
-                "p-3 rounded-2xl w-fit flex items-center justify-center bg-neutral-100",
+                "p-3 rounded-2xl w-fit flex items-center justify-center bg-neutral-100 dark:bg-neutral-800",
             )}>
                 <Icon size={24} style={{ color: iconColor }} />
             </div>
 
             <div className="flex flex-col gap-1">
-                <p className="text-[18px] text-neutral-500 font-medium">
+                <p className="text-[18px] text-neutral-500 dark:text-neutral-400 font-medium">
                     {title}
                 </p>
-                <h3 className="text-[28px] font-bold text-neutral-1100 tracking-tight">
+                <h3 className="text-[28px] font-bold text-neutral-1100 dark:text-white tracking-tight">
                     {formatCurrency(value)}
                 </h3>
             </div>

@@ -141,10 +141,10 @@ export function TransactionsTable() {
 
     return (
         <>
-            <div className="bg-white rounded-[20px] border border-neutral-300 p-8 shadow-sm w-full">
+            <div className="bg-white dark:bg-neutral-900 rounded-[20px] border border-neutral-300 dark:border-neutral-800 p-8 shadow-sm w-full transition-colors duration-300">
                 {/* Header */}
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-                    <h2 className="text-xl font-bold text-neutral-1100 tracking-tight">
+                    <h2 className="text-xl font-bold text-neutral-1100 dark:text-white tracking-tight">
                         Extrato detalhado
                     </h2>
 
@@ -157,7 +157,7 @@ export function TransactionsTable() {
                                 placeholder="Buscar lançamentos..."
                                 value={localSearch}
                                 onChange={(e) => setLocalSearch(e.target.value)}
-                                className="w-full h-10 pl-10 pr-4 bg-white border border-neutral-200 rounded-full text-sm text-neutral-900 placeholder:text-neutral-400 focus:ring-2 focus:ring-black focus:border-transparent transition-all outline-none"
+                                className="w-full h-10 pl-10 pr-4 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-full text-sm text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:ring-2 focus:ring-black dark:focus:ring-[#D7FF00] focus:border-transparent transition-all outline-none"
                             />
                         </div>
 
@@ -165,7 +165,7 @@ export function TransactionsTable() {
                         <select
                             value={localTypeFilter}
                             onChange={(e) => setLocalTypeFilter(e.target.value as 'all' | 'income' | 'expense')}
-                            className="w-full sm:w-[140px] h-10 px-4 bg-white border border-neutral-200 rounded-full text-sm text-neutral-900 focus:ring-2 focus:ring-black focus:border-transparent transition-all outline-none cursor-pointer"
+                            className="w-full sm:w-[140px] h-10 px-4 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-full text-sm text-neutral-900 dark:text-white focus:ring-2 focus:ring-black dark:focus:ring-[#D7FF00] focus:border-transparent transition-all outline-none cursor-pointer"
                         >
                             <option value="all">Todos</option>
                             <option value="income">Receitas</option>
@@ -178,26 +178,26 @@ export function TransactionsTable() {
                 <div className="overflow-x-auto -mx-8 px-8">
                     <table className="w-full">
                         <thead>
-                            <tr className="border-b border-neutral-200 bg-neutral-50">
-                                <th className="text-left py-4 px-4 text-xs font-bold text-neutral-600 uppercase tracking-wider w-[50px]">
+                            <tr className="border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/50">
+                                <th className="text-left py-4 px-4 text-xs font-bold text-neutral-600 dark:text-neutral-400 uppercase tracking-wider w-[50px]">
                                     Membro
                                 </th>
-                                <th className="text-left py-4 px-4 text-xs font-bold text-neutral-600 uppercase tracking-wider">
+                                <th className="text-left py-4 px-4 text-xs font-bold text-neutral-600 dark:text-neutral-400 uppercase tracking-wider">
                                     Datas
                                 </th>
-                                <th className="text-left py-4 px-4 text-xs font-bold text-neutral-600 uppercase tracking-wider">
+                                <th className="text-left py-4 px-4 text-xs font-bold text-neutral-600 dark:text-neutral-400 uppercase tracking-wider">
                                     Descrição
                                 </th>
-                                <th className="text-left py-4 px-4 text-xs font-bold text-neutral-600 uppercase tracking-wider">
+                                <th className="text-left py-4 px-4 text-xs font-bold text-neutral-600 dark:text-neutral-400 uppercase tracking-wider">
                                     Categorias
                                 </th>
-                                <th className="text-left py-4 px-4 text-xs font-bold text-neutral-600 uppercase tracking-wider">
+                                <th className="text-left py-4 px-4 text-xs font-bold text-neutral-600 dark:text-neutral-400 uppercase tracking-wider">
                                     Conta/cartão
                                 </th>
-                                <th className="text-left py-4 px-4 text-xs font-bold text-neutral-600 uppercase tracking-wider">
+                                <th className="text-left py-4 px-4 text-xs font-bold text-neutral-600 dark:text-neutral-400 uppercase tracking-wider">
                                     Parcelas
                                 </th>
-                                <th className="text-right py-4 px-4 text-xs font-bold text-neutral-600 uppercase tracking-wider">
+                                <th className="text-right py-4 px-4 text-xs font-bold text-neutral-600 dark:text-neutral-400 uppercase tracking-wider">
                                     Valor
                                 </th>
                             </tr>
@@ -209,8 +209,8 @@ export function TransactionsTable() {
                                         key={transaction.id}
                                         onClick={() => handleTransactionClick(transaction)}
                                         className={cn(
-                                            'border-b border-neutral-100 last:border-b-0 transition-colors hover:bg-neutral-50 cursor-pointer group',
-                                            index % 2 === 1 && 'bg-neutral-25'
+                                            'border-b border-neutral-100 dark:border-neutral-800 last:border-b-0 transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800 cursor-pointer group',
+                                            index % 2 === 1 && 'bg-neutral-25 dark:bg-neutral-900/50'
                                         )}
                                     >
                                         {/* Avatar */}
@@ -222,14 +222,14 @@ export function TransactionsTable() {
                                                     className="w-6 h-6 rounded-full object-cover"
                                                 />
                                             ) : (
-                                                <div className="w-6 h-6 rounded-full bg-neutral-200 flex items-center justify-center">
-                                                    <User size={14} className="text-neutral-500" />
+                                                <div className="w-6 h-6 rounded-full bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center">
+                                                    <User size={14} className="text-neutral-500 dark:text-neutral-400" />
                                                 </div>
                                             )}
                                         </td>
 
                                         {/* Date */}
-                                        <td className="py-4 px-4 text-sm text-neutral-600">
+                                        <td className="py-4 px-4 text-sm text-neutral-600 dark:text-neutral-400">
                                             {formatDate(transaction.date)}
                                         </td>
 
@@ -239,16 +239,16 @@ export function TransactionsTable() {
                                                 <div
                                                     className={cn(
                                                         'w-8 h-8 rounded-full flex items-center justify-center shrink-0',
-                                                        transaction.type === 'income' ? 'bg-green-50' : 'bg-red-50'
+                                                        transaction.type === 'income' ? 'bg-green-50 dark:bg-green-950/30' : 'bg-red-50 dark:bg-red-950/30'
                                                     )}
                                                 >
                                                     {transaction.type === 'income' ? (
-                                                        <ArrowDownCircle size={16} className="text-green-600" />
+                                                        <ArrowUpCircle size={16} className="text-green-600 dark:text-green-500" />
                                                     ) : (
-                                                        <ArrowUpCircle size={16} className="text-red-600" />
+                                                        <ArrowDownCircle size={16} className="text-red-600 dark:text-red-500" />
                                                     )}
                                                 </div>
-                                                <span className="text-sm font-bold text-neutral-1100 truncate">
+                                                <span className="text-sm font-bold text-neutral-1100 dark:text-white truncate">
                                                     {transaction.description}
                                                 </span>
                                             </div>
@@ -256,18 +256,18 @@ export function TransactionsTable() {
 
                                         {/* Category */}
                                         <td className="py-4 px-4">
-                                            <span className="inline-block px-3 py-1 bg-neutral-100 text-neutral-600 text-xs font-medium rounded-full">
+                                            <span className="inline-block px-3 py-1 bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 text-xs font-medium rounded-full">
                                                 {transaction.category}
                                             </span>
                                         </td>
 
                                         {/* Account/Card */}
-                                        <td className="py-4 px-4 text-sm text-neutral-600">
+                                        <td className="py-4 px-4 text-sm text-neutral-600 dark:text-neutral-400">
                                             {getAccountName(transaction)}
                                         </td>
 
                                         {/* Installments */}
-                                        <td className="py-4 px-4 text-sm text-neutral-600 text-center">
+                                        <td className="py-4 px-4 text-sm text-neutral-600 dark:text-neutral-400 text-center">
                                             {getInstallmentText(transaction)}
                                         </td>
 
@@ -276,7 +276,7 @@ export function TransactionsTable() {
                                             <span
                                                 className={cn(
                                                     'text-sm font-bold',
-                                                    transaction.type === 'income' ? 'text-green-600' : 'text-neutral-1100'
+                                                    transaction.type === 'income' ? 'text-green-600 dark:text-green-500' : 'text-neutral-1100 dark:text-white'
                                                 )}
                                             >
                                                 {transaction.type === 'income' ? '+' : '-'} {formatCurrency(transaction.amount)}
@@ -299,8 +299,8 @@ export function TransactionsTable() {
 
                 {/* Pagination */}
                 {filteredTransactions.length > 0 && (
-                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 pt-6 border-t border-neutral-200">
-                        <p className="text-sm text-neutral-600">
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 pt-6 border-t border-neutral-200 dark:border-neutral-800">
+                        <p className="text-sm text-neutral-600 dark:text-neutral-400">
                             Mostrando {startIndex + 1} a {Math.min(endIndex, filteredTransactions.length)} de{' '}
                             {filteredTransactions.length}
                         </p>
@@ -309,19 +309,21 @@ export function TransactionsTable() {
                             <button
                                 onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                                 disabled={currentPage === 1}
-                                className="p-2 rounded-lg border border-neutral-200 text-neutral-600 hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                className="p-2 rounded-lg border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                             >
                                 <ChevronLeft size={16} />
                             </button>
 
                             <div className="flex items-center gap-1">
-                                {renderPageNumbers()}
+                                {renderPageNumbers().map((page) => {
+                                    return page;
+                                })}
                             </div>
 
                             <button
                                 onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                                 disabled={currentPage === totalPages}
-                                className="p-2 rounded-lg border border-neutral-200 text-neutral-600 hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                className="p-2 rounded-lg border border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                             >
                                 <ChevronRight size={16} />
                             </button>

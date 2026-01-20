@@ -239,6 +239,20 @@ FOR ALL TO authenticated
 USING ( bucket_id = 'avatars' )
 WITH CHECK ( bucket_id = 'avatars' );
 
+-- 4. Bucket 'logos' (Para bancos/cartões)
+INSERT INTO storage.buckets (id, name, public) 
+VALUES ('logos', 'logos', true) 
+ON CONFLICT (id) DO UPDATE SET public = true;
+
+DROP POLICY IF EXISTS "Logos Public Access" ON storage.objects;
+CREATE POLICY "Logos Public Access" ON storage.objects FOR SELECT USING ( bucket_id = 'logos' );
+
+DROP POLICY IF EXISTS "Users upload logos" ON storage.objects;
+CREATE POLICY "Users upload logos" ON storage.objects 
+FOR ALL TO authenticated 
+USING ( bucket_id = 'logos' )
+WITH CHECK ( bucket_id = 'logos' );
+
 -- ============================================
 -- 👤 USUÁRIOS (REGRAS EXTRAS)
 -- ============================================

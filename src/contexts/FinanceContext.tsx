@@ -216,7 +216,8 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
                     closingDay: c.closing_day || 1,
                     dueDay: c.due_day || 10,
                     theme: c.theme || 'black',
-                    brand: c.bank
+                    brand: c.bank,
+                    imageUrl: c.logo_url
                 })));
             }
 
@@ -432,6 +433,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
             due_day: c.dueDay,
             last_digits: c.last4Digits,
             theme: c.theme,
+            logo_url: c.imageUrl || null,
             holder_id: c.holderId || null
         };
 
@@ -447,6 +449,13 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         const payload: any = {};
         if (c.name) payload.name = c.name;
         if (c.limit) payload.credit_limit = c.limit;
+        if (c.imageUrl !== undefined) payload.logo_url = c.imageUrl;
+        if (c.brand) payload.bank = c.brand;
+        if (c.last4Digits) payload.last_digits = c.last4Digits;
+        if (c.closingDay) payload.closing_day = c.closingDay;
+        if (c.dueDay) payload.due_day = c.dueDay;
+        if (c.theme) payload.theme = c.theme;
+
         const { error } = await sb.from('accounts').update(payload).eq('id', id);
         if (error) {
             console.error('Error updating card:', error);

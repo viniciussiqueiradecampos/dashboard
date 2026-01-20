@@ -28,6 +28,7 @@ export interface CreditCard {
     dueDay: number;
     theme: CreditCardTheme;
     brand: string;
+    imageUrl?: string;
 }
 
 export interface Transaction {

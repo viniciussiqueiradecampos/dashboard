@@ -15,8 +15,8 @@ export function Cards() {
 
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 mt-4">
                 <div>
-                    <h2 className="text-2xl font-bold text-neutral-1100">Cartões e Dinheiro</h2>
-                    <p className="text-sm text-neutral-500">Gerencie seus cartões, contas bancárias e dinheiro em espécie</p>
+                    <h2 className="text-2xl font-bold text-neutral-1100 dark:text-white transition-colors">Cartões e Dinheiro</h2>
+                    <p className="text-sm text-neutral-500 dark:text-neutral-400 transition-colors">Gerencie seus cartões, contas bancárias e dinheiro em espécie</p>
                 </div>
 
                 <div className="flex items-center gap-3">
@@ -30,7 +30,7 @@ export function Cards() {
 
                     <button
                         onClick={() => setIsAddCardOpen(true)}
-                        className="flex items-center gap-2 px-6 py-3 bg-[#080B12] text-white rounded-full hover:bg-neutral-800 transition-all font-bold shadow-sm"
+                        className="flex items-center gap-2 px-6 py-3 bg-[#080B12] dark:bg-[#D7FF00] text-white dark:text-[#080B12] rounded-full hover:bg-neutral-800 dark:hover:opacity-90 transition-all font-bold shadow-sm"
                     >
                         <Plus size={18} />
                         <span>Novo Cartão/Conta</span>

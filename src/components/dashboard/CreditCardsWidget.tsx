@@ -28,7 +28,7 @@ function CreditCardItem({ card, onClick }: CreditCardItemProps) {
             case 'lime':
                 return { bg: 'bg-[#D7FF00]', icon: 'text-[#080B12]', badge: 'bg-[#080B12] text-white' };
             default: // white
-                return { bg: 'bg-white border border-neutral-200', icon: 'text-neutral-600', badge: 'bg-neutral-100 text-neutral-800' };
+                return { bg: 'bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700', icon: 'text-neutral-600 dark:text-neutral-400', badge: 'bg-neutral-100 dark:bg-neutral-700 text-neutral-800 dark:text-white' };
         }
     };
 
@@ -37,24 +37,45 @@ function CreditCardItem({ card, onClick }: CreditCardItemProps) {
     return (
         <div
             onClick={onClick}
-            className="group bg-white p-5 rounded-3xl shadow-sm border border-neutral-100 flex items-center gap-4 transition-all duration-300 hover:-translate-y-2 hover:shadow-xl cursor-pointer"
+            className="group bg-white dark:bg-neutral-900 p-5 rounded-3xl shadow-sm border border-neutral-100 dark:border-neutral-800 flex items-center gap-4 transition-all duration-300 hover:-translate-y-2 hover:shadow-xl cursor-pointer"
         >
-            <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center shrink-0", theme.bg)}>
-                <CardIcon size={24} className={theme.icon} />
+            <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 overflow-hidden", theme.bg)}>
+                {card.imageUrl ? (
+                    <img src={card.imageUrl} alt={card.brand} className="w-full h-full object-cover" />
+                ) : (
+                    <CardIcon size={24} className={theme.icon} />
+                )}
             </div>
 
             <div className="flex-1 min-w-0">
-                <p className="text-xs font-medium text-neutral-500 mb-0.5">{card.brand} {card.name}</p>
-                <h4 className="text-lg font-bold text-neutral-1100 leading-tight">
+                <div className="flex items-center justify-between mb-1">
+                    <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400">{card.brand} {card.name}</p>
+                    <span className={cn("text-[10px] font-bold px-1.5 py-0.5 rounded-md", theme.badge)}>
+                        {usagePercentage}%
+                    </span>
+                </div>
+                <h4 className="text-lg font-bold text-neutral-1100 dark:text-white leading-tight mb-2">
                     {formatCurrency(card.currentInvoice)}
                 </h4>
-                <p className="text-[11px] text-neutral-400 font-medium">
-                    •••• {card.last4Digits}
-                </p>
-            </div>
 
-            <div className={cn("px-3 py-1.5 rounded-full text-[13px] font-bold shrink-0", theme.badge)}>
-                {usagePercentage}%
+                {/* Progress Bar */}
+                <div className="w-full h-1.5 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden mb-1">
+                    <div
+                        className={cn(
+                            "h-full rounded-full transition-all duration-500",
+                            card.theme === 'lime' ? 'bg-[#080B12] dark:bg-white' : 'bg-[#D7FF00]'
+                        )}
+                        style={{ width: `${Math.min(usagePercentage, 100)}%` }}
+                    />
+                </div>
+                <div className="flex justify-between items-center text-[10px] font-medium">
+                    <p className="text-neutral-400 dark:text-neutral-500">
+                        •••• {card.last4Digits}
+                    </p>
+                    <p className="text-neutral-400 dark:text-neutral-500">
+                        Limite: {formatCurrency(card.limit)}
+                    </p>
+                </div>
             </div>
         </div>
     );
@@ -73,23 +94,23 @@ function AccountItem({ account, isCash }: AccountItemProps) {
     };
 
     return (
-        <div className="group bg-white p-5 rounded-3xl shadow-sm border border-neutral-100 flex items-center gap-4 transition-all duration-300 hover:-translate-y-2 hover:shadow-xl cursor-default">
+        <div className="group bg-white dark:bg-neutral-900 p-5 rounded-3xl shadow-sm border border-neutral-100 dark:border-neutral-800 flex items-center gap-4 transition-all duration-300 hover:-translate-y-2 hover:shadow-xl cursor-default">
             <div className={cn(
                 "w-14 h-14 rounded-2xl flex items-center justify-center shrink-0",
-                isCash ? "bg-[#D7FF00] text-[#080B12]" : "bg-blue-100 text-blue-600"
+                isCash ? "bg-[#D7FF00] text-[#080B12]" : "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
             )}>
                 {isCash ? <Plus size={24} /> : <LayoutDashboard size={24} />}
             </div>
             <div className="flex-1 min-w-0">
-                <p className="text-xs font-medium text-neutral-500 mb-0.5">
+                <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-0.5">
                     {isCash ? 'Dinheiro em Espécie' : account.bankName}
                 </p>
-                <h4 className="text-lg font-bold text-neutral-1100 leading-tight">
+                <h4 className="text-lg font-bold text-neutral-1100 dark:text-white leading-tight">
                     {account.name}
                 </h4>
             </div>
             <div className="text-right">
-                <p className="text-[13px] font-bold text-green-600">
+                <p className="text-[13px] font-bold text-green-600 dark:text-green-500">
                     {formatCurrency(account.balance)}
                 </p>
             </div>
@@ -140,38 +161,38 @@ export function CreditCardsWidget() {
 
     return (
         <>
-            <div className="bg-white border border-neutral-300 rounded-[32px] p-6 flex flex-col shadow-sm min-h-[460px]">
+            <div className="bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-800 rounded-[32px] p-6 flex flex-col shadow-sm min-h-[460px] transition-colors duration-300">
                 <div className="flex items-center justify-between mb-8">
                     <div className="flex items-center gap-3">
-                        <div className="p-2.5 bg-white rounded-xl shadow-sm border border-neutral-100">
-                            <CardIcon size={22} className="text-neutral-1100" />
+                        <div className="p-2.5 bg-white dark:bg-neutral-800 rounded-xl shadow-sm border border-neutral-100 dark:border-neutral-700 transition-colors">
+                            <CardIcon size={22} className="text-neutral-1100 dark:text-white" />
                         </div>
-                        <h2 className="text-xl font-bold text-neutral-1100 tracking-tight">Cartões e Dinheiro</h2>
+                        <h2 className="text-xl font-bold text-neutral-1100 dark:text-white tracking-tight">Cartões e Dinheiro</h2>
                     </div>
                     <div className="flex items-center gap-2">
                         <button
                             onClick={() => setIsAddModalOpen(true)}
-                            className="w-10 h-10 flex items-center justify-center rounded-full bg-white border border-neutral-200 text-neutral-1100 hover:bg-neutral-50 hover:scale-110 transition-all shadow-sm"
+                            className="w-10 h-10 flex items-center justify-center rounded-full bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-1100 dark:text-white hover:bg-neutral-50 dark:hover:bg-neutral-700 hover:scale-110 transition-all shadow-sm"
                             title="Adicionar conta ou cartão"
                         >
                             <Plus size={20} />
                         </button>
                         {totalPages > 1 && (
-                            <div className="flex items-center ml-2 border border-neutral-200 rounded-full bg-white p-1 shadow-sm">
+                            <div className="flex items-center ml-2 border border-neutral-200 dark:border-neutral-700 rounded-full bg-white dark:bg-neutral-800 p-1 shadow-sm transition-colors">
                                 <button
                                     onClick={prevPage}
                                     disabled={currentPage === 0}
-                                    className="p-1.5 text-neutral-400 hover:text-black disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                                    className="p-1.5 text-neutral-400 hover:text-black dark:hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                                 >
                                     <ChevronLeft size={16} />
                                 </button>
-                                <span className="text-[11px] font-bold text-neutral-600 px-1">
+                                <span className="text-[11px] font-bold text-neutral-600 dark:text-neutral-400 px-1">
                                     {currentPage + 1}/{totalPages}
                                 </span>
                                 <button
                                     onClick={nextPage}
                                     disabled={currentPage === totalPages - 1}
-                                    className="p-1.5 text-neutral-400 hover:text-black disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                                    className="p-1.5 text-neutral-400 hover:text-black dark:hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                                 >
                                     <ChevronRight size={16} />
                                 </button>

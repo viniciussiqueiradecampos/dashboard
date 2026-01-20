@@ -39,23 +39,23 @@ function ExpenseItem({ expense, onMarkAsPaid, getAccountName }: ExpenseItemProps
     };
 
     return (
-        <div className="flex items-center justify-between py-4 border-b border-neutral-200 last:border-b-0 group/item">
+        <div className="flex items-center justify-between py-4 border-b border-neutral-200 dark:border-neutral-800 last:border-b-0 group/item transition-colors duration-300">
             {/* Left: Expense Info */}
             <div className="flex-1 min-w-0 pr-4">
-                <h4 className="text-[15px] font-bold text-neutral-1100 mb-1 truncate">
+                <h4 className="text-[15px] font-bold text-neutral-1100 dark:text-white mb-1 truncate transition-colors">
                     {expense.description}
                 </h4>
-                <p className="text-[13px] text-neutral-600 font-medium mb-0.5">
+                <p className="text-[13px] text-neutral-600 dark:text-neutral-400 font-medium mb-0.5 transition-colors">
                     {formatDueDate(expense.date)}
                 </p>
-                <p className="text-[11px] text-neutral-400 font-medium">
+                <p className="text-[11px] text-neutral-400 dark:text-neutral-500 font-medium transition-colors">
                     {getAccountName(expense)}
                 </p>
             </div>
 
             {/* Right: Amount and Action */}
             <div className="flex items-center gap-4 shrink-0">
-                <p className="text-[16px] font-bold text-neutral-1100 whitespace-nowrap">
+                <p className="text-[16px] font-bold text-neutral-1100 dark:text-white whitespace-nowrap transition-colors">
                     {formatCurrency(expense.amount)}
                 </p>
                 <button
@@ -66,8 +66,8 @@ function ExpenseItem({ expense, onMarkAsPaid, getAccountName }: ExpenseItemProps
                     className={cn(
                         "w-8 h-8 rounded-full border flex items-center justify-center transition-all duration-200",
                         isHovered || isPaying
-                            ? "bg-green-50 border-green-600 text-green-600"
-                            : "bg-transparent border-neutral-300 text-neutral-400 hover:border-neutral-400"
+                            ? "bg-green-50 dark:bg-green-900/30 border-green-600 text-green-600 dark:text-green-500"
+                            : "bg-transparent border-neutral-300 dark:border-neutral-700 text-neutral-400 dark:text-neutral-500 hover:border-neutral-400 dark:hover:border-neutral-500"
                     )}
                     title="Marcar como paga"
                 >
@@ -127,41 +127,41 @@ export function UpcomingExpensesWidget() {
 
     return (
         <>
-            <div className="bg-white border border-neutral-300 rounded-[32px] p-6 h-full flex flex-col shadow-sm">
+            <div className="bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-800 rounded-[32px] p-6 h-full flex flex-col shadow-sm transition-colors duration-300">
                 {/* Header */}
                 <div className="flex items-center justify-between mb-8 shrink-0">
                     <div className="flex items-center gap-3">
-                        <div className="p-2.5 bg-neutral-100 rounded-xl">
-                            <Wallet size={20} className="text-neutral-1100" />
+                        <div className="p-2.5 bg-neutral-100 dark:bg-neutral-800 rounded-xl transition-colors">
+                            <Wallet size={20} className="text-neutral-1100 dark:text-white" />
                         </div>
-                        <h2 className="text-xl font-bold text-neutral-1100 tracking-tight">
+                        <h2 className="text-xl font-bold text-neutral-1100 dark:text-white tracking-tight transition-colors">
                             Próximas despesas
                         </h2>
                     </div>
                     <div className="flex items-center gap-2">
                         <button
                             onClick={() => setIsTransactionModalOpen(true)}
-                            className="w-10 h-10 flex items-center justify-center rounded-full bg-white border border-neutral-200 text-neutral-1100 hover:bg-neutral-50 hover:scale-110 transition-all shadow-sm"
+                            className="w-10 h-10 flex items-center justify-center rounded-full bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-1100 dark:text-white hover:bg-neutral-50 dark:hover:bg-neutral-700 hover:scale-110 transition-all shadow-sm"
                             title="Adicionar despesa"
                         >
                             <Plus size={20} />
                         </button>
                         {totalPages > 1 && (
-                            <div className="flex items-center ml-2 border border-neutral-200 rounded-full bg-white p-1 shadow-sm">
+                            <div className="flex items-center ml-2 border border-neutral-200 dark:border-neutral-700 rounded-full bg-white dark:bg-neutral-800 p-1 shadow-sm transition-colors">
                                 <button
                                     onClick={prevPage}
                                     disabled={currentPage === 0}
-                                    className="p-1.5 text-neutral-400 hover:text-black disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                                    className="p-1.5 text-neutral-400 hover:text-black dark:hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                                 >
                                     <ChevronLeft size={16} />
                                 </button>
-                                <span className="text-[11px] font-bold text-neutral-600 px-1">
+                                <span className="text-[11px] font-bold text-neutral-600 dark:text-neutral-400 px-1">
                                     {currentPage + 1}/{totalPages}
                                 </span>
                                 <button
                                     onClick={nextPage}
                                     disabled={currentPage === totalPages - 1}
-                                    className="p-1.5 text-neutral-400 hover:text-black disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                                    className="p-1.5 text-neutral-400 hover:text-black dark:hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                                 >
                                     <ChevronRight size={16} />
                                 </button>
@@ -184,9 +184,9 @@ export function UpcomingExpensesWidget() {
                             ))}
                         </div>
                     ) : (
-                        <div className="flex flex-col items-center justify-center h-full border-2 border-dashed border-neutral-200 rounded-3xl py-12">
-                            <div className="w-16 h-16 rounded-full bg-green-50 border-2 border-green-600 flex items-center justify-center mb-4">
-                                <Check size={32} className="text-green-600" />
+                        <div className="flex flex-col items-center justify-center h-full border-2 border-dashed border-neutral-200 dark:border-neutral-800 rounded-3xl py-12 transition-colors">
+                            <div className="w-16 h-16 rounded-full bg-green-50 dark:bg-green-900/30 border-2 border-green-600 flex items-center justify-center mb-4">
+                                <Check size={32} className="text-green-600 dark:text-green-500" />
                             </div>
                             <p className="text-sm text-neutral-400 font-medium">
                                 Nenhuma despesa pendente

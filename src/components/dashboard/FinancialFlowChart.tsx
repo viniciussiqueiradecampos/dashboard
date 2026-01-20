@@ -4,6 +4,8 @@ import { useFinance } from '@/contexts/FinanceContext';
 import { useMemo } from 'react';
 import { parseISO, format as formatDateFns } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { useTheme } from '@/contexts/ThemeContext';
+import { cn } from '@/utils/cn';
 
 const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -23,13 +25,13 @@ const formatYAxis = (value: number) => {
 const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
         return (
-            <div className="bg-white border border-neutral-200 p-4 rounded-2xl shadow-xl outline-none">
-                <p className="text-sm font-bold text-neutral-1100 mb-2">{label}</p>
+            <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-4 rounded-2xl shadow-xl outline-none">
+                <p className="text-sm font-bold text-neutral-1100 dark:text-white mb-2">{label}</p>
                 <div className="space-y-1">
-                    <p className="text-xs font-semibold text-green-700">
+                    <p className="text-xs font-semibold text-green-700 dark:text-green-500">
                         Receitas: {formatCurrency(payload[0].value)}
                     </p>
-                    <p className="text-xs font-semibold text-neutral-1100">
+                    <p className="text-xs font-semibold text-neutral-1100 dark:text-white">
                         Despesas: {formatCurrency(payload[1].value)}
                     </p>
                 </div>
@@ -41,6 +43,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 export function FinancialFlowChart() {
     const { transactions } = useFinance();
+    const { theme } = useTheme();
 
     const chartData = useMemo(() => {
         if (!transactions.length) return [];
@@ -69,24 +72,26 @@ export function FinancialFlowChart() {
             .map(({ month, receitas, despesas }) => ({ month, receitas, despesas }));
     }, [transactions]);
 
+    const expenseColor = theme === 'dark' ? '#FFFFFF' : '#080B12';
+
     return (
-        <div className="w-full bg-white border border-neutral-300 rounded-[32px] p-8 shadow-sm h-full flex flex-col">
+        <div className="w-full bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-800 rounded-[32px] p-8 shadow-sm h-full flex flex-col transition-colors duration-300">
             <div className="flex items-center justify-between mb-8 shrink-0">
                 <div className="flex items-center gap-3">
-                    <div className="p-2.5 bg-neutral-100 rounded-xl">
-                        <TrendingUp size={24} className="text-neutral-1100" />
+                    <div className="p-2.5 bg-neutral-100 dark:bg-neutral-800 rounded-xl transition-colors">
+                        <TrendingUp size={24} className="text-neutral-1100 dark:text-white" />
                     </div>
-                    <h2 className="text-xl font-bold text-neutral-1100">Fluxo financeiro</h2>
+                    <h2 className="text-xl font-bold text-neutral-1100 dark:text-white">Fluxo financeiro</h2>
                 </div>
 
                 <div className="flex items-center gap-6">
                     <div className="flex items-center gap-2">
                         <div className="w-2.5 h-2.5 rounded-full bg-[#D7FF00]" />
-                        <span className="text-xs font-bold text-neutral-600">Receitas</span>
+                        <span className="text-xs font-bold text-neutral-600 dark:text-neutral-400">Receitas</span>
                     </div>
                     <div className="flex items-center gap-2">
-                        <div className="w-2.5 h-2.5 rounded-full bg-[#080B12]" />
-                        <span className="text-xs font-bold text-neutral-600">Despesas</span>
+                        <div className={cn("w-2.5 h-2.5 rounded-full", theme === 'dark' ? "bg-white" : "bg-[#080B12]")} />
+                        <span className="text-xs font-bold text-neutral-600 dark:text-neutral-400">Despesas</span>
                     </div>
                 </div>
             </div>
@@ -104,15 +109,15 @@ export function FinancialFlowChart() {
                                     <stop offset="95%" stopColor="#D7FF00" stopOpacity={0} />
                                 </linearGradient>
                                 <linearGradient id="colorDespesas" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#080B12" stopOpacity={0.1} />
-                                    <stop offset="95%" stopColor="#080B12" stopOpacity={0} />
+                                    <stop offset="5%" stopColor={expenseColor} stopOpacity={0.1} />
+                                    <stop offset="95%" stopColor={expenseColor} stopOpacity={0} />
                                 </linearGradient>
                             </defs>
 
                             <CartesianGrid
                                 vertical={false}
                                 strokeDasharray="4 4"
-                                stroke="#E5E7EB"
+                                stroke={theme === 'dark' ? '#334155' : '#E5E7EB'}
                                 opacity={0.5}
                             />
 
@@ -120,21 +125,21 @@ export function FinancialFlowChart() {
                                 dataKey="month"
                                 axisLine={false}
                                 tickLine={false}
-                                tick={{ fill: '#64748B', fontSize: 12, fontWeight: 700 }}
+                                tick={{ fill: theme === 'dark' ? '#94A3B8' : '#64748B', fontSize: 12, fontWeight: 700 }}
                                 dy={15}
                             />
 
                             <YAxis
                                 axisLine={false}
                                 tickLine={false}
-                                tick={{ fill: '#64748B', fontSize: 12, fontWeight: 700 }}
+                                tick={{ fill: theme === 'dark' ? '#94A3B8' : '#64748B', fontSize: 12, fontWeight: 700 }}
                                 tickFormatter={formatYAxis}
                                 width={60}
                             />
 
                             <Tooltip
                                 content={<CustomTooltip />}
-                                cursor={{ stroke: '#E5E7EB', strokeWidth: 1 }}
+                                cursor={{ stroke: theme === 'dark' ? '#334155' : '#E5E7EB', strokeWidth: 1 }}
                             />
 
                             <Area
@@ -150,7 +155,7 @@ export function FinancialFlowChart() {
                             <Area
                                 type="monotone"
                                 dataKey="despesas"
-                                stroke="#080B12"
+                                stroke={expenseColor}
                                 strokeWidth={3}
                                 fillOpacity={1}
                                 fill="url(#colorDespesas)"

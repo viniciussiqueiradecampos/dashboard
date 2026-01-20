@@ -1,5 +1,6 @@
 
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
+import { cn } from '@/utils/cn';
 import { SidebarProvider } from '@/contexts/SidebarContext';
 import { FinanceProvider } from '@/contexts/FinanceContext';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
@@ -13,12 +14,18 @@ import { Login } from '@/pages/auth/Login';
 import { Register } from '@/pages/auth/Register';
 import { Loader2 } from 'lucide-react';
 
+import { ThemeProvider, useTheme } from '@/contexts/ThemeContext';
+
 function ProtectedLayout() {
     const { user, loading } = useAuth();
+    const { theme } = useTheme();
 
     if (loading) {
         return (
-            <div className="h-screen w-full flex items-center justify-center bg-[#F1F5F9]">
+            <div className={cn(
+                "h-screen w-full flex items-center justify-center transition-colors duration-300",
+                theme === 'dark' ? 'bg-[#080B12]' : 'bg-neutral-100'
+            )}>
                 <Loader2 className="animate-spin text-neutral-400" size={40} />
             </div>
         );
@@ -31,7 +38,10 @@ function ProtectedLayout() {
     return (
         <FinanceProvider>
             <SidebarProvider>
-                <div className="flex h-screen bg-[#F1F5F9] overflow-hidden">
+                <div className={cn(
+                    "flex h-screen overflow-hidden transition-colors duration-300",
+                    theme === 'dark' ? 'bg-[#080B12]' : 'bg-neutral-100'
+                )}>
                     <Sidebar />
                     <main className="flex-1 overflow-y-auto p-4 lg:p-8 ml-0 lg:ml-20 transition-all duration-300">
                         <div className="max-w-7xl mx-auto h-full">
@@ -46,23 +56,25 @@ function ProtectedLayout() {
 
 function App() {
     return (
-        <Router>
-            <AuthProvider>
-                <Routes>
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/register" element={<Register />} />
+        <ThemeProvider>
+            <Router>
+                <AuthProvider>
+                    <Routes>
+                        <Route path="/login" element={<Login />} />
+                        <Route path="/register" element={<Register />} />
 
-                    <Route element={<ProtectedLayout />}>
-                        <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                        <Route path="/dashboard" element={<Dashboard />} />
-                        <Route path="/transactions" element={<Transactions />} />
-                        <Route path="/goals" element={<Goals />} />
-                        <Route path="/cards" element={<Cards />} />
-                        <Route path="/profile" element={<Profile />} />
-                    </Route>
-                </Routes>
-            </AuthProvider>
-        </Router>
+                        <Route element={<ProtectedLayout />}>
+                            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                            <Route path="/dashboard" element={<Dashboard />} />
+                            <Route path="/transactions" element={<Transactions />} />
+                            <Route path="/goals" element={<Goals />} />
+                            <Route path="/cards" element={<Cards />} />
+                            <Route path="/profile" element={<Profile />} />
+                        </Route>
+                    </Routes>
+                </AuthProvider>
+            </Router>
+        </ThemeProvider>
     );
 }
 

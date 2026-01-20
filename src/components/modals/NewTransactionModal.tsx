@@ -141,41 +141,41 @@ export function NewTransactionModal({ isOpen, onClose, defaultCardId }: NewTrans
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header */}
-                <div className="flex items-center justify-between p-8 border-b border-neutral-200 shrink-0">
+                <div className="flex items-center justify-between p-8 border-b border-neutral-200 dark:border-neutral-800 shrink-0">
                     <div className="flex items-center gap-4">
                         <div className={cn(
-                            "w-16 h-16 rounded-full flex items-center justify-center",
-                            type === 'income' ? 'bg-[#D7FF00]' : 'bg-[#080B12]'
+                            "w-14 h-14 rounded-[20px] flex items-center justify-center",
+                            type === 'income' ? 'bg-[#D7FF00]' : 'bg-[#080B12] dark:bg-white'
                         )}>
                             {type === 'income' ? (
                                 <ArrowDownCircle size={32} className="text-[#080B12]" />
                             ) : (
-                                <ArrowUpCircle size={32} className="text-white" />
+                                <ArrowUpCircle size={32} className="text-white dark:text-[#080B12]" />
                             )}
                         </div>
                         <div>
-                            <h2 className="text-2xl font-bold text-neutral-1100">Nova Transação</h2>
-                            <p className="text-sm text-neutral-500">Registre entradas e saídas</p>
+                            <h2 className="text-2xl font-bold text-neutral-1100 dark:text-white">Nova Transação</h2>
+                            <p className="text-sm text-neutral-500 dark:text-neutral-400">Registre entradas e saídas</p>
                         </div>
                     </div>
                     <button
                         onClick={onClose}
-                        className="w-12 h-12 rounded-full hover:bg-neutral-100 flex items-center justify-center transition-colors"
+                        className="w-12 h-12 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center justify-center transition-colors dark:text-white"
                     >
                         <X size={24} />
                     </button>
                 </div>
 
                 {/* Content */}
-                <div className="flex-1 overflow-y-auto bg-neutral-50 p-8">
+                <div className="flex-1 overflow-y-auto bg-neutral-50 dark:bg-neutral-900 p-8">
                     <div className="max-w-xl mx-auto space-y-6">
                         {/* Type Toggle */}
-                        <div className="bg-neutral-200 p-1 rounded-full flex gap-1">
+                        <div className="bg-neutral-200 dark:bg-neutral-800 p-1 rounded-full flex gap-1">
                             <button
                                 onClick={() => { setType('income'); setCategoryInput(''); }}
                                 className={cn(
                                     "flex-1 py-3 rounded-full font-medium transition-all",
-                                    type === 'income' ? 'bg-white shadow-sm text-neutral-1100' : 'text-neutral-500'
+                                    type === 'income' ? 'bg-white dark:bg-neutral-700 shadow-sm text-neutral-1100 dark:text-white' : 'text-neutral-500 dark:text-neutral-400'
                                 )}
                             >
                                 Receita
@@ -184,7 +184,7 @@ export function NewTransactionModal({ isOpen, onClose, defaultCardId }: NewTrans
                                 onClick={() => { setType('expense'); setCategoryInput(''); }}
                                 className={cn(
                                     "flex-1 py-3 rounded-full font-medium transition-all",
-                                    type === 'expense' ? 'bg-white shadow-sm text-neutral-1100' : 'text-neutral-500'
+                                    type === 'expense' ? 'bg-white dark:bg-neutral-700 shadow-sm text-neutral-1100 dark:text-white' : 'text-neutral-500 dark:text-neutral-400'
                                 )}
                             >
                                 Despesa
@@ -194,19 +194,19 @@ export function NewTransactionModal({ isOpen, onClose, defaultCardId }: NewTrans
                         {/* Amount & Date */}
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-sm font-medium text-neutral-700 mb-2">
+                                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
                                     Valor
                                 </label>
                                 <div className="relative">
-                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500">R$</span>
+                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500 dark:text-neutral-400">R$</span>
                                     <input
                                         type="number"
                                         step="0.01"
                                         value={amount}
                                         onChange={(e) => setAmount(e.target.value)}
                                         className={cn(
-                                            "w-full h-14 pl-12 pr-4 bg-white border rounded-2xl text-neutral-1100 focus:ring-2 focus:ring-black focus:border-transparent transition-all outline-none",
-                                            errors.amount ? 'border-red-500' : 'border-neutral-300'
+                                            "w-full h-14 pl-12 pr-4 bg-white dark:bg-neutral-800 border rounded-2xl text-neutral-1100 dark:text-white focus:ring-2 focus:ring-black dark:focus:ring-[#D7FF00] focus:border-transparent transition-all outline-none",
+                                            errors.amount ? 'border-red-500' : 'border-neutral-300 dark:border-neutral-700'
                                         )}
                                         placeholder="0,00"
                                     />
@@ -215,26 +215,26 @@ export function NewTransactionModal({ isOpen, onClose, defaultCardId }: NewTrans
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-neutral-700 mb-2">Data</label>
+                                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Data</label>
                                 <input
                                     type="date"
                                     value={date}
                                     onChange={(e) => setDate(e.target.value)}
-                                    className="w-full h-14 px-4 bg-white border border-neutral-300 rounded-2xl text-neutral-1100 focus:ring-2 focus:ring-black focus:border-transparent transition-all outline-none"
+                                    className="w-full h-14 px-4 bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-2xl text-neutral-1100 dark:text-white focus:ring-2 focus:ring-black dark:focus:ring-[#D7FF00] focus:border-transparent transition-all outline-none"
                                 />
                             </div>
                         </div>
 
                         {/* Description */}
                         <div>
-                            <label className="block text-sm font-medium text-neutral-700 mb-2">Descrição</label>
+                            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Descrição</label>
                             <input
                                 type="text"
                                 value={description}
                                 onChange={(e) => setDescription(e.target.value)}
                                 className={cn(
-                                    "w-full h-14 px-4 bg-white border rounded-2xl text-neutral-1100 focus:ring-2 focus:ring-black focus:border-transparent transition-all outline-none",
-                                    errors.description ? 'border-red-500' : 'border-neutral-300'
+                                    "w-full h-14 px-4 bg-white dark:bg-neutral-800 border rounded-2xl text-neutral-1100 dark:text-white focus:ring-2 focus:ring-black dark:focus:ring-[#D7FF00] focus:border-transparent transition-all outline-none",
+                                    errors.description ? 'border-red-500' : 'border-neutral-300 dark:border-neutral-700'
                                 )}
                                 placeholder="Ex: Mercado"
                             />
@@ -243,7 +243,7 @@ export function NewTransactionModal({ isOpen, onClose, defaultCardId }: NewTrans
 
                         {/* Category with Add/Remove */}
                         <div>
-                            <label className="block text-sm font-medium text-neutral-700 mb-2">Categoria</label>
+                            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Categoria</label>
                             <div className="flex gap-2">
                                 {isCreatingCategory ? (
                                     <div className="flex-1 flex gap-2">
@@ -251,12 +251,12 @@ export function NewTransactionModal({ isOpen, onClose, defaultCardId }: NewTrans
                                             type="text"
                                             value={categoryInput}
                                             onChange={(e) => setCategoryInput(e.target.value)}
-                                            className="flex-1 h-14 px-4 bg-white border border-neutral-300 rounded-2xl outline-none"
+                                            className="flex-1 h-14 px-4 bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-2xl outline-none dark:text-white"
                                             placeholder="Nome da categoria"
                                             autoFocus
                                         />
-                                        <button onClick={handleCreateCategory} className="px-4 bg-black text-white rounded-2xl">OK</button>
-                                        <button onClick={() => setIsCreatingCategory(false)} className="px-4 border rounded-2xl">Can</button>
+                                        <button onClick={handleCreateCategory} className="px-4 bg-black dark:bg-[#D7FF00] text-white dark:text-[#080B12] rounded-2xl font-bold">OK</button>
+                                        <button onClick={() => setIsCreatingCategory(false)} className="px-4 border dark:border-neutral-700 rounded-2xl dark:text-white">Can</button>
                                     </div>
                                 ) : (
                                     <div className="relative flex-1">
@@ -267,8 +267,8 @@ export function NewTransactionModal({ isOpen, onClose, defaultCardId }: NewTrans
                                                 else setCategoryInput(e.target.value);
                                             }}
                                             className={cn(
-                                                "w-full h-14 px-4 bg-white border rounded-2xl text-neutral-1100 focus:ring-2 focus:ring-black focus:border-transparent transition-all outline-none appearance-none",
-                                                errors.category ? 'border-red-500' : 'border-neutral-300'
+                                                "w-full h-14 px-4 bg-white dark:bg-neutral-800 border rounded-2xl text-neutral-1100 dark:text-white focus:ring-2 focus:ring-black dark:focus:ring-[#D7FF00] focus:border-transparent transition-all outline-none appearance-none",
+                                                errors.category ? 'border-red-500' : 'border-neutral-300 dark:border-neutral-700'
                                             )}
                                         >
                                             <option value="">Selecione...</option>
@@ -304,11 +304,11 @@ export function NewTransactionModal({ isOpen, onClose, defaultCardId }: NewTrans
                         {/* Account Select with Add Custom */}
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-sm font-medium text-neutral-700 mb-2">Membro</label>
+                                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Membro</label>
                                 <select
                                     value={memberId || ''}
                                     onChange={(e) => setMemberId(e.target.value || '')}
-                                    className="w-full h-14 px-4 bg-white border border-neutral-300 rounded-2xl text-neutral-1100 focus:ring-2 focus:ring-black focus:border-transparent transition-all outline-none"
+                                    className="w-full h-14 px-4 bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-2xl text-neutral-1100 dark:text-white focus:ring-2 focus:ring-black dark:focus:ring-[#D7FF00] focus:border-transparent transition-all outline-none"
                                 >
                                     <option value="">Família (Geral)</option>
                                     {familyMembers.map(member => (
@@ -318,17 +318,17 @@ export function NewTransactionModal({ isOpen, onClose, defaultCardId }: NewTrans
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-neutral-700 mb-2">Conta / Método</label>
+                                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Conta / Método</label>
                                 {isCreatingAccount ? (
                                     <div className="flex gap-1">
                                         <input
                                             value={newAccountName}
                                             onChange={e => setNewAccountName(e.target.value)}
                                             placeholder="Nome (Ex: Pix)"
-                                            className="flex-1 h-14 px-2 border rounded-l-2xl outline-none text-sm"
+                                            className="flex-1 h-14 px-2 bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-l-2xl outline-none text-sm dark:text-white"
                                         />
-                                        <button onClick={handleCreateAccount} className="px-2 bg-black text-white text-xs rounded-r-2xl">Criar</button>
-                                        <button onClick={() => setIsCreatingAccount(false)} className="px-2 border rounded-2xl text-xs"><X size={14} /></button>
+                                        <button onClick={handleCreateAccount} className="px-2 bg-black dark:bg-[#D7FF00] text-white dark:text-[#080B12] text-xs rounded-r-2xl font-bold">Criar</button>
+                                        <button onClick={() => setIsCreatingAccount(false)} className="px-2 border dark:border-neutral-700 rounded-2xl text-xs dark:text-white"><X size={14} /></button>
                                     </div>
                                 ) : (
                                     <select
@@ -338,12 +338,12 @@ export function NewTransactionModal({ isOpen, onClose, defaultCardId }: NewTrans
                                             else setAccountId(e.target.value);
                                         }}
                                         className={cn(
-                                            "w-full h-14 px-4 bg-white border rounded-2xl text-neutral-1100 focus:ring-2 focus:ring-black focus:border-transparent transition-all outline-none",
-                                            errors.accountId ? 'border-red-500' : 'border-neutral-300'
+                                            "w-full h-14 px-4 bg-white dark:bg-neutral-800 border rounded-2xl text-neutral-1100 dark:text-white focus:ring-2 focus:ring-black dark:focus:ring-[#D7FF00] focus:border-transparent transition-all outline-none",
+                                            errors.accountId ? 'border-red-500' : 'border-neutral-300 dark:border-neutral-700'
                                         )}
                                     >
                                         <option value="">Selecione...</option>
-                                        <optgroup label="Contas / Métodos">
+                                        <optgroup label="Contas / Métodos" className="dark:bg-neutral-800">
                                             {bankAccounts.map(acc => (
                                                 <option key={acc.id} value={acc.id}>{acc.name}</option>
                                             ))}
@@ -352,7 +352,7 @@ export function NewTransactionModal({ isOpen, onClose, defaultCardId }: NewTrans
                                             )}
                                             <option value="NEW_ACCOUNT">+ Adicionar Modo/Conta</option>
                                         </optgroup>
-                                        <optgroup label="Cartões de Crédito">
+                                        <optgroup label="Cartões de Crédito" className="dark:bg-neutral-800">
                                             {creditCards.map(card => (
                                                 <option key={card.id} value={card.id}>{card.brand} {card.name}</option>
                                             ))}
@@ -366,12 +366,12 @@ export function NewTransactionModal({ isOpen, onClose, defaultCardId }: NewTrans
                         {/* Installments & Recurring */}
                         {showInstallments && (
                             <div className="animate-in slide-in-from-top-2 duration-300">
-                                <label className="block text-sm font-medium text-neutral-700 mb-2">Parcelamento</label>
+                                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Parcelamento</label>
                                 <select
                                     value={installments}
                                     onChange={(e) => setInstallments(parseInt(e.target.value))}
                                     disabled={isRecurring}
-                                    className="w-full h-14 px-4 bg-white border border-neutral-300 rounded-2xl outline-none disabled:opacity-50"
+                                    className="w-full h-14 px-4 bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-2xl outline-none disabled:opacity-50 dark:text-white"
                                 >
                                     {Array.from({ length: 12 }, (_, i) => i + 1).map(n => (
                                         <option key={n} value={n}>{n}x</option>
@@ -380,7 +380,7 @@ export function NewTransactionModal({ isOpen, onClose, defaultCardId }: NewTrans
                             </div>
                         )}
 
-                        <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4">
+                        <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900 rounded-2xl p-4 transition-colors">
                             <label className="flex items-start gap-3 cursor-pointer">
                                 <input
                                     type="checkbox"
@@ -393,10 +393,10 @@ export function NewTransactionModal({ isOpen, onClose, defaultCardId }: NewTrans
                                     className="mt-1"
                                 />
                                 <div>
-                                    <p className="font-bold text-neutral-1100">
+                                    <p className="font-bold text-neutral-1100 dark:text-white transition-colors">
                                         {type === 'income' ? 'Receita Recorrente' : 'Despesa Recorrente'}
                                     </p>
-                                    <p className="text-xs text-neutral-600 mt-1">
+                                    <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-1 transition-colors">
                                         {type === 'income'
                                             ? 'Salários, aluguéis recebidos ou bônus mensais'
                                             : 'Contas mensais (Netflix, Internet, Aluguel)'}
@@ -408,16 +408,16 @@ export function NewTransactionModal({ isOpen, onClose, defaultCardId }: NewTrans
                 </div>
 
                 {/* Footer */}
-                <div className="flex items-center justify-end gap-3 p-6 border-t border-neutral-200 bg-white shrink-0">
+                <div className="flex items-center justify-end gap-3 p-6 border-t border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shrink-0 transition-colors">
                     <button
                         onClick={onClose}
-                        className="px-6 py-3 rounded-full border border-neutral-300 text-neutral-700 font-medium hover:bg-neutral-50 transition-colors"
+                        className="px-6 py-3 rounded-full border border-neutral-300 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 font-medium hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
                     >
                         Cancelar
                     </button>
                     <button
                         onClick={handleSubmit}
-                        className="px-8 py-3 rounded-full bg-neutral-1100 text-white font-medium hover:bg-neutral-900 transition-colors"
+                        className="px-8 py-3 rounded-full bg-neutral-1100 dark:bg-[#D7FF00] text-white dark:text-[#080B12] font-bold hover:scale-[1.02] active:scale-[0.98] transition-all shadow-sm"
                     >
                         Salvar Transação
                     </button>

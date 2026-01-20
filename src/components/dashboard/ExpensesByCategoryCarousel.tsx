@@ -27,7 +27,7 @@ function CategoryDonutCard({ category, value, percentage, color }: CategoryDonut
     const offset = circumference - (percentage / 100) * circumference;
 
     return (
-        <div className="flex flex-col items-center bg-white border border-neutral-300 rounded-[24px] w-[160px] min-h-[160px] p-4 shrink-0 transition-all duration-300 hover:border-[#D7FF00] shadow-sm hover:shadow-md group cursor-default">
+        <div className="flex flex-col items-center bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-800 rounded-[24px] w-[160px] min-h-[160px] p-4 shrink-0 transition-all duration-300 hover:border-[#D7FF00] shadow-sm hover:shadow-md group cursor-default">
             {/* Donut Chart */}
             <div className="relative flex items-center justify-center mb-3"> {/* space/12 gap */}
                 <svg width={size} height={size} className="transform -rotate-90">
@@ -36,9 +36,10 @@ function CategoryDonutCard({ category, value, percentage, color }: CategoryDonut
                         cx={center}
                         cy={center}
                         r={radius}
-                        stroke="#F1F5F9"
+                        stroke="currentColor"
                         strokeWidth={strokeWidth}
                         fill="transparent"
+                        className="text-neutral-100 dark:text-neutral-800"
                     />
                     {/* Progress circle */}
                     <circle
@@ -54,16 +55,16 @@ function CategoryDonutCard({ category, value, percentage, color }: CategoryDonut
                         className="transition-all duration-700 ease-out"
                     />
                 </svg>
-                <span className="absolute text-[12px] font-bold text-neutral-1100">
+                <span className="absolute text-[12px] font-bold text-neutral-1100 dark:text-white">
                     {percentage.toFixed(0)}%
                 </span>
             </div>
 
             <div className="flex flex-col items-center text-center w-full">
-                <p className="text-[13px] text-neutral-500 font-medium mb-1 truncate w-full">
+                <p className="text-[13px] text-neutral-500 dark:text-neutral-400 font-medium mb-1 truncate w-full">
                     {category}
                 </p>
-                <h3 className="text-[16px] font-bold text-neutral-1100 whitespace-nowrap">
+                <h3 className="text-[16px] font-bold text-neutral-1100 dark:text-white whitespace-nowrap">
                     {formatCurrency(value)}
                 </h3>
             </div>

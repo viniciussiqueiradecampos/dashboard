@@ -2,6 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  body {
+    @apply bg-neutral-100 text-neutral-1100 antialiased transition-colors duration-300;
+  }
+
+  .dark body {
+    @apply bg-[#080B12] text-neutral-100;
+  }
+}
+
 @layer utilities {
   .no-scrollbar::-webkit-scrollbar {
     display: none;
@@ -11,8 +21,4 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
-}
-
-body {
-  @apply bg-neutral-200 text-neutral-1100 antialiased;
 }
