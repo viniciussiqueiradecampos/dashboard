@@ -19,24 +19,24 @@ function CategoryDonutCard({ category, value, percentage, color }: CategoryDonut
     };
 
     // Donut settings
-    const size = 72;
-    const strokeWidth = 8;
+    const size = 64;
+    const strokeWidth = 6;
     const center = size / 2;
     const radius = (size - strokeWidth) / 2;
     const circumference = 2 * Math.PI * radius;
     const offset = circumference - (percentage / 100) * circumference;
 
     return (
-        <div className="flex flex-col items-center p-6 bg-white border border-neutral-300 rounded-[32px] w-[185px] h-[190px] shrink-0 transition-all duration-300 hover:border-[#D7FF00] group cursor-default shadow-sm hover:shadow-md">
+        <div className="flex flex-col items-center justify-between p-5 bg-white border border-neutral-300 rounded-[24px] w-[145px] h-[160px] shrink-0 transition-all duration-300 hover:border-[#D7FF00] hover:shadow-md group cursor-default">
             {/* Donut Chart */}
-            <div className="relative flex items-center justify-center mb-4">
+            <div className="relative flex items-center justify-center">
                 <svg width={size} height={size} className="transform -rotate-90">
                     {/* Background circle */}
                     <circle
                         cx={center}
                         cy={center}
                         r={radius}
-                        stroke="#F3F4F6"
+                        stroke="#F1F5F9"
                         strokeWidth={strokeWidth}
                         fill="transparent"
                     />
@@ -54,17 +54,19 @@ function CategoryDonutCard({ category, value, percentage, color }: CategoryDonut
                         className="transition-all duration-700 ease-out"
                     />
                 </svg>
-                <span className="absolute text-[13px] font-bold text-neutral-1100">
+                <span className="absolute text-[12px] font-bold text-neutral-1100">
                     {percentage.toFixed(0)}%
                 </span>
             </div>
 
-            <p className="text-[14px] text-neutral-500 font-medium mb-1 truncate w-full text-center">
-                {category}
-            </p>
-            <h3 className="text-[18px] font-bold text-neutral-1100 whitespace-nowrap">
-                {formatCurrency(value)}
-            </h3>
+            <div className="flex flex-col items-center gap-0.5 w-full">
+                <p className="text-[12px] text-neutral-500 font-semibold truncate w-full text-center uppercase tracking-tight">
+                    {category}
+                </p>
+                <h3 className="text-[15px] font-bold text-neutral-1100 whitespace-nowrap">
+                    {formatCurrency(value)}
+                </h3>
+            </div>
         </div>
     );
 }
@@ -77,7 +79,6 @@ export function ExpensesByCategoryCarousel() {
     const [isDragging, setIsDragging] = useState(false);
     const [startX, setStartX] = useState(0);
     const [scrollLeft, setScrollLeft] = useState(0);
-
 
     const checkArrows = () => {
         if (scrollRef.current) {
@@ -92,13 +93,18 @@ export function ExpensesByCategoryCarousel() {
         if (el) {
             el.addEventListener('scroll', checkArrows);
             checkArrows();
-            return () => el.removeEventListener('scroll', checkArrows);
+            // Also check on window resize
+            window.addEventListener('resize', checkArrows);
+            return () => {
+                el.removeEventListener('scroll', checkArrows);
+                window.removeEventListener('resize', checkArrows);
+            };
         }
     }, [expensesByCategory]);
 
     const scroll = (direction: 'left' | 'right') => {
         if (scrollRef.current) {
-            const scrollAmount = direction === 'left' ? -200 : 200;
+            const scrollAmount = direction === 'left' ? -165 : 165;
             scrollRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
         }
     };
@@ -122,36 +128,25 @@ export function ExpensesByCategoryCarousel() {
 
     const handleMouseUp = () => setIsDragging(false);
 
-    // Mouse wheel scroll logic
-    const handleWheel = (e: React.WheelEvent) => {
-        if (scrollRef.current) {
-            scrollRef.current.scrollLeft += e.deltaY;
-        }
-    };
-
     if (!expensesByCategory.length) return null;
 
     return (
-        <div className="relative group/carousel w-full mb-8 overflow-hidden">
-            {/* Mask Gradients for Fade Effect */}
-            <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-neutral-200 to-transparent z-10 pointer-events-none opacity-0 group-hover/carousel:opacity-100 transition-opacity" />
-            <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-neutral-200 to-transparent z-10 pointer-events-none opacity-0 group-hover/carousel:opacity-100 transition-opacity" />
-
-            {/* Navigation Arrows (Visible on Hover) */}
+        <div className="relative group/carousel w-full overflow-hidden">
+            {/* Navigation Arrows (Visible on Hover if Needed) */}
             {showLeftArrow && (
                 <button
                     onClick={() => scroll('left')}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white shadow-lg border border-neutral-100 z-20 flex items-center justify-center text-neutral-600 hover:text-black hover:scale-110 transition-all opacity-0 group-hover/carousel:opacity-100 hidden lg:flex"
+                    className="absolute left-0 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 shadow-sm border border-neutral-200 z-20 flex items-center justify-center text-neutral-400 hover:text-black transition-all opacity-0 group-hover/carousel:opacity-100 hidden lg:flex"
                 >
-                    <ChevronLeft size={20} />
+                    <ChevronLeft size={16} />
                 </button>
             )}
             {showRightArrow && (
                 <button
                     onClick={() => scroll('right')}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white shadow-lg border border-neutral-100 z-20 flex items-center justify-center text-neutral-600 hover:text-black hover:scale-110 transition-all opacity-0 group-hover/carousel:opacity-100 hidden lg:flex"
+                    className="absolute right-0 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 shadow-sm border border-neutral-200 z-20 flex items-center justify-center text-neutral-400 hover:text-black transition-all opacity-0 group-hover/carousel:opacity-100 hidden lg:flex"
                 >
-                    <ChevronRight size={20} />
+                    <ChevronRight size={16} />
                 </button>
             )}
 
@@ -162,9 +157,8 @@ export function ExpensesByCategoryCarousel() {
                 onMouseMove={handleMouseMove}
                 onMouseUp={handleMouseUp}
                 onMouseLeave={handleMouseUp}
-                onWheel={handleWheel}
                 className={cn(
-                    "flex gap-5 overflow-x-auto no-scrollbar py-2 px-1 scroll-smooth",
+                    "flex gap-4 overflow-x-auto no-scrollbar py-1 px-0.5 scroll-smooth",
                     isDragging ? "cursor-grabbing" : "cursor-grab"
                 )}
             >
