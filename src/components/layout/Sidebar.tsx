@@ -1,0 +1,156 @@
+import * as React from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
+import { cn } from '@/utils/cn';
+import {
+    Home,
+    Target,
+    CreditCard,
+    ArrowRightLeft,
+    User,
+    ChevronLeft,
+    ChevronRight,
+    LogOut,
+} from 'lucide-react';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from '@/components/ui/tooltip';
+
+interface SidebarProps {
+
+}
+
+const NAV_ITEMS = [
+    { label: 'Dashboard', icon: Home, path: '/dashboard' },
+    { label: 'Objetivos', icon: Target, path: '/goals' },
+    { label: 'Cartões', icon: CreditCard, path: '/cards' },
+    { label: 'Transações', icon: ArrowRightLeft, path: '/transactions' },
+    { label: 'Perfil', icon: User, path: '/profile' },
+];
+
+export function Sidebar({ }: SidebarProps) {
+    const [isCollapsed, setIsCollapsed] = React.useState(false);
+    const location = useLocation();
+
+    const toggleSidebar = () => setIsCollapsed(!isCollapsed);
+
+    const SidebarContent = (
+        <div className={cn(
+            "flex flex-col h-screen bg-neutral-0 text-neutral-1100 transition-all duration-300 ease-in-out border-r border-neutral-200 relative z-50",
+            isCollapsed ? "w-20" : "w-[300px]"
+        )}>
+            {/* Toggle Button */}
+            <button
+                onClick={toggleSidebar}
+                className="absolute -right-3 top-12 bg-neutral-0 border border-neutral-200 text-neutral-600 rounded-full p-1 shadow-md hover:text-brand-900 hover:border-brand-500 transition-colors"
+                aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            >
+                {isCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+            </button>
+
+            {/* Logo Area */}
+            <div className={cn(
+                "flex items-center h-20 px-6 border-b border-neutral-100",
+                isCollapsed ? "justify-center px-0" : "justify-between"
+            )}>
+                <div className="flex items-center gap-2 overflow-hidden">
+                    {/* Logo Icon */}
+                    <div className="bg-brand-500 p-1.5 rounded-lg shrink-0 flex items-center justify-center">
+                        <span className="font-bold text-lg text-neutral-1100">m+</span>
+                    </div>
+
+                    {!isCollapsed && (
+                        <div className="flex items-baseline">
+                            <span className="font-medium text-2xl text-neutral-1100 tracking-tight">my</span>
+                            <span className="font-bold text-2xl text-neutral-1100 tracking-tight">cash</span>
+                            <span className="font-bold text-2xl text-brand-600 ml-0.5">+</span>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Navigation */}
+            <nav className="flex-1 py-8 px-4 space-y-2">
+                {NAV_ITEMS.map((item) => {
+                    const isActive = location.pathname === item.path;
+
+                    const LinkContent = (
+                        <NavLink
+                            to={item.path}
+                            className={cn(
+                                "flex items-center gap-4 px-4 py-3 rounded-2xl transition-all duration-200 group relative overflow-hidden",
+                                // Active State: #D7FF00 Background, #080B12 Text
+                                isActive
+                                    ? "bg-[#D7FF00] text-[#080B12] shadow-sm ring-1 ring-[#D7FF00]"
+                                    : "hover:bg-neutral-100 hover:text-neutral-900 text-neutral-600",
+                                isCollapsed && "justify-center px-0 py-3"
+                            )}
+                        >
+                            {isActive && <div className="absolute left-0 top-1/2 -translate-y-1/2 h-8 w-1 bg-[#080B12] rounded-r-full" />}
+                            <item.icon
+                                size={22}
+                                className={cn(
+                                    "shrink-0 transition-colors",
+                                    isActive ? "text-[#080B12]" : "text-neutral-500 group-hover:text-neutral-700"
+                                )}
+                            />
+                            {!isCollapsed && (
+                                <span className={cn("font-medium", isActive && "text-[#080B12] font-semibold")}>
+                                    {item.label}
+                                </span>
+                            )}
+                        </NavLink>
+                    );
+
+                    if (isCollapsed) {
+                        return (
+                            <Tooltip key={item.path} delayDuration={0}>
+                                <TooltipTrigger asChild>
+                                    {LinkContent}
+                                </TooltipTrigger>
+                                <TooltipContent side="right" className="bg-neutral-900 text-white border-neutral-800 ml-2">
+                                    <p>{item.label}</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        );
+                    }
+
+                    return <div key={item.path}>{LinkContent}</div>;
+                })}
+            </nav>
+
+            {/* Profile Section */}
+            <div className="p-4 border-t border-neutral-100">
+                <div className={cn(
+                    "flex items-center gap-3 p-2 rounded-2xl transition-colors hover:bg-neutral-100 cursor-pointer overflow-hidden border border-transparent hover:border-neutral-200",
+                    isCollapsed ? "justify-center" : ""
+                )}>
+                    <img
+                        src="https://github.com/viniciussiqueiradecampos.png"
+                        alt="User"
+                        className="w-10 h-10 rounded-full border-2 border-white shadow-sm shrink-0"
+                    />
+
+                    {!isCollapsed && (
+                        <div className="flex flex-col min-w-0">
+                            <span className="text-sm font-bold text-neutral-900 truncate">Vinicius Campos</span>
+                            <span className="text-xs text-neutral-500 truncate">Admin Family</span>
+                        </div>
+                    )}
+
+                    {!isCollapsed && (
+                        <LogOut size={18} className="ml-auto text-neutral-400 hover:text-red-500 transition-colors" />
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+
+    return (
+        <TooltipProvider>
+            {SidebarContent}
+        </TooltipProvider>
+    )
+}
