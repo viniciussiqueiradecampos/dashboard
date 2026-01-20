@@ -52,7 +52,7 @@ export function Profile() {
                         </div>
                         <h3 className="text-lg font-bold text-neutral-1100 mb-1">{member.name}</h3>
                         <span className="px-3 py-1 bg-neutral-100 text-neutral-600 rounded-full text-xs font-medium mb-4">
-                            {member.role === 'admin' ? 'Administrador' : 'Membro'}
+                            {member.role}
                         </span>
 
                         <div className="w-full space-y-3 mt-2">

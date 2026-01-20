@@ -76,7 +76,7 @@ interface FinanceContextType {
 
 const FinanceContext = createContext<FinanceContextType | undefined>(undefined);
 
-// Explicitly bypass type checking for the supabase client to unblock Vercel deployment
+// Explicitly bypass type checking for the supabase client to avoid 'never' issues
 const sb = supabase as any;
 
 export function FinanceProvider({ children }: { children: React.ReactNode }) {
@@ -131,12 +131,23 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         if (!user) return;
         setIsLoading(true);
         try {
+            // Ensure public.users entry exists (Safety check)
+            const { data: publicUser } = await sb.from('users').select('id').eq('id', user.id).single();
+            if (!publicUser) {
+                console.log('Public user profile not found, creating...');
+                await sb.from('users').insert({
+                    id: user.id,
+                    email: user.email,
+                    name: user.user_metadata?.name || 'Agravity User'
+                });
+            }
+
             const [
-                { data: transData },
-                { data: membersData },
-                { data: accountsData },
-                { data: goalsData },
-                { data: categoriesData }
+                { data: transData, error: transError },
+                { data: membersData, error: membersError },
+                { data: accountsData, error: accountsError },
+                { data: goalsData, error: goalsError },
+                { data: categoriesData, error: categoriesError }
             ] = await Promise.all([
                 sb.from('transactions').select('*, categories(name)').order('date', { ascending: false }),
                 sb.from('family_members').select('*'),
@@ -144,6 +155,12 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
                 sb.from('goals').select('*'),
                 sb.from('categories').select('*').eq('is_active', true)
             ]);
+
+            if (transError) console.error('Error loading transactions:', transError);
+            if (membersError) console.error('Error loading members:', membersError);
+            if (accountsError) console.error('Error loading accounts:', accountsError);
+            if (goalsError) console.error('Error loading goals:', goalsError);
+            if (categoriesError) console.error('Error loading categories:', categoriesError);
 
             if (goalsData) {
                 setGoals((goalsData as any[]).map((g: any) => ({
@@ -168,10 +185,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
             }
 
             if (transData) setTransactions((transData as any[]).map(mapTransactionFromDB));
-            if (membersData) {
-                console.log('Members loaded from Supabase:', membersData.length);
-                setFamilyMembers((membersData as any[]).map(mapMemberFromDB));
-            }
+            if (membersData) setFamilyMembers((membersData as any[]).map(mapMemberFromDB));
 
             if (accountsData) {
                 const data = accountsData as any[];
@@ -200,7 +214,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
             }
 
         } catch (error) {
-            console.error('Error loading data:', error);
+            console.error('Unexpected error loading data:', error);
         } finally {
             setIsLoading(false);
         }
@@ -249,7 +263,8 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         };
 
         const { error } = await sb.from('transactions').insert(payload);
-        if (!error) refreshData();
+        if (error) console.error('Error adding transaction:', error);
+        await refreshData();
     };
 
     const updateTransaction = async (id: string, t: Partial<Transaction>) => {
@@ -259,12 +274,12 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         if (t.status !== undefined) payload.status = t.status.toUpperCase();
 
         const { error } = await sb.from('transactions').update(payload).eq('id', id);
-        if (!error) refreshData();
+        if (!error) await refreshData();
     };
 
     const deleteTransaction = async (id: string) => {
         const { error } = await sb.from('transactions').delete().eq('id', id);
-        if (!error) refreshData();
+        if (!error) await refreshData();
     };
 
     const addGoal = async (g: Omit<Goal, 'id'>) => {
@@ -277,7 +292,8 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
             deadline: g.deadline,
             category: g.category
         });
-        if (!error) refreshData();
+        if (error) console.error('Error adding goal:', error);
+        await refreshData();
     };
     const updateGoal = async (_id: string, _g: Partial<Goal>) => { };
     const deleteGoal = async (_id: string) => { };
@@ -300,7 +316,8 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         };
 
         const { error } = await sb.from('accounts').insert(payload);
-        if (!error) refreshData();
+        if (error) console.error('Error adding card:', error);
+        await refreshData();
     };
 
     const updateCard = async (id: string, c: Partial<CreditCard>) => {
@@ -308,18 +325,18 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         if (c.name) payload.name = c.name;
         if (c.limit) payload.credit_limit = c.limit;
         const { error } = await sb.from('accounts').update(payload).eq('id', id);
-        if (!error) refreshData();
+        if (!error) await refreshData();
     };
 
     const deleteCard = async (id: string) => {
         const { error } = await sb.from('accounts').delete().eq('id', id);
-        if (!error) refreshData();
+        if (!error) await refreshData();
     };
 
     const addAccount = async (a: Omit<BankAccount, 'id'>) => {
         if (!user) return;
         const holderId = await getFirstMemberId();
-        await sb.from('accounts').insert({
+        const { error } = await sb.from('accounts').insert({
             user_id: user.id,
             type: 'CHECKING',
             name: a.name,
@@ -328,24 +345,24 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
             color: a.color,
             holder_id: holderId
         });
-        refreshData();
+        if (error) console.error('Error adding account:', error);
+        await refreshData();
     };
     const updateAccount = async (id: string, a: Partial<BankAccount>) => {
-        await sb.from('accounts').update({
+        const { error } = await sb.from('accounts').update({
             name: a.name,
             bank: a.bankName,
             balance: a.balance
         }).eq('id', id);
-        refreshData();
+        if (!error) await refreshData();
     };
     const deleteAccount = async (id: string) => {
-        await sb.from('accounts').delete().eq('id', id);
-        refreshData();
+        const { error } = await sb.from('accounts').delete().eq('id', id);
+        if (!error) await refreshData();
     };
 
     const addMember = async (m: Omit<FamilyMember, 'id'>) => {
         if (!user) return;
-        console.log('Adding member to Supabase:', m.name);
         const { error } = await sb.from('family_members').insert({
             user_id: user.id,
             name: m.name,
@@ -353,40 +370,37 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
             monthly_income: m.income || 0,
             avatar_url: m.avatarUrl
         });
-        if (error) {
-            console.error("Error adding member:", error);
-        } else {
-            console.log("Member added successfully");
-            await refreshData();
-        }
+        if (error) console.error("Error adding member:", error);
+        await refreshData();
     };
     const updateMember = async (id: string, m: Partial<FamilyMember>) => {
         const payload: any = {};
         if (m.name) payload.name = m.name;
         if (m.income !== undefined) payload.monthly_income = m.income;
-        await sb.from('family_members').update(payload).eq('id', id);
-        refreshData();
+        const { error } = await sb.from('family_members').update(payload).eq('id', id);
+        if (!error) await refreshData();
     };
     const deleteMember = async (id: string) => {
-        await sb.from('family_members').delete().eq('id', id);
-        refreshData();
+        const { error } = await sb.from('family_members').delete().eq('id', id);
+        if (!error) await refreshData();
     };
 
     const addCategory = async (c: Omit<Category, 'id'>) => {
         if (!user) return;
-        await sb.from('categories').insert({
+        const { error } = await sb.from('categories').insert({
             user_id: user.id,
             name: c.name,
             type: c.type.toUpperCase(),
             icon: c.icon,
             color: c.color
         });
-        refreshData();
+        if (error) console.error('Error adding category:', error);
+        await refreshData();
     };
 
     const deleteCategory = async (id: string) => {
-        await sb.from('categories').update({ is_active: false }).eq('id', id);
-        refreshData();
+        const { error } = await sb.from('categories').update({ is_active: false }).eq('id', id);
+        if (!error) await refreshData();
     };
 
     const filteredTransactions = useMemo(() => {

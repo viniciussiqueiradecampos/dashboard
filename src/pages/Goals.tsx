@@ -1,9 +1,12 @@
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
 import { useFinance } from '@/contexts/FinanceContext';
 import { Plus, Target } from 'lucide-react';
+import { useState } from 'react';
+import { NewGoalModal } from '@/components/modals/NewGoalModal';
 
 export function Goals() {
     const { goals } = useFinance();
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     return (
         <div className="flex flex-col w-full h-full">
@@ -12,6 +15,7 @@ export function Goals() {
             <div className="flex items-center justify-between mb-8 mt-4">
                 <h2 className="text-2xl font-bold text-neutral-1100">Meus Objetivos</h2>
                 <button
+                    onClick={() => setIsModalOpen(true)}
                     className="flex items-center gap-2 px-4 py-2 bg-neutral-1100 text-white rounded-full hover:bg-neutral-800 transition-colors"
                 >
                     <Plus size={18} />
@@ -56,11 +60,19 @@ export function Goals() {
                     </div>
                     <h3 className="text-lg font-medium text-neutral-900 mb-1">Nenhum objetivo encontrado</h3>
                     <p className="text-neutral-500 mb-6">Defina metas financeiras para realizar seus sonhos.</p>
-                    <button className="px-6 py-2 bg-neutral-1100 text-white rounded-full hover:bg-neutral-800 transition-colors">
+                    <button
+                        onClick={() => setIsModalOpen(true)}
+                        className="px-6 py-2 bg-neutral-1100 text-white rounded-full hover:bg-neutral-800 transition-colors"
+                    >
                         Criar primeiro objetivo
                     </button>
                 </div>
             )}
+
+            <NewGoalModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+            />
         </div>
     );
 }
