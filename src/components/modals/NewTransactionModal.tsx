@@ -116,6 +116,7 @@ export function NewTransactionModal({ isOpen, onClose, defaultCardId }: NewTrans
             accountId: isAccount ? accountId : undefined,
             cardId: isCard ? accountId : undefined,
             memberId,
+            isRecurring,
             installments: showInstallments ? { current: 1, total: installments } : undefined,
         });
 
@@ -346,6 +347,9 @@ export function NewTransactionModal({ isOpen, onClose, defaultCardId }: NewTrans
                                             {bankAccounts.map(acc => (
                                                 <option key={acc.id} value={acc.id}>{acc.name}</option>
                                             ))}
+                                            {!bankAccounts.some(a => a.name.toLowerCase() === 'dinheiro') && (
+                                                <option value="CASH">💵 Dinheiro (Espécie)</option>
+                                            )}
                                             <option value="NEW_ACCOUNT">+ Adicionar Modo/Conta</option>
                                         </optgroup>
                                         <optgroup label="Cartões de Crédito">
@@ -376,28 +380,30 @@ export function NewTransactionModal({ isOpen, onClose, defaultCardId }: NewTrans
                             </div>
                         )}
 
-                        {type === 'expense' && (
-                            <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4">
-                                <label className="flex items-start gap-3 cursor-pointer">
-                                    <input
-                                        type="checkbox"
-                                        checked={isRecurring}
-                                        onChange={(e) => {
-                                            setIsRecurring(e.target.checked);
-                                            if (e.target.checked) setInstallments(1);
-                                        }}
-                                        disabled={installments > 1}
-                                        className="mt-1"
-                                    />
-                                    <div>
-                                        <p className="font-bold text-neutral-1100">Despesa Recorrente</p>
-                                        <p className="text-xs text-neutral-600 mt-1">
-                                            Contas mensais (Netflix, Internet, Aluguel)
-                                        </p>
-                                    </div>
-                                </label>
-                            </div>
-                        )}
+                        <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4">
+                            <label className="flex items-start gap-3 cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    checked={isRecurring}
+                                    onChange={(e) => {
+                                        setIsRecurring(e.target.checked);
+                                        if (e.target.checked) setInstallments(1);
+                                    }}
+                                    disabled={installments > 1}
+                                    className="mt-1"
+                                />
+                                <div>
+                                    <p className="font-bold text-neutral-1100">
+                                        {type === 'income' ? 'Receita Recorrente' : 'Despesa Recorrente'}
+                                    </p>
+                                    <p className="text-xs text-neutral-600 mt-1">
+                                        {type === 'income'
+                                            ? 'Salários, aluguéis recebidos ou bônus mensais'
+                                            : 'Contas mensais (Netflix, Internet, Aluguel)'}
+                                    </p>
+                                </div>
+                            </label>
+                        </div>
                     </div>
                 </div>
 

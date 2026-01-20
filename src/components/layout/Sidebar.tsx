@@ -26,7 +26,7 @@ interface SidebarProps {
 const NAV_ITEMS = [
     { label: 'Dashboard', icon: Home, path: '/dashboard' },
     { label: 'Objetivos', icon: Target, path: '/goals' },
-    { label: 'Cartões', icon: CreditCard, path: '/cards' },
+    { label: 'Cartões/Dinheiro', icon: CreditCard, path: '/cards' },
     { label: 'Transações', icon: ArrowRightLeft, path: '/transactions' },
     { label: 'Perfil', icon: User, path: '/profile' },
 ];

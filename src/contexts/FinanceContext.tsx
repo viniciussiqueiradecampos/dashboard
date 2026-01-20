@@ -191,6 +191,9 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
             if (transData) setTransactions((transData as any[]).map(mapTransactionFromDB));
             if (membersData) setFamilyMembers((membersData as any[]).map(mapMemberFromDB));
 
+            // Run recurrence engine in background
+            if (user) processRecurringTransactions(user.id);
+
             if (accountsData) {
                 const data = accountsData as any[];
                 const banks = data.filter((a: any) => a.type !== 'CREDIT_CARD');
@@ -247,6 +250,42 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
             }
         }
 
+        let finalAccountId = t.accountId;
+        if (t.accountId === 'CASH') {
+            const { data: cashAcc } = await sb.from('accounts').select('id').eq('name', 'Dinheiro').eq('user_id', user.id).maybeSingle();
+            if (cashAcc) {
+                finalAccountId = (cashAcc as any).id;
+            } else {
+                const { data: newCash } = await sb.from('accounts').insert({
+                    user_id: user.id,
+                    name: 'Dinheiro',
+                    type: 'CHECKING',
+                    bank: 'Dinheiro',
+                    balance: 0,
+                    color: '#4ADE80'
+                }).select().maybeSingle();
+                if (newCash) finalAccountId = (newCash as any).id;
+            }
+        }
+
+        let recurringId = null;
+        if (t.isRecurring) {
+            const { data: rt } = await sb.from('recurring_transactions').insert({
+                user_id: user.id,
+                type: t.type.toUpperCase(),
+                amount: t.amount,
+                description: t.description,
+                category_id: catId,
+                account_id: finalAccountId || null,
+                member_id: t.memberId || null,
+                frequency: 'MONTHLY',
+                day_of_month: parseISO(t.date).getDate(),
+                start_date: t.date,
+                is_active: true
+            }).select().maybeSingle();
+            if (rt) recurringId = (rt as any).id;
+        }
+
         const payload = {
             user_id: user.id,
             description: t.description,
@@ -255,9 +294,11 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
             date: t.date,
             status: t.status.toUpperCase(),
             category_id: catId,
-            account_id: t.accountId || null,
+            account_id: finalAccountId || null,
             card_id: t.cardId || null,
             member_id: t.memberId || null,
+            is_recurring: t.isRecurring || false,
+            recurring_transaction_id: recurringId
         };
 
         const { error } = await sb.from('transactions').insert(payload);
@@ -322,6 +363,51 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
             alert(`Erro ao atualizar objetivo: ${error.message}`);
         }
         await refreshData();
+    };
+
+    const processRecurringTransactions = async (userId: string) => {
+        const { data: recurring } = await sb.from('recurring_transactions')
+            .select('*')
+            .eq('user_id', userId)
+            .eq('is_active', true);
+
+        if (!recurring || recurring.length === 0) return;
+
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentMonth = now.getMonth() + 1; // 1-12
+
+        for (const rt of recurring) {
+            // Check if already spawned this month
+            const startOfMonth = `${currentYear}-${String(currentMonth).padStart(2, '0')}-01`;
+            const endOfMonth = `${currentYear}-${String(currentMonth).padStart(2, '0')}-31`;
+
+            const { count } = await sb.from('transactions')
+                .select('*', { count: 'exact', head: true })
+                .eq('recurring_transaction_id', rt.id)
+                .gte('date', startOfMonth)
+                .lte('date', endOfMonth);
+
+            if (count === 0) {
+                // Spawn!
+                const day = Math.min(rt.day_of_month || 1, 28);
+                const spawnDate = `${currentYear}-${String(currentMonth).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+                await sb.from('transactions').insert({
+                    user_id: userId,
+                    recurring_transaction_id: rt.id,
+                    description: rt.description,
+                    amount: rt.amount,
+                    type: rt.type,
+                    date: spawnDate,
+                    category_id: rt.category_id,
+                    account_id: rt.account_id,
+                    member_id: rt.member_id,
+                    status: 'COMPLETED',
+                    is_recurring: true
+                });
+            }
+        }
     };
 
     const deleteGoal = async (id: string) => {
@@ -481,10 +567,15 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     }, [transactions, filters]);
 
     const totalBalance = useMemo(() => {
-        const accBalance = bankAccounts.reduce((acc, curr) => acc + curr.balance, 0);
-        const cardDebt = creditCards.reduce((acc, curr) => acc + curr.currentInvoice, 0);
-        return accBalance - cardDebt;
-    }, [bankAccounts, creditCards]);
+        const totalIncome = transactions
+            .filter(t => t.type === 'income' && t.status === 'completed')
+            .reduce((acc, curr) => acc + curr.amount, 0);
+        const totalExpense = transactions
+            .filter(t => t.type === 'expense' && t.status === 'completed')
+            .reduce((acc, curr) => acc + curr.amount, 0);
+
+        return totalIncome - totalExpense;
+    }, [transactions]);
 
     const incomeForPeriod = useMemo(() => {
         return filteredTransactions
