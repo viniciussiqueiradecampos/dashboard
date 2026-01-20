@@ -2,8 +2,17 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  body {
-    @apply bg-neutral-200 text-neutral-1000 antialiased font-sans;
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
   }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+body {
+  @apply bg-neutral-200 text-neutral-1100 antialiased;
 }

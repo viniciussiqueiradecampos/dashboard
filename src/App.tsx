@@ -2,11 +2,17 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { MainLayout } from '@/components/layout/MainLayout';
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
 import { SummaryCards } from '@/components/dashboard/SummaryCards';
+import { ExpensesByCategoryCarousel } from '@/components/dashboard/ExpensesByCategoryCarousel';
 
 // Placeholder Pages - To be real components soon
 const DashboardMock = () => (
     <div className="flex flex-col w-full">
         <DashboardHeader />
+
+        {/* Category Carousel (Prompt 7) */}
+        <ExpensesByCategoryCarousel />
+
+        {/* Summary Cards (Prompt 5) */}
         <SummaryCards />
 
         {/* Large placeholder for chart/list area */}
