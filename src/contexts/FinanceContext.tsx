@@ -132,18 +132,17 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         setIsLoading(true);
         try {
             // Ensure public.users entry exists (Safety check) - MUST finish before loading other data
-            const { data: publicUser } = await sb.from('users').select('id').eq('id', user.id).maybeSingle();
+            const { data: publicUser, error: checkError } = await sb.from('users').select('id').eq('id', user.id).maybeSingle();
 
-            if (!publicUser) {
+            if (!publicUser && !checkError) {
                 console.log('Synchronizing user profile...');
-                const { error: syncError } = await sb.from('users').upsert({
+                const { error: insertError } = await sb.from('users').insert({
                     id: user.id,
                     email: user.email,
                     name: user.user_metadata?.display_name || user.user_metadata?.name || 'Usuário'
                 });
-                if (syncError) {
-                    console.error('User sync error:', syncError);
-                    alert(`Erro de Perfil: Não foi possível sincronizar seu usuário no banco (${syncError.message}). Por favor, execute o script SQL de permissões.`);
+                if (insertError) {
+                    console.warn('Initial user profile sync error (non-fatal):', insertError.message);
                 }
             }
 

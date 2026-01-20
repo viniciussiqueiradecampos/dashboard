@@ -220,11 +220,30 @@ CREATE POLICY "Users can manage their goals" ON goals
   USING (auth.uid() = user_id);
 
 -- ============================================
--- 📦 STORAGE BUCKET POLICIES (Exemplo)
+-- 📦 STORAGE BUCKET POLICIES
 -- ============================================
--- Você precisa criar os buckets 'avatars' e 'logos' manualmente no painel,
--- mas aqui está um exemplo de policy se fosse configurar via SQL (nem sempre suportado diretamente no editor simples)
---
--- INSERT INTO storage.buckets (id, name, public) VALUES ('avatars', 'avatars', true);
--- CREATE POLICY "Avatar Public Access" ON storage.objects FOR SELECT USING ( bucket_id = 'avatars' );
--- CREATE POLICY "Users upload avatars" ON storage.objects FOR INSERT WITH CHECK ( bucket_id = 'avatars' AND auth.uid()::text = (storage.foldername(name))[1] );
+-- 1. Garante que o bucket 'avatars' exista e seja público
+INSERT INTO storage.buckets (id, name, public) 
+VALUES ('avatars', 'avatars', true) 
+ON CONFLICT (id) DO UPDATE SET public = true;
+
+-- 2. Permissões de Leitura
+DROP POLICY IF EXISTS "Avatar Public Access" ON storage.objects;
+CREATE POLICY "Avatar Public Access" ON storage.objects FOR SELECT USING ( bucket_id = 'avatars' );
+
+-- 3. Permissões de Escrita (Upload e Gerenciamento)
+DROP POLICY IF EXISTS "Users upload avatars" ON storage.objects;
+CREATE POLICY "Users upload avatars" ON storage.objects 
+FOR ALL TO authenticated 
+USING ( bucket_id = 'avatars' )
+WITH CHECK ( bucket_id = 'avatars' );
+
+-- ============================================
+-- 👤 USUÁRIOS (REGRAS EXTRAS)
+-- ============================================
+ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "user_full_access" ON public.users;
+CREATE POLICY "user_full_access" ON public.users 
+FOR ALL TO authenticated 
+USING (auth.uid() = id) 
+WITH CHECK (auth.uid() = id);
