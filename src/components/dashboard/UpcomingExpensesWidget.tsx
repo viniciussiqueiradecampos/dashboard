@@ -130,7 +130,7 @@ export function UpcomingExpensesWidget() {
                 </div>
 
                 {/* Expenses List */}
-                <div className="flex-1 overflow-y-auto px-1 max-h-[400px] scrollbar-thin scrollbar-thumb-neutral-200 dark:scrollbar-thumb-neutral-800">
+                <div className="flex-1 overflow-y-auto px-1 max-h-[400px] no-scrollbar">
                     {allUpcomingExpenses.length > 0 ? (
                         <div className="space-y-0">
                             {allUpcomingExpenses.map((expense) => (
