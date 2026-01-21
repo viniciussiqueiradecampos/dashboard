@@ -1,6 +1,7 @@
 import { Search, ArrowUpCircle, ArrowDownCircle, User, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState, useMemo } from 'react';
 import { useFinance } from '@/contexts/FinanceContext';
+import { useSettings } from '@/contexts/SettingsContext';
 import { cn } from '@/utils/cn';
 import { Transaction } from '@/types';
 import { EditTransactionModal } from '@/components/modals/EditTransactionModal';
@@ -9,6 +10,7 @@ const ITEMS_PER_PAGE = 5;
 
 export function TransactionsTable() {
     const { getFilteredTransactions, familyMembers, bankAccounts, creditCards } = useFinance();
+    const { formatCurrency, t } = useSettings();
     const [localSearch, setLocalSearch] = useState('');
     const [localTypeFilter, setLocalTypeFilter] = useState<'all' | 'income' | 'expense'>('all');
     const [currentPage, setCurrentPage] = useState(1);
@@ -53,13 +55,6 @@ export function TransactionsTable() {
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
     const endIndex = startIndex + ITEMS_PER_PAGE;
     const currentTransactions = filteredTransactions.slice(startIndex, endIndex);
-
-    const formatCurrency = (value: number) => {
-        return new Intl.NumberFormat('pt-BR', {
-            style: 'currency',
-            currency: 'BRL',
-        }).format(value);
-    };
 
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);
@@ -145,7 +140,7 @@ export function TransactionsTable() {
                 {/* Header */}
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
                     <h2 className="text-xl font-bold text-neutral-1100 dark:text-white tracking-tight">
-                        Extrato detalhado
+                        {t('Extrato detalhado')}
                     </h2>
 
                     <div className="flex flex-col sm:flex-row gap-3">
@@ -154,7 +149,7 @@ export function TransactionsTable() {
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" size={18} />
                             <input
                                 type="text"
-                                placeholder="Buscar lançamentos..."
+                                placeholder={t('Buscar lançamentos...')}
                                 value={localSearch}
                                 onChange={(e) => setLocalSearch(e.target.value)}
                                 className="w-full h-10 pl-10 pr-4 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-full text-sm text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:ring-2 focus:ring-black dark:focus:ring-[#D7FF00] focus:border-transparent transition-all outline-none"
@@ -167,9 +162,9 @@ export function TransactionsTable() {
                             onChange={(e) => setLocalTypeFilter(e.target.value as 'all' | 'income' | 'expense')}
                             className="w-full sm:w-[140px] h-10 px-4 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-full text-sm text-neutral-900 dark:text-white focus:ring-2 focus:ring-black dark:focus:ring-[#D7FF00] focus:border-transparent transition-all outline-none cursor-pointer"
                         >
-                            <option value="all">Todos</option>
-                            <option value="income">Receitas</option>
-                            <option value="expense">Despesas</option>
+                            <option value="all">{t('Todos')}</option>
+                            <option value="income">{t('Receitas')}</option>
+                            <option value="expense">{t('Despesas')}</option>
                         </select>
                     </div>
                 </div>
@@ -180,25 +175,25 @@ export function TransactionsTable() {
                         <thead>
                             <tr className="border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/50">
                                 <th className="text-left py-4 px-4 text-xs font-bold text-neutral-600 dark:text-neutral-400 uppercase tracking-wider w-[50px]">
-                                    Membro
+                                    {t('Membro')}
                                 </th>
                                 <th className="text-left py-4 px-4 text-xs font-bold text-neutral-600 dark:text-neutral-400 uppercase tracking-wider">
-                                    Datas
+                                    {t('Datas')}
                                 </th>
                                 <th className="text-left py-4 px-4 text-xs font-bold text-neutral-600 dark:text-neutral-400 uppercase tracking-wider">
-                                    Descrição
+                                    {t('Descrição')}
                                 </th>
                                 <th className="text-left py-4 px-4 text-xs font-bold text-neutral-600 dark:text-neutral-400 uppercase tracking-wider">
-                                    Categorias
+                                    {t('Categorias')}
                                 </th>
                                 <th className="text-left py-4 px-4 text-xs font-bold text-neutral-600 dark:text-neutral-400 uppercase tracking-wider">
-                                    Conta/cartão
+                                    {t('Conta/cartão')}
                                 </th>
                                 <th className="text-left py-4 px-4 text-xs font-bold text-neutral-600 dark:text-neutral-400 uppercase tracking-wider">
-                                    Parcelas
+                                    {t('Parcelas')}
                                 </th>
                                 <th className="text-right py-4 px-4 text-xs font-bold text-neutral-600 dark:text-neutral-400 uppercase tracking-wider">
-                                    Valor
+                                    {t('Valor')}
                                 </th>
                             </tr>
                         </thead>
@@ -288,7 +283,7 @@ export function TransactionsTable() {
                                 <tr>
                                     <td colSpan={7} className="py-12 text-center">
                                         <p className="text-neutral-400 font-medium">
-                                            Nenhum lançamento encontrado.
+                                            {t('Nenhum lançamento encontrado.')}
                                         </p>
                                     </td>
                                 </tr>
@@ -301,7 +296,7 @@ export function TransactionsTable() {
                 {filteredTransactions.length > 0 && (
                     <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 pt-6 border-t border-neutral-200 dark:border-neutral-800">
                         <p className="text-sm text-neutral-600 dark:text-neutral-400">
-                            Mostrando {startIndex + 1} a {Math.min(endIndex, filteredTransactions.length)} de{' '}
+                            {t('Mostrando')} {startIndex + 1} {t('a')} {Math.min(endIndex, filteredTransactions.length)} {t('de')}{' '}
                             {filteredTransactions.length}
                         </p>
 

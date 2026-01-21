@@ -17,6 +17,7 @@ interface SettingsContextType {
     toggleMenuItem: (id: string) => void;
     isMasterUser: boolean;
     formatCurrency: (value: number) => string;
+    t: (key: string) => string;
 }
 
 const DEFAULT_MENU_ITEMS: MenuItemConfig[] = [
@@ -26,6 +27,145 @@ const DEFAULT_MENU_ITEMS: MenuItemConfig[] = [
     { id: 'goals', name: 'Metas', enabled: true },
     { id: 'profile', name: 'Perfil', enabled: true },
 ];
+
+const TRANSLATIONS: Record<string, Record<string, string>> = {
+    'pt-BR': {
+        'Dashboard': 'Dashboard',
+        'Transações': 'Transações',
+        'Cartões': 'Cartões',
+        'Metas': 'Metas',
+        'Perfil': 'Perfil',
+        'Sair': 'Sair',
+        'Configurações': 'Configurações',
+        'Fluxo financeiro': 'Fluxo financeiro',
+        'Receitas': 'Receitas',
+        'Despesas': 'Despesas',
+        'Transações Recorrentes': 'Transações Recorrentes',
+        'Nenhuma despesa pendente': 'Nenhuma despesa pendente',
+        'Cards & contas': 'Cards & contas',
+        'Adicionar conta ou cartão': 'Adicionar conta ou cartão',
+        'Adicionar primeiro cartão': 'Adicionar primeiro cartão',
+        'Nenhum cartão ou conta cadastrado': 'Nenhum cartão ou conta cadastrado',
+        'Extrato detalhado': 'Extrato detalhado',
+        'Buscar lançamentos...': 'Buscar lançamentos...',
+        'Todos': 'Todos',
+        'Membro': 'Membro',
+        'Datas': 'Datas',
+        'Descrição': 'Descrição',
+        'Categorias': 'Categorias',
+        'Conta/cartão': 'Conta/cartão',
+        'Parcelas': 'Parcelas',
+        'Valor': 'Valor',
+        'Anterior': 'Anterior',
+        'Próxima': 'Próxima',
+        'Página': 'Página',
+        'de': 'de',
+        'Mostrando': 'Mostrando',
+        'a': 'a',
+        'Nenhum lançamento encontrado.': 'Nenhum lançamento encontrado.',
+        'Limite Total': 'Limite Total',
+        'Fatura Atual': 'Fatura Atual',
+        'Disponível': 'Disponível',
+        'Uso do Limite': 'Uso do Limite',
+        'Fechamento': 'Fechamento',
+        'Vencimento': 'Vencimento',
+        'Limite Utilizado': 'Limite Utilizado',
+        'Despesas neste Cartão': 'Despesas neste Cartão',
+        'Fechar': 'Fechar',
+        'Editar Cartão': 'Editar Cartão',
+        'Salvar': 'Salvar',
+        'Adicionar Despesa': 'Adicionar Despesa',
+        'Recebido': 'Recebido',
+        'Pago': 'Pago',
+        'Aguardando recebimento': 'Aguardando recebimento',
+        'Agendado / Pendente': 'Agendado / Pendente',
+        'Valor já entrou na conta': 'Valor já entrou na conta',
+        'Valor já saiu da conta': 'Valor já saiu da conta',
+        'Receita Recorrente': 'Receita Recorrente',
+        'Despesa Recorrente': 'Despesa Recorrente',
+        'Parcelamento': 'Parcelamento',
+        'Conta / Método': 'Conta / Método',
+        'Família (Geral)': 'Família (Geral)',
+        'Selecione...': 'Selecione...',
+        'Contas / Métodos': 'Contas / Métodos',
+        'Cartões de Crédito': 'Cartões de Crédito',
+        'Dinheiro (Espécie)': 'Dinheiro (Espécie)',
+        '+ Adicionar Modo/Conta': '+ Adicionar Modo/Conta',
+        'Ex: Mercado': 'Ex: Mercado',
+        'Receita': 'Receita',
+        'Despesa': 'Despesa',
+        'Cancelar': 'Cancelar',
+        'Salvar Transação': 'Salvar Transação'
+    },
+    'en-US': {
+        'Dashboard': 'Dashboard',
+        'Transações': 'Transactions',
+        'Cartões': 'Cards',
+        'Metas': 'Goals',
+        'Perfil': 'Profile',
+        'Sair': 'Logout',
+        'Configurações': 'Settings',
+        'Fluxo financeiro': 'Financial Flow',
+        'Receitas': 'Income',
+        'Despesas': 'Expenses',
+        'Transações Recorrentes': 'Recurring Transactions',
+        'Nenhuma despesa pendente': 'No pending expenses',
+        'Cards & contas': 'Cards & Accounts',
+        'Adicionar conta ou cartão': 'Add account or card',
+        'Adicionar primeiro cartão': 'Add first card',
+        'Nenhum cartão ou conta cadastrado': 'No card or account registered',
+        'Extrato detalhado': 'Detailed Statement',
+        'Buscar lançamentos...': 'Search transactions...',
+        'Todos': 'All',
+        'Membro': 'Member',
+        'Datas': 'Date',
+        'Descrição': 'Description',
+        'Categorias': 'Category',
+        'Conta/cartão': 'Account/Card',
+        'Parcelas': 'Installments',
+        'Valor': 'Amount',
+        'Anterior': 'Previous',
+        'Próxima': 'Next',
+        'Página': 'Page',
+        'de': 'of',
+        'Mostrando': 'Showing',
+        'a': 'to',
+        'Nenhum lançamento encontrado.': 'No transactions found.',
+        'Limite Total': 'Total Limit',
+        'Fatura Atual': 'Current Invoice',
+        'Disponível': 'Available',
+        'Uso do Limite': 'Limit Usage',
+        'Fechamento': 'Closing Date',
+        'Vencimento': 'Due Date',
+        'Limite Utilizado': 'Limit Used',
+        'Despesas neste Cartão': 'Expenses on this Card',
+        'Fechar': 'Close',
+        'Editar Cartão': 'Edit Card',
+        'Salvar': 'Save',
+        'Adicionar Despesa': 'Add Expense',
+        'Recebido': 'Received',
+        'Pago': 'Paid',
+        'Aguardando recebimento': 'Awaiting payment',
+        'Agendado / Pendente': 'Scheduled / Pending',
+        'Valor já entrou na conta': 'Amount already in account',
+        'Valor já saiu da conta': 'Amount already left account',
+        'Receita Recorrente': 'Recurring Income',
+        'Despesa Recorrente': 'Recurring Expense',
+        'Parcelamento': 'Installments',
+        'Conta / Método': 'Account / Method',
+        'Família (Geral)': 'Family (General)',
+        'Selecione...': 'Select...',
+        'Contas / Métodos': 'Accounts / Methods',
+        'Cartões de Crédito': 'Credit Cards',
+        'Dinheiro (Espécie)': 'Cash',
+        '+ Adicionar Modo/Conta': '+ Add Method/Account',
+        'Ex: Mercado': 'Ex: Market',
+        'Receita': 'Income',
+        'Despesa': 'Expense',
+        'Cancelar': 'Cancel',
+        'Salvar Transação': 'Save Transaction'
+    }
+};
 
 const MASTER_EMAIL = 'vinisiqueiradecampos@gmail.com';
 
@@ -171,6 +311,11 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         }).format(value);
     }, [currency]);
 
+    const t = useCallback((key: string): string => {
+        const lang = currency === 'BRL' ? 'pt-BR' : 'en-US';
+        return TRANSLATIONS[lang]?.[key] || key;
+    }, [currency]);
+
     return (
         <SettingsContext.Provider value={{
             currency,
@@ -178,7 +323,8 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
             menuItems,
             toggleMenuItem,
             isMasterUser,
-            formatCurrency
+            formatCurrency,
+            t
         }}>
             {children}
         </SettingsContext.Provider>

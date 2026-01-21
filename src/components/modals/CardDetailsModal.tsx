@@ -1,5 +1,6 @@
 import { X, CreditCard as CardIcon } from 'lucide-react';
 import { useFinance } from '@/contexts/FinanceContext';
+import { useSettings } from '@/contexts/SettingsContext';
 import { CreditCard, Transaction } from '@/types';
 import { useState, useMemo } from 'react';
 import { cn } from '@/utils/cn';
@@ -14,6 +15,7 @@ interface CardDetailsModalProps {
 
 export function CardDetailsModal({ isOpen, onClose, card }: CardDetailsModalProps) {
     const { getFilteredTransactions } = useFinance();
+    const { formatCurrency } = useSettings();
     const [currentPage, setCurrentPage] = useState(1);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isNewTransactionModalOpen, setIsNewTransactionModalOpen] = useState(false);
@@ -34,13 +36,6 @@ export function CardDetailsModal({ isOpen, onClose, card }: CardDetailsModalProp
 
     const availableLimit = card.limit - card.currentInvoice;
     const usagePercentage = (card.currentInvoice / card.limit) * 100;
-
-    const formatCurrency = (value: number) => {
-        return new Intl.NumberFormat('pt-BR', {
-            style: 'currency',
-            currency: 'BRL',
-        }).format(value);
-    };
 
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);
@@ -214,7 +209,7 @@ export function CardDetailsModal({ isOpen, onClose, card }: CardDetailsModalProp
                             onClick={() => setIsNewTransactionModalOpen(true)}
                             className="px-6 py-2.5 rounded-full bg-neutral-1100 dark:bg-[#D7FF00] text-white dark:text-[#080B12] font-bold hover:scale-[1.02] active:scale-[0.98] transition-all shadow-sm"
                         >
-                            Adicionar Despesa
+                            Salvar
                         </button>
                     </div>
                 </div>

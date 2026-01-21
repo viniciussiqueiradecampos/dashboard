@@ -39,7 +39,7 @@ export function Sidebar() {
     const { isCollapsed, toggleSidebar } = useSidebar();
     const { user, signOut } = useAuth();
     const { theme, toggleTheme } = useTheme();
-    const { isMasterUser, menuItems } = useSettings();
+    const { isMasterUser, menuItems, t } = useSettings();
     const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
     const location = useLocation();
 
@@ -91,6 +91,7 @@ export function Sidebar() {
             <nav className="flex-1 mt-14 px-4 space-y-2">
                 {visibleNavItems.map((item) => {
                     const isActive = location.pathname === item.path;
+                    const label = t(item.label);
 
                     const LinkContent = (
                         <NavLink
@@ -113,7 +114,7 @@ export function Sidebar() {
                             />
                             {!isCollapsed && (
                                 <span className={cn("font-medium", isActive && "text-[#080B12] font-semibold")}>
-                                    {item.label}
+                                    {label}
                                 </span>
                             )}
                         </NavLink>
@@ -126,7 +127,7 @@ export function Sidebar() {
                                     {LinkContent}
                                 </TooltipTrigger>
                                 <TooltipContent side="right" className="bg-neutral-900 text-white border-neutral-800 ml-2">
-                                    <p>{item.label}</p>
+                                    <p>{label}</p>
                                 </TooltipContent>
                             </Tooltip>
                         );
@@ -149,12 +150,12 @@ export function Sidebar() {
                     {theme === 'light' ? (
                         <>
                             <Moon size={20} className="shrink-0" />
-                            {!isCollapsed && <span className="font-medium">Modo Escuro</span>}
+                            {!isCollapsed && <span className="font-medium">{t('Modo Escuro')}</span>}
                         </>
                     ) : (
                         <>
                             <Sun size={20} className="shrink-0 text-[#D7FF00]" />
-                            {!isCollapsed && <span className="font-medium text-white">Modo Claro</span>}
+                            {!isCollapsed && <span className="font-medium text-white">{t('Modo Claro')}</span>}
                         </>
                     )}
                 </button>
@@ -166,7 +167,7 @@ export function Sidebar() {
                         "w-full flex items-center gap-3 p-2 rounded-2xl transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800 overflow-hidden border border-transparent text-neutral-600 dark:text-neutral-400 group",
                         isCollapsed ? "justify-center" : ""
                     )}
-                    title="Editar Perfil"
+                    title={t('Editar Perfil')}
                 >
                     <div className="relative shrink-0">
                         <div className="w-10 h-10 rounded-full bg-neutral-200 dark:bg-neutral-700 flex items-center justify-center text-neutral-500 dark:text-neutral-300 font-bold border-2 border-white dark:border-neutral-800 shadow-sm overflow-hidden group-hover:scale-110 transition-transform">
@@ -183,7 +184,7 @@ export function Sidebar() {
                             <span className="text-sm font-bold text-neutral-900 dark:text-white truncate">
                                 {user?.user_metadata?.name || 'Usuário'}
                             </span>
-                            <span className="text-xs text-neutral-500 truncate">Editar Perfil</span>
+                            <span className="text-xs text-neutral-500 truncate">{t('Editar Perfil')}</span>
                         </div>
                     )}
                 </button>
@@ -197,7 +198,7 @@ export function Sidebar() {
                     )}
                 >
                     <LogOut size={20} className="shrink-0" />
-                    {!isCollapsed && <span className="font-medium">Sair</span>}
+                    {!isCollapsed && <span className="font-medium">{t('Sair')}</span>}
                 </button>
             </div>
 

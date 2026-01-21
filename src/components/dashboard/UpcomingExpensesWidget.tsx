@@ -1,6 +1,7 @@
 import { Wallet, Plus, Check, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState, useMemo } from 'react';
 import { useFinance } from '@/contexts/FinanceContext';
+import { useSettings } from '@/contexts/SettingsContext';
 import { NewTransactionModal } from '@/components/modals/NewTransactionModal';
 import { cn } from '@/utils/cn';
 import { Transaction } from '@/types';
@@ -14,21 +15,15 @@ interface ExpenseItemProps {
 }
 
 function ExpenseItem({ expense, onMarkAsPaid, getAccountName }: ExpenseItemProps) {
+    const { formatCurrency, t } = useSettings();
     const [isHovered, setIsHovered] = useState(false);
     const [isPaying, setIsPaying] = useState(false);
-
-    const formatCurrency = (value: number) => {
-        return new Intl.NumberFormat('pt-BR', {
-            style: 'currency',
-            currency: 'BRL',
-        }).format(value);
-    };
 
     const formatDueDate = (dateString: string) => {
         const date = new Date(dateString);
         const day = date.getDate().toString().padStart(2, '0');
         const month = (date.getMonth() + 1).toString().padStart(2, '0');
-        return `Vence dia ${day}/${month}`;
+        return `${t('Vencimento')} ${day}/${month}`;
     };
 
     const handleMarkAsPaid = async () => {
@@ -83,6 +78,7 @@ function ExpenseItem({ expense, onMarkAsPaid, getAccountName }: ExpenseItemProps
 
 export function UpcomingExpensesWidget() {
     const { transactions, updateTransaction, bankAccounts, creditCards } = useFinance();
+    const { t } = useSettings();
     const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
     const [currentPage, setCurrentPage] = useState(0);
     const itemsPerPage = 2;
@@ -135,14 +131,14 @@ export function UpcomingExpensesWidget() {
                             <Wallet size={20} className="text-neutral-1100 dark:text-white" />
                         </div>
                         <h2 className="text-xl font-bold text-neutral-1100 dark:text-white tracking-tight transition-colors">
-                            Transações Recorrentes
+                            {t('Transações Recorrentes')}
                         </h2>
                     </div>
                     <div className="flex items-center gap-2">
                         <button
                             onClick={() => setIsTransactionModalOpen(true)}
                             className="w-10 h-10 flex items-center justify-center rounded-full bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 text-neutral-1100 dark:text-white hover:bg-neutral-50 dark:hover:bg-neutral-700 hover:scale-110 transition-all shadow-sm"
-                            title="Adicionar despesa"
+                            title={t('Adicionar Despesa')}
                         >
                             <Plus size={20} />
                         </button>
@@ -189,7 +185,7 @@ export function UpcomingExpensesWidget() {
                                 <Check size={32} className="text-green-600 dark:text-green-500" />
                             </div>
                             <p className="text-sm text-neutral-400 font-medium">
-                                Nenhuma despesa pendente
+                                {t('Nenhuma despesa pendente')}
                             </p>
                         </div>
                     )}

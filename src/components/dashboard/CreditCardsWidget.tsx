@@ -14,7 +14,7 @@ interface CreditCardItemProps {
 }
 
 function CreditCardItem({ card, onClick }: CreditCardItemProps) {
-    const { formatCurrency } = useSettings();
+    const { formatCurrency, t } = useSettings();
     const usagePercentage = card.limit > 0 ? Math.round((card.currentInvoice / card.limit) * 100) : 0;
     const availableLimit = card.limit - card.currentInvoice;
 
@@ -70,13 +70,13 @@ function CreditCardItem({ card, onClick }: CreditCardItemProps) {
 
             {/* Due date */}
             <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-3">
-                Vence dia {card.dueDay}
+                {t('Vencimento')} {card.dueDay}
             </p>
 
             {/* Available limit */}
             <div className="flex items-center justify-between mb-1">
                 <span className="text-xs text-green-600 dark:text-green-500">
-                    Limite disponível: {formatCurrency(availableLimit)}
+                    {t('Disponível')}: {formatCurrency(availableLimit)}
                 </span>
                 <span className="text-xs text-neutral-500 dark:text-neutral-400 font-medium">
                     {usagePercentage}%
@@ -93,7 +93,7 @@ function CreditCardItem({ card, onClick }: CreditCardItemProps) {
 
             {/* Total limit */}
             <p className="text-xs text-neutral-400 dark:text-neutral-500">
-                Limite total: {formatCurrency(card.limit)}
+                {t('Limite Total')}: {formatCurrency(card.limit)}
             </p>
         </div>
     );
@@ -106,7 +106,7 @@ interface AccountItemProps {
 }
 
 function AccountItem({ account, isCash, onClick }: AccountItemProps) {
-    const { formatCurrency } = useSettings();
+    const { formatCurrency, t } = useSettings();
 
     return (
         <div
@@ -127,7 +127,7 @@ function AccountItem({ account, isCash, onClick }: AccountItemProps) {
                         </div>
                     )}
                     <span className="text-sm font-medium text-neutral-900 dark:text-white">
-                        {isCash ? 'Dinheiro' : account.bankName}
+                        {isCash ? t('Dinheiro (Espécie)') : account.bankName}
                     </span>
                 </div>
             </div>
@@ -150,6 +150,7 @@ function AccountItem({ account, isCash, onClick }: AccountItemProps) {
 
 export function CreditCardsWidget() {
     const { creditCards, bankAccounts } = useFinance();
+    const { t } = useSettings();
     const [selectedCard, setSelectedCard] = useState<CreditCard | null>(null);
     const [selectedAccount, setSelectedAccount] = useState<BankAccount | null>(null);
 
@@ -176,13 +177,13 @@ export function CreditCardsWidget() {
                         <div className="p-2 bg-neutral-100 dark:bg-neutral-800 rounded-xl transition-colors">
                             <CardIcon size={20} className="text-neutral-900 dark:text-white" />
                         </div>
-                        <h2 className="text-xl font-bold text-neutral-900 dark:text-white tracking-tight">Cards & contas</h2>
+                        <h2 className="text-xl font-bold text-neutral-900 dark:text-white tracking-tight">{t('Cards & contas')}</h2>
                     </div>
                     <div className="flex items-center gap-2">
                         <button
                             onClick={() => setIsAddModalOpen(true)}
                             className="w-10 h-10 flex items-center justify-center rounded-full border border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-white hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-all"
-                            title="Adicionar conta ou cartão"
+                            title={t('Adicionar conta ou cartão')}
                         >
                             <Plus size={20} />
                         </button>
@@ -217,12 +218,12 @@ export function CreditCardsWidget() {
                     {creditCards.length === 0 && bankAccounts.length === 0 && (
                         <div className="flex flex-col items-center justify-center py-12 border-2 border-dashed border-neutral-200 dark:border-neutral-800 rounded-2xl">
                             <CardIcon size={32} className="text-neutral-300 dark:text-neutral-700 mb-3" />
-                            <p className="text-sm text-neutral-400 font-medium">Nenhum cartão ou conta cadastrado</p>
+                            <p className="text-sm text-neutral-400 font-medium">{t('Nenhum cartão ou conta cadastrado')}</p>
                             <button
                                 onClick={() => setIsAddModalOpen(true)}
                                 className="mt-4 px-4 py-2 bg-neutral-900 dark:bg-[#D7FF00] text-white dark:text-black rounded-full text-sm font-medium hover:opacity-90 transition-opacity"
                             >
-                                Adicionar primeiro cartão
+                                {t('Adicionar primeiro cartão')}
                             </button>
                         </div>
                     )}
