@@ -1,7 +1,7 @@
 import { useFinance } from '@/contexts/FinanceContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/utils/cn';
-import { Search, SlidersHorizontal, Plus, Moon, Sun } from 'lucide-react';
+import { Search, SlidersHorizontal, Plus, Moon, Sun, RotateCcw } from 'lucide-react';
 import { MemberFilter } from './MemberFilter';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -111,7 +111,7 @@ export function DashboardHeader() {
                             className="h-12 w-12 flex items-center justify-center rounded-full bg-transparent border border-[#9CA3AF] dark:border-neutral-700 text-[#080B12] dark:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-all active:scale-90 shrink-0"
                             title={t('Sincronizar Recorrências')}
                         >
-                            <Plus className="rotate-45" size={20} />
+                            <RotateCcw size={20} />
                         </button>
 
                         <button
