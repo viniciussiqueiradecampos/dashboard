@@ -13,6 +13,7 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const sb = supabase as any;
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
@@ -69,7 +70,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             if (updates.name) payload.name = updates.name;
             if (updates.avatar_url !== undefined) payload.avatar_url = updates.avatar_url;
 
-            await supabase.from('users').update(payload).eq('id', user.id);
+            await sb.from('users').update(payload).eq('id', user.id);
         }
 
         // Refresh user state
