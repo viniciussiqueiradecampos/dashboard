@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import {
     Transaction, Goal, CreditCard, BankAccount, FamilyMember,
     TransactionType, Category
@@ -95,6 +95,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
     const [recurringTransactions, setRecurringTransactions] = useState<any[]>([]);
+    const hasProcessedRecurrences = useRef(false);
 
     const [filters, setFilters] = useState<FinanceContextType['filters']>({
         selectedMember: null,
@@ -206,8 +207,11 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
             if (membersData) setFamilyMembers((membersData as any[]).map(mapMemberFromDB));
             if (recurringData) setRecurringTransactions(recurringData as any[]);
 
-            // Run recurrence engine and WAIT for it if we just logged in or it's a manual refresh
-            if (user) await processRecurringTransactions(user.id);
+            // Only run recurrence engine if we haven't this session, or it's a manual mount
+            if (user && !hasProcessedRecurrences.current) {
+                await processRecurringTransactions(user.id);
+                hasProcessedRecurrences.current = true;
+            }
 
             if (accountsData) {
                 const data = accountsData as any[];
@@ -328,6 +332,16 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
             return;
         }
 
+        // Manual balance sync for credit cards (in case trigger is missing)
+        if (t.cardId && t.type === 'expense') {
+            await sb.rpc('increment_current_bill', { card_id: t.cardId, amount_to_add: t.amount });
+            // Fallback if RPC doesn't exist
+            const { data: card } = await sb.from('accounts').select('current_bill').eq('id', t.cardId).single();
+            if (card) {
+                await sb.from('accounts').update({ current_bill: Number(card.current_bill) + t.amount }).eq('id', t.cardId);
+            }
+        }
+
         // Handle installments
         if (t.installments && t.installments.total > 1 && t.installments.current === 1) {
             const installments = [];
@@ -348,12 +362,22 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
 
             const { error: instError } = await sb.from('transactions').insert(installments);
             if (instError) console.error('Error adding installments:', instError);
+
+            // Update card balance for all future installments too if it's a credit card
+            if (t.cardId && t.type === 'expense') {
+                const extraAmount = t.amount * (t.installments.total - 1);
+                const { data: card } = await sb.from('accounts').select('current_bill').eq('id', t.cardId).single();
+                if (card) {
+                    await sb.from('accounts').update({ current_bill: Number(card.current_bill) + extraAmount }).eq('id', t.cardId);
+                }
+            }
         }
 
         await refreshData();
     };
 
     const updateTransaction = async (id: string, t: Partial<Transaction>) => {
+        const trans = transactions.find(item => item.id === id);
         const payload: any = {};
         if (t.description !== undefined) payload.description = t.description;
         if (t.amount !== undefined) payload.amount = t.amount;
@@ -363,6 +387,13 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         if (error) {
             console.error('Error updating transaction:', error);
             alert(`Erro ao atualizar transação: ${error.message}`);
+        } else if (trans && trans.cardId && trans.type === 'expense' && t.amount !== undefined) {
+            // Amount changed, sync balance
+            const diff = t.amount - trans.amount;
+            const { data: card } = await sb.from('accounts').select('current_bill').eq('id', trans.cardId).single();
+            if (card) {
+                await sb.from('accounts').update({ current_bill: Number(card.current_bill) + diff }).eq('id', trans.cardId);
+            }
         }
         await refreshData();
     };
@@ -371,6 +402,26 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         try {
             const trans = transactions.find(t => t.id === id);
             if (!trans) return;
+
+            // Manual balance sync fallback for credit cards
+            if (trans.cardId && trans.type === 'expense') {
+                let totalAmountToDelete = trans.amount;
+
+                // If deleting a series, calculate total impact
+                if (!trans.parentTransactionId) {
+                    const children = transactions.filter(t => t.parentTransactionId === id);
+                    totalAmountToDelete += children.reduce((acc, c) => acc + c.amount, 0);
+                } else {
+                    // It's a child, but the user requested deletion of this child specifically?
+                    // Usually we delete the whole series if parentId is present.
+                }
+
+                const { data: card } = await sb.from('accounts').select('current_bill').eq('id', trans.cardId).single();
+                if (card) {
+                    const newBill = Math.max(0, Number(card.current_bill) - totalAmountToDelete);
+                    await sb.from('accounts').update({ current_bill: newBill }).eq('id', trans.cardId);
+                }
+            }
 
             // Cancel future recurring transactions if applicable
             if (trans.isRecurring && trans.recurringId) {

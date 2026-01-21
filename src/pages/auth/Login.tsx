@@ -1,42 +1,16 @@
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useNavigate, Link } from 'react-router-dom';
-import { Mail, Lock, Loader2, ArrowRight, Globe } from 'lucide-react';
-import { useLanguage, Language } from '@/contexts/LanguageContext';
-import { cn } from '@/utils/cn';
-
-// Flag components
-function BrazilFlag({ className }: { className?: string }) {
-    return (
-        <svg className={className} viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
-            <rect fill="#009c3b" width="512" height="512" />
-            <polygon fill="#ffdf00" points="256,64 480,256 256,448 32,256" />
-            <circle fill="#002776" cx="256" cy="256" r="96" />
-            <path d="M160,256 Q256,180 352,256" stroke="#fff" strokeWidth="12" fill="none" />
-        </svg>
-    );
-}
-
-function UKFlag({ className }: { className?: string }) {
-    return (
-        <svg className={className} viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
-            <rect fill="#012169" width="512" height="512" />
-            <path fill="#fff" d="M0,0 L512,512 M512,0 L0,512" stroke="#fff" strokeWidth="80" />
-            <path fill="#C8102E" d="M0,0 L512,512 M512,0 L0,512" stroke="#C8102E" strokeWidth="52" />
-            <path fill="#fff" d="M256,0 V512 M0,256 H512" stroke="#fff" strokeWidth="100" />
-            <path fill="#C8102E" d="M256,0 V512 M0,256 H512" stroke="#C8102E" strokeWidth="60" />
-        </svg>
-    );
-}
+import { Mail, Lock, Loader2, ArrowRight } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export function Login() {
     const navigate = useNavigate();
-    const { language, setLanguage, t } = useLanguage();
+    const { t } = useLanguage();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [isLanguageOpen, setIsLanguageOpen] = useState(false);
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -58,57 +32,8 @@ export function Login() {
         }
     };
 
-    const handleLanguageSelect = (lang: Language) => {
-        setLanguage(lang);
-        setIsLanguageOpen(false);
-    };
-
     return (
         <div className="min-h-screen bg-[#F1F5F9] flex items-center justify-center p-4 relative">
-            {/* Language Selector - Top Right */}
-            <div className="absolute top-4 right-4">
-                <div className="relative">
-                    <button
-                        onClick={() => setIsLanguageOpen(!isLanguageOpen)}
-                        className="flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-sm border border-neutral-200 hover:bg-neutral-50 transition-colors"
-                    >
-                        {language === 'pt-BR' ? (
-                            <BrazilFlag className="w-5 h-5 rounded-sm" />
-                        ) : (
-                            <UKFlag className="w-5 h-5 rounded-sm" />
-                        )}
-                        <span className="text-sm font-medium text-neutral-700">
-                            {language === 'pt-BR' ? 'Português' : 'English'}
-                        </span>
-                        <Globe size={16} className="text-neutral-400" />
-                    </button>
-
-                    {isLanguageOpen && (
-                        <div className="absolute top-full right-0 mt-2 bg-white rounded-xl shadow-lg border border-neutral-200 overflow-hidden z-50 min-w-[180px]">
-                            <button
-                                onClick={() => handleLanguageSelect('pt-BR')}
-                                className={cn(
-                                    "w-full flex items-center gap-3 px-4 py-3 hover:bg-neutral-50 transition-colors",
-                                    language === 'pt-BR' && "bg-neutral-100"
-                                )}
-                            >
-                                <BrazilFlag className="w-6 h-6 rounded-sm" />
-                                <span className="text-sm font-medium text-neutral-700">Português (BR)</span>
-                            </button>
-                            <button
-                                onClick={() => handleLanguageSelect('en-GB')}
-                                className={cn(
-                                    "w-full flex items-center gap-3 px-4 py-3 hover:bg-neutral-50 transition-colors",
-                                    language === 'en-GB' && "bg-neutral-100"
-                                )}
-                            >
-                                <UKFlag className="w-6 h-6 rounded-sm" />
-                                <span className="text-sm font-medium text-neutral-700">English (GB)</span>
-                            </button>
-                        </div>
-                    )}
-                </div>
-            </div>
 
             <div className="max-w-md w-full bg-white rounded-[32px] p-8 shadow-xl border border-neutral-100">
                 <div className="text-center mb-8">

@@ -1,6 +1,6 @@
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
 import { useSettings, Currency } from '@/contexts/SettingsContext';
-import { useLanguage, Language } from '@/contexts/LanguageContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { DollarSign, Globe, Menu, Shield, AlertCircle, Trash2 } from 'lucide-react';
 import { useFinance } from '@/contexts/FinanceContext';
 import { cn } from '@/utils/cn';
@@ -12,14 +12,9 @@ const CURRENCIES: { value: Currency; label: string; symbol: string }[] = [
     { value: 'GBP', label: 'British Pound', symbol: '£' },
 ];
 
-const LANGUAGES: { value: Language; label: string; flag: string }[] = [
-    { value: 'pt-BR', label: 'Português (Brasil)', flag: '🇧🇷' },
-    { value: 'en-GB', label: 'English (UK)', flag: '🇬🇧' },
-];
-
 export function Settings() {
     const { currency, setCurrency, menuItems, toggleMenuItem, renameMenuItem, isMasterUser } = useSettings();
-    const { language, setLanguage, t } = useLanguage();
+    const { t } = useLanguage();
     const { resetAllData } = useFinance();
 
     if (!isMasterUser) {
@@ -102,40 +97,16 @@ export function Settings() {
                     </div>
                 </div>
 
-                {/* Language Settings */}
                 <div className="bg-white dark:bg-neutral-900 rounded-[24px] border border-neutral-200 dark:border-neutral-800 p-6 shadow-sm">
-                    <div className="flex items-center gap-3 mb-6">
-                        <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-xl">
-                            <Globe size={20} className="text-blue-600 dark:text-blue-400" />
+                    {/* Placeholder for future settings or just spacing */}
+                    <div className="flex items-center gap-3 mb-6 opacity-50">
+                        <div className="p-2 bg-neutral-100 dark:bg-neutral-800 rounded-xl">
+                            <Globe size={20} className="text-neutral-400" />
                         </div>
-                        <h3 className="text-lg font-bold text-neutral-900 dark:text-white">{t('settings.language')}</h3>
+                        <h3 className="text-lg font-bold text-neutral-400">{t('settings.language')}</h3>
                     </div>
-
-                    <div className="space-y-2">
-                        {LANGUAGES.map((lang) => (
-                            <button
-                                key={lang.value}
-                                onClick={() => setLanguage(lang.value)}
-                                className={cn(
-                                    "w-full flex items-center justify-between p-4 rounded-xl transition-all",
-                                    language === lang.value
-                                        ? "bg-neutral-100 dark:bg-neutral-800 border-2 border-neutral-900 dark:border-[#D7FF00]"
-                                        : "bg-neutral-50 dark:bg-neutral-800/50 border-2 border-transparent hover:bg-neutral-100 dark:hover:bg-neutral-800"
-                                )}
-                            >
-                                <div className="flex items-center gap-3">
-                                    <span className="text-2xl">{lang.flag}</span>
-                                    <span className="text-sm font-medium text-neutral-600 dark:text-neutral-400">{lang.label}</span>
-                                </div>
-                                {language === lang.value && (
-                                    <div className="w-6 h-6 bg-neutral-900 dark:bg-[#D7FF00] rounded-full flex items-center justify-center">
-                                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M11.6666 3.5L5.24992 9.91667L2.33325 7" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="dark:stroke-black" />
-                                        </svg>
-                                    </div>
-                                )}
-                            </button>
-                        ))}
+                    <div className="p-4 bg-neutral-50 dark:bg-neutral-800/50 rounded-xl border border-dashed border-neutral-200 dark:border-neutral-700">
+                        <p className="text-sm text-neutral-400 text-center font-medium">Standard (Português)</p>
                     </div>
                 </div>
 

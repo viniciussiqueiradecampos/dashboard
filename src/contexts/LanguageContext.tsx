@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import React, { createContext, useContext, useCallback, useEffect } from 'react';
 
 export type Language = 'pt-BR' | 'en-GB';
 
@@ -143,6 +143,8 @@ const translations: Translations = {
     'transactions.confirmDelete': { 'pt-BR': 'Confirmar Exclusão', 'en-GB': 'Confirm Deletion' },
     'transactions.deleteMessage': { 'pt-BR': 'Tem certeza que deseja excluir esta transação? Esta ação não pode ser desfeita.', 'en-GB': 'Are you sure you want to delete this transaction? This action cannot be undone.' },
     'transactions.recurrenceCancel': { 'pt-BR': 'Esta é uma transação recorrente. Deseja cancelar as próximas ocorrências também?', 'en-GB': 'This is a recurring transaction. Do you want to cancel future occurrences as well?' },
+    'Página': { 'pt-BR': 'Página', 'en-GB': 'Page' },
+    'de': { 'pt-BR': 'de', 'en-GB': 'of' },
 };
 
 interface LanguageContextType {
@@ -154,14 +156,9 @@ interface LanguageContextType {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-    const [language, setLanguageState] = useState<Language>(() => {
-        const saved = localStorage.getItem('app_language');
-        return (saved as Language) || 'pt-BR';
-    });
-
-    const setLanguage = useCallback((lang: Language) => {
-        setLanguageState(lang);
-        localStorage.setItem('app_language', lang);
+    const language: Language = 'pt-BR';
+    const setLanguage = useCallback(() => {
+        // No-op as we only support pt-BR now
     }, []);
 
     const t = useCallback((key: string): string => {
