@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { useAuth } from './AuthContext';
+import { supabase } from '@/lib/supabase';
 
 export type Currency = 'BRL' | 'USD' | 'EUR' | 'GBP';
 
@@ -52,20 +53,108 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
 
     const isMasterUser = user?.email === MASTER_EMAIL;
 
-    const setCurrency = useCallback((c: Currency) => {
+    // Load settings from Supabase on mount/auth change
+    useEffect(() => {
+        if (!user) return;
+
+        const loadSettings = async () => {
+            try {
+                const { data, error } = await supabase
+                    .from('user_settings')
+                    .select('*')
+                    .eq('user_id', user.id)
+                    .single();
+
+                if (error) {
+                    console.error('Error loading settings:', error);
+                    return;
+                }
+
+                // Cast data to any to avoid TS errors
+                const settings = data as any;
+
+                if (settings) {
+                    // Update Currency
+                    if (settings.currency) {
+                        setCurrencyState(settings.currency as Currency);
+                        localStorage.setItem('app_currency', settings.currency);
+                    }
+
+                    // Update Menus
+                    if (settings.enabled_menus && Array.isArray(settings.enabled_menus)) {
+                        const enabledSet = new Set(settings.enabled_menus as string[]);
+                        setMenuItems(prev => {
+                            const newItems = prev.map(item => ({
+                                ...item,
+                                enabled: enabledSet.has(item.id)
+                            }));
+                            localStorage.setItem('app_menu_items', JSON.stringify(newItems));
+                            return newItems;
+                        });
+                    }
+                }
+            } catch (err) {
+                console.error('Failed to load settings:', err);
+            }
+        };
+
+        loadSettings();
+    }, [user]);
+
+    const setCurrency = useCallback(async (c: Currency) => {
+        // Optimistic update
         setCurrencyState(c);
         localStorage.setItem('app_currency', c);
-    }, []);
 
-    const toggleMenuItem = useCallback((id: string) => {
+        if (user) {
+            try {
+                const { error } = await supabase
+                    .from('user_settings')
+                    .upsert({
+                        user_id: user.id,
+                        currency: c,
+                        updated_at: new Date().toISOString()
+                    } as any);
+
+                if (error) console.error('Error saving currency to DB:', error);
+            } catch (err) {
+                console.error('Error saving currency:', err);
+            }
+        }
+    }, [user]);
+
+    const toggleMenuItem = useCallback(async (id: string) => {
+        let updatedItems: MenuItemConfig[] = [];
+
+        // Optimistic update
         setMenuItems(prev => {
-            const updated = prev.map(item =>
+            updatedItems = prev.map(item =>
                 item.id === id ? { ...item, enabled: !item.enabled } : item
             );
-            localStorage.setItem('app_menu_items', JSON.stringify(updated));
-            return updated;
+            localStorage.setItem('app_menu_items', JSON.stringify(updatedItems));
+            return updatedItems;
         });
-    }, []);
+
+        if (user) {
+            const enabledMenus = updatedItems
+                .filter(item => item.enabled)
+                .map(item => item.id);
+
+            try {
+                const { error } = await supabase
+                    .from('user_settings')
+                    .upsert({
+                        user_id: user.id,
+                        enabled_menus: enabledMenus,
+                        updated_at: new Date().toISOString()
+                    } as any);
+
+                if (error) console.error('Error saving menus to DB:', error);
+            } catch (err) {
+                console.error('Error saving menus:', err);
+            }
+        }
+    }, [user]);
 
     const formatCurrency = useCallback((value: number): string => {
         const currencyMap: Record<Currency, { locale: string; currency: string }> = {
