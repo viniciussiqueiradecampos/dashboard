@@ -76,6 +76,7 @@ interface FinanceContextType {
     refreshData: () => Promise<void>;
     deleteMemberTransactions: (memberId: string) => Promise<void>;
     resetAllData: () => Promise<void>;
+    processRecurringTransactions: () => Promise<void>;
 }
 
 const FinanceContext = createContext<FinanceContextType | undefined>(undefined);
@@ -207,11 +208,14 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
             if (membersData) setFamilyMembers((membersData as any[]).map(mapMemberFromDB));
             if (recurringData) setRecurringTransactions(recurringData as any[]);
 
-            // Only run recurrence engine if we haven't this session, or it's a manual mount
+            // DISABLED automatic recurrence engine on startup as per user request
+            // "só aparece quando eu dou o comando para aparecer"
+            /*
             if (user && !hasProcessedRecurrences.current) {
                 await processRecurringTransactions(user.id);
                 hasProcessedRecurrences.current = true;
             }
+            */
 
             if (accountsData) {
                 const data = accountsData as any[];
@@ -479,10 +483,11 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         await refreshData();
     };
 
-    const processRecurringTransactions = async (userId: string) => {
+    const processRecurringTransactions = async () => {
+        if (!user) return;
         const { data: recurring } = await sb.from('recurring_transactions')
             .select('*')
-            .eq('user_id', userId)
+            .eq('user_id', user.id)
             .eq('is_active', true);
 
         if (!recurring || recurring.length === 0) return;
@@ -513,7 +518,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
                 const spawnDate = `${currentYear}-${String(currentMonth).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 
                 const { error } = await sb.from('transactions').insert({
-                    user_id: userId,
+                    user_id: user.id,
                     recurring_transaction_id: rt.id,
                     description: rt.description,
                     amount: rt.amount,
@@ -532,8 +537,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
 
         // If we created anything, we need to RE-FETCH transactions to show them immediately
         if (createdAny) {
-            const { data } = await sb.from('transactions').select('*, categories(name)').order('date', { ascending: false });
-            if (data) setTransactions(data.map(mapTransactionFromDB));
+            await refreshData();
         }
     };
 
@@ -822,6 +826,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         refreshData,
         deleteMemberTransactions,
         resetAllData,
+        processRecurringTransactions,
         recurringTransactions
     };
 

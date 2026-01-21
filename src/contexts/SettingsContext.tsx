@@ -91,7 +91,10 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
                             const newItems = prev.map(item => ({
                                 ...item,
                                 name: customNames[item.id] || item.name,
-                                enabled: enabledSet.has(item.id)
+                                // The user wants all tabs to be ACTIVE by default when opening the system.
+                                // We will honor this by defaulting to true, but still keeping the names.
+                                // If they want to deactivate, they go to settings.
+                                enabled: true
                             }));
                             localStorage.setItem('app_menu_items', JSON.stringify(newItems));
                             return newItems;

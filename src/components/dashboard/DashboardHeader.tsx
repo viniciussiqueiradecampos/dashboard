@@ -11,7 +11,7 @@ import { FiltersMobileModal } from '@/components/modals/FiltersMobileModal';
 import { useState } from 'react';
 
 export function DashboardHeader() {
-    const { filters, setFilters } = useFinance();
+    const { filters, setFilters, processRecurringTransactions } = useFinance();
     const { theme, toggleTheme } = useTheme();
     const { t } = useLanguage();
     const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
@@ -96,13 +96,32 @@ export function DashboardHeader() {
                     <MemberFilter />
 
                     {/* New Transaction Button */}
-                    <button
-                        onClick={() => setIsTransactionModalOpen(true)}
-                        className="h-12 px-8 flex items-center justify-center gap-2 bg-neutral-1100 dark:bg-[#D7FF00] text-white dark:text-[#080B12] rounded-full font-bold hover:scale-[1.02] active:scale-[0.98] transition-all whitespace-nowrap shadow-sm hover:shadow-md"
-                    >
-                        <Plus size={20} />
-                        {t('dashboard.newTransaction')}
-                    </button>
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={async () => {
+                                const btn = document.getElementById('sync-btn');
+                                if (btn) btn.classList.add('animate-spin');
+                                try {
+                                    await processRecurringTransactions();
+                                } finally {
+                                    if (btn) btn.classList.remove('animate-spin');
+                                }
+                            }}
+                            id="sync-btn"
+                            className="h-12 w-12 flex items-center justify-center rounded-full bg-transparent border border-[#9CA3AF] dark:border-neutral-700 text-[#080B12] dark:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-all active:scale-90 shrink-0"
+                            title={t('Sincronizar Recorrências')}
+                        >
+                            <Plus className="rotate-45" size={20} />
+                        </button>
+
+                        <button
+                            onClick={() => setIsTransactionModalOpen(true)}
+                            className="h-12 px-8 flex items-center justify-center gap-2 bg-neutral-1100 dark:bg-[#D7FF00] text-white dark:text-[#080B12] rounded-full font-bold hover:scale-[1.02] active:scale-[0.98] transition-all whitespace-nowrap shadow-sm hover:shadow-md"
+                        >
+                            <Plus size={20} />
+                            {t('dashboard.newTransaction')}
+                        </button>
+                    </div>
                 </div>
             </div>
 
