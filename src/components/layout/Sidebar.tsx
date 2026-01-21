@@ -11,6 +11,7 @@ import {
     LogOut,
     Sun,
     Moon,
+    Settings,
 } from 'lucide-react';
 import {
     Tooltip,
@@ -21,23 +22,36 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { useSidebar } from '@/contexts/SidebarContext';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useSettings } from '@/contexts/SettingsContext';
 import { useState } from 'react';
 import { EditProfileModal } from '@/components/modals/EditProfileModal';
 
 const NAV_ITEMS = [
-    { label: 'Dashboard', icon: Home, path: '/dashboard' },
-    { label: 'Objetivos', icon: Target, path: '/goals' },
-    { label: 'Cartões/Dinheiro', icon: CreditCard, path: '/cards' },
-    { label: 'Transações', icon: ArrowRightLeft, path: '/transactions' },
-    { label: 'Perfil', icon: User, path: '/profile' },
+    { id: 'dashboard', label: 'Dashboard', icon: Home, path: '/dashboard' },
+    { id: 'goals', label: 'Objetivos', icon: Target, path: '/goals' },
+    { id: 'cards', label: 'Cartões/Dinheiro', icon: CreditCard, path: '/cards' },
+    { id: 'transactions', label: 'Transações', icon: ArrowRightLeft, path: '/transactions' },
+    { id: 'profile', label: 'Perfil', icon: User, path: '/profile' },
+    { id: 'settings', label: 'Configurações', icon: Settings, path: '/settings', masterOnly: true },
 ];
 
 export function Sidebar() {
     const { isCollapsed, toggleSidebar } = useSidebar();
     const { user, signOut } = useAuth();
     const { theme, toggleTheme } = useTheme();
+    const { isMasterUser, menuItems } = useSettings();
     const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
     const location = useLocation();
+
+    // Filter nav items based on settings and master user status
+    const visibleNavItems = NAV_ITEMS.filter(item => {
+        // Check if it's master only and user is not master
+        if ((item as any).masterOnly && !isMasterUser) return false;
+        // Check if item is enabled in settings
+        const menuConfig = menuItems.find(m => m.id === item.id);
+        if (menuConfig && !menuConfig.enabled) return false;
+        return true;
+    });
 
     const SidebarContent = (
         <div className={cn(
@@ -75,7 +89,7 @@ export function Sidebar() {
 
             {/* Navigation */}
             <nav className="flex-1 mt-14 px-4 space-y-2">
-                {NAV_ITEMS.map((item) => {
+                {visibleNavItems.map((item) => {
                     const isActive = location.pathname === item.path;
 
                     const LinkContent = (

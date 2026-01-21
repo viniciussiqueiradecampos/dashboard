@@ -1,13 +1,11 @@
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
 import { CreditCardsWidget } from '@/components/dashboard/CreditCardsWidget';
 import { AddAccountModal } from '@/components/modals/AddAccountModal';
-import { NewTransactionModal } from '@/components/modals/NewTransactionModal';
 import { useState } from 'react';
-import { Plus, ArrowRightLeft } from 'lucide-react';
+import { Plus } from 'lucide-react';
 
 export function Cards() {
     const [isAddCardOpen, setIsAddCardOpen] = useState(false);
-    const [isNewTransactionOpen, setIsNewTransactionOpen] = useState(false);
 
     return (
         <div className="flex flex-col w-full h-full">
@@ -20,14 +18,6 @@ export function Cards() {
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <button
-                        onClick={() => setIsNewTransactionOpen(true)}
-                        className="flex items-center gap-2 px-6 py-3 bg-[#D7FF00] text-[#080B12] rounded-full hover:opacity-90 transition-all font-bold shadow-sm"
-                    >
-                        <ArrowRightLeft size={18} />
-                        <span>Lançar Transação</span>
-                    </button>
-
                     <button
                         onClick={() => setIsAddCardOpen(true)}
                         className="flex items-center gap-2 px-6 py-3 bg-[#080B12] dark:bg-[#D7FF00] text-white dark:text-[#080B12] rounded-full hover:bg-neutral-800 dark:hover:opacity-90 transition-all font-bold shadow-sm"
@@ -47,11 +37,6 @@ export function Cards() {
             <AddAccountModal
                 isOpen={isAddCardOpen}
                 onClose={() => setIsAddCardOpen(false)}
-            />
-
-            <NewTransactionModal
-                isOpen={isNewTransactionOpen}
-                onClose={() => setIsNewTransactionOpen(false)}
             />
         </div>
     );

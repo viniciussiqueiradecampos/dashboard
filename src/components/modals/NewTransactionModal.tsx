@@ -1,8 +1,9 @@
-import { X, ArrowUpCircle, ArrowDownCircle, Trash2 } from 'lucide-react';
+import { X, ArrowUpCircle, ArrowDownCircle } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useFinance } from '@/contexts/FinanceContext';
 import { cn } from '@/utils/cn';
 import { TransactionType } from '@/types';
+import { CategorySelector } from '@/components/ui/CategorySelector';
 
 interface NewTransactionModalProps {
     isOpen: boolean;
@@ -28,7 +29,6 @@ export function NewTransactionModal({ isOpen, onClose, defaultCardId }: NewTrans
 
     // Category Management
     const [categoryInput, setCategoryInput] = useState('');
-    const [isCreatingCategory, setIsCreatingCategory] = useState(false);
 
     const [memberId, setMemberId] = useState('');
     const [accountId, setAccountId] = useState(defaultCardId || '');
@@ -49,7 +49,6 @@ export function NewTransactionModal({ isOpen, onClose, defaultCardId }: NewTrans
         }
     }, [isOpen, defaultCardId]);
 
-    const filteredCategories = categories.filter(c => c.type === type);
     const isCard = creditCards.some(c => c.id === accountId);
     const isAccount = bankAccounts.some(a => a.id === accountId);
     const showInstallments = isCard && type === 'expense';
@@ -67,16 +66,14 @@ export function NewTransactionModal({ isOpen, onClose, defaultCardId }: NewTrans
         // User needs to select the newly created account manually or we could select it automatically if addAccount returned ID
     };
 
-    const handleCreateCategory = async () => {
-        if (!categoryInput.trim()) return;
+    const handleCreateCategory = async (name: string) => {
         await addCategory({
-            name: categoryInput,
-            type: type, // income or expense
+            name: name,
+            type: type,
             icon: '🏷️',
             color: '#333'
         });
-        setCategoryInput(''); // Select logic handles selection by name
-        setIsCreatingCategory(false);
+        setCategoryInput(name);
     };
 
     const validate = () => {
@@ -87,9 +84,7 @@ export function NewTransactionModal({ isOpen, onClose, defaultCardId }: NewTrans
             newErrors.amount = 'Valor deve ser maior que zero';
         }
 
-        if (!description || description.length < 3) {
-            newErrors.description = 'Descrição deve ter pelo menos 3 caracteres';
-        }
+        // Descrição é opcional - não validamos mais
 
         if (!categoryInput) {
             newErrors.category = 'Selecione uma categoria';
@@ -154,8 +149,8 @@ export function NewTransactionModal({ isOpen, onClose, defaultCardId }: NewTrans
                             )}
                         </div>
                         <div>
-                            <h2 className="text-2xl font-bold text-neutral-1100 dark:text-white">Nova Transação</h2>
-                            <p className="text-sm text-neutral-500 dark:text-neutral-400">Registre entradas e saídas</p>
+                            <h2 className="text-2xl font-bold text-neutral-1100 dark:text-white">Transações Recorrentes</h2>
+                            <p className="text-sm text-neutral-500 dark:text-neutral-400">Registre despesas e receitas fixas</p>
                         </div>
                     </div>
                     <button
@@ -242,64 +237,20 @@ export function NewTransactionModal({ isOpen, onClose, defaultCardId }: NewTrans
                         </div>
 
                         {/* Category with Add/Remove */}
-                        <div>
-                            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Categoria</label>
-                            <div className="flex gap-2">
-                                {isCreatingCategory ? (
-                                    <div className="flex-1 flex gap-2">
-                                        <input
-                                            type="text"
-                                            value={categoryInput}
-                                            onChange={(e) => setCategoryInput(e.target.value)}
-                                            className="flex-1 h-14 px-4 bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-2xl outline-none dark:text-white"
-                                            placeholder="Nome da categoria"
-                                            autoFocus
-                                        />
-                                        <button onClick={handleCreateCategory} className="px-4 bg-black dark:bg-[#D7FF00] text-white dark:text-[#080B12] rounded-2xl font-bold">OK</button>
-                                        <button onClick={() => setIsCreatingCategory(false)} className="px-4 border dark:border-neutral-700 rounded-2xl dark:text-white">Can</button>
-                                    </div>
-                                ) : (
-                                    <div className="relative flex-1">
-                                        <select
-                                            value={categoryInput}
-                                            onChange={(e) => {
-                                                if (e.target.value === 'NEW') setIsCreatingCategory(true);
-                                                else setCategoryInput(e.target.value);
-                                            }}
-                                            className={cn(
-                                                "w-full h-14 px-4 bg-white dark:bg-neutral-800 border rounded-2xl text-neutral-1100 dark:text-white focus:ring-2 focus:ring-black dark:focus:ring-[#D7FF00] focus:border-transparent transition-all outline-none appearance-none",
-                                                errors.category ? 'border-red-500' : 'border-neutral-300 dark:border-neutral-700'
-                                            )}
-                                        >
-                                            <option value="">Selecione...</option>
-                                            {filteredCategories.map(cat => (
-                                                <option key={cat.id} value={cat.name}>{cat.name}</option>
-                                            ))}
-                                            <option value="NEW" className="font-bold">+ Nova Categoria</option>
-                                        </select>
-                                        {categoryInput && categories.some(c => c.name === categoryInput) && (
-                                            <button
-                                                onClick={() => {
-                                                    const c = categories.find(c => c.name === categoryInput);
-                                                    if (c) {
-                                                        deleteCategory(c.id);
-                                                        setCategoryInput('');
-                                                    }
-                                                }}
-                                                className="absolute right-10 top-1/2 -translate-y-1/2 text-red-500 hover:text-red-700 p-2"
-                                                title="Deletar Categoria"
-                                            >
-                                                <Trash2 size={16} />
-                                            </button>
-                                        )}
-                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
-                                            <ArrowDownCircle size={16} className="text-neutral-500" />
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                            {errors.category && <p className="text-red-500 text-xs mt-1">{errors.category}</p>}
-                        </div>
+                        <CategorySelector
+                            categories={categories}
+                            selectedCategory={categoryInput}
+                            onSelect={(name) => setCategoryInput(name)}
+                            onAddCategory={handleCreateCategory}
+                            onDeleteCategory={(id) => {
+                                deleteCategory(id);
+                                if (categories.find(c => c.id === id)?.name === categoryInput) {
+                                    setCategoryInput('');
+                                }
+                            }}
+                            type={type}
+                            error={errors.category}
+                        />
 
                         {/* Account Select with Add Custom */}
                         <div className="grid grid-cols-2 gap-4">

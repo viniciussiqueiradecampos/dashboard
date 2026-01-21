@@ -135,7 +135,7 @@ export function UpcomingExpensesWidget() {
                             <Wallet size={20} className="text-neutral-1100 dark:text-white" />
                         </div>
                         <h2 className="text-xl font-bold text-neutral-1100 dark:text-white tracking-tight transition-colors">
-                            Próximas despesas
+                            Transações Recorrentes
                         </h2>
                     </div>
                     <div className="flex items-center gap-2">

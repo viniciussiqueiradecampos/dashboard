@@ -577,10 +577,10 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
 
     const totalBalance = useMemo(() => {
         const totalIncome = transactions
-            .filter(t => t.type === 'income' && t.status === 'completed')
+            .filter(t => t.type === 'income')
             .reduce((acc, curr) => acc + curr.amount, 0);
         const totalExpense = transactions
-            .filter(t => t.type === 'expense' && t.status === 'completed')
+            .filter(t => t.type === 'expense')
             .reduce((acc, curr) => acc + curr.amount, 0);
 
         return totalIncome - totalExpense;
