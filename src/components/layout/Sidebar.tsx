@@ -72,13 +72,13 @@ export function Sidebar() {
 
     const SidebarContent = (
         <div className={cn(
-            "flex flex-col h-screen bg-neutral-0 dark:bg-neutral-900 text-neutral-1100 dark:text-white transition-all duration-300 ease-in-out border-r border-neutral-200 dark:border-neutral-800 relative z-50",
+            "hidden lg:flex flex-col h-screen bg-neutral-0 dark:bg-neutral-900 text-neutral-1100 dark:text-white transition-all duration-300 ease-in-out border-r border-neutral-200 dark:border-neutral-800 relative z-50",
             isCollapsed ? "w-20" : "w-[300px]"
         )}>
             {/* Toggle Button */}
             <button
                 onClick={toggleSidebar}
-                className="absolute -right-3 top-12 bg-neutral-0 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-400 rounded-full p-1 shadow-md hover:text-brand-900 dark:hover:text-[#D7FF00] hover:border-brand-500 transition-colors"
+                className="hidden lg:flex absolute -right-3 top-12 bg-neutral-0 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-400 rounded-full p-1 shadow-md hover:text-brand-900 dark:hover:text-[#D7FF00] hover:border-brand-500 transition-colors"
                 aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
             >
                 {isCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
@@ -226,9 +226,50 @@ export function Sidebar() {
         </div>
     );
 
+    const BottomNav = (
+        <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-[60] bg-white dark:bg-[#080B12] border-t border-neutral-200 dark:border-neutral-800 px-2 pb-6 pt-2">
+            <div className="flex items-center justify-around">
+                {visibleNavItems.map((item) => {
+                    const isActive = location.pathname === item.path;
+                    return (
+                        <NavLink
+                            key={item.path}
+                            to={item.path}
+                            className={cn(
+                                "flex flex-col items-center gap-1 p-2 rounded-xl transition-all duration-200 min-w-16",
+                                isActive
+                                    ? "text-[#D7FF00]"
+                                    : "text-neutral-500 dark:text-neutral-400"
+                            )}
+                        >
+                            <item.icon
+                                size={24}
+                                className={cn(
+                                    "transition-colors",
+                                    isActive ? "text-[#D7FF00]" : "text-neutral-500 dark:text-neutral-400"
+                                )}
+                            />
+                            <span className={cn(
+                                "text-[10px] font-medium uppercase tracking-tight",
+                                isActive ? "text-[#D7FF00]" : "text-neutral-500 dark:text-neutral-400"
+                            )}>
+                                {item.displayLabel.split(' ')[0]}
+                            </span>
+                        </NavLink>
+                    );
+                })}
+            </div>
+        </nav>
+    );
+
     return (
         <TooltipProvider>
             {SidebarContent}
+            {BottomNav}
+            <EditProfileModal
+                isOpen={isEditProfileOpen}
+                onClose={() => setIsEditProfileOpen(false)}
+            />
         </TooltipProvider>
     )
 }

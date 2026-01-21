@@ -46,7 +46,7 @@ function ProtectedLayout() {
                         theme === 'dark' ? 'bg-[#080B12]' : 'bg-neutral-100'
                     )}>
                         <Sidebar />
-                        <main className="flex-1 overflow-y-auto p-4 lg:p-8 ml-0 lg:ml-20 transition-all duration-300">
+                        <main className="flex-1 overflow-y-auto p-4 lg:p-8 pb-24 lg:pb-8 transition-all duration-300">
                             <div className="max-w-7xl mx-auto h-full">
                                 <Outlet />
                             </div>
