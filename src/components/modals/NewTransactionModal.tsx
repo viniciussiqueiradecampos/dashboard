@@ -26,6 +26,7 @@ export function NewTransactionModal({ isOpen, onClose, defaultCardId }: NewTrans
     const [type, setType] = useState<TransactionType>('expense');
     const [amount, setAmount] = useState('');
     const [description, setDescription] = useState('');
+    const [status, setStatus] = useState<'completed' | 'pending'>('completed');
 
     // Category Management
     const [categoryInput, setCategoryInput] = useState('');
@@ -43,11 +44,22 @@ export function NewTransactionModal({ isOpen, onClose, defaultCardId }: NewTrans
     const [errors, setErrors] = useState<Record<string, string>>({});
 
     // Update accountId when modal opens with defaultCardId
+    // Update accountId when modal opens with defaultCardId
     useEffect(() => {
         if (isOpen && defaultCardId) {
             setAccountId(defaultCardId);
         }
     }, [isOpen, defaultCardId]);
+
+    // Update status based on date
+    useEffect(() => {
+        const today = new Date().toISOString().split('T')[0];
+        if (date > today) {
+            setStatus('pending');
+        } else {
+            setStatus('completed');
+        }
+    }, [date]);
 
     const isCard = creditCards.some(c => c.id === accountId);
     const isAccount = bankAccounts.some(a => a.id === accountId);
@@ -63,7 +75,6 @@ export function NewTransactionModal({ isOpen, onClose, defaultCardId }: NewTrans
         });
         setNewAccountName('');
         setIsCreatingAccount(false);
-        // User needs to select the newly created account manually or we could select it automatically if addAccount returned ID
     };
 
     const handleCreateCategory = async (name: string) => {
@@ -83,8 +94,6 @@ export function NewTransactionModal({ isOpen, onClose, defaultCardId }: NewTrans
         if (!amount || numAmount <= 0) {
             newErrors.amount = 'Valor deve ser maior que zero';
         }
-
-        // Descrição é opcional - não validamos mais
 
         if (!categoryInput) {
             newErrors.category = 'Selecione uma categoria';
@@ -107,7 +116,7 @@ export function NewTransactionModal({ isOpen, onClose, defaultCardId }: NewTrans
             type,
             category: categoryInput,
             date,
-            status: 'completed',
+            status: status,
             accountId: isAccount ? accountId : undefined,
             cardId: isCard ? accountId : undefined,
             memberId,
@@ -234,6 +243,25 @@ export function NewTransactionModal({ isOpen, onClose, defaultCardId }: NewTrans
                                 placeholder="Ex: Mercado"
                             />
                             {errors.description && <p className="text-red-500 text-xs mt-1">{errors.description}</p>}
+                        </div>
+
+                        {/* Status Checkbox */}
+                        <div className="flex items-center gap-3 bg-neutral-100 dark:bg-neutral-800 p-4 rounded-2xl">
+                            <input
+                                type="checkbox"
+                                id="status-check"
+                                checked={status === 'completed'}
+                                onChange={(e) => setStatus(e.target.checked ? 'completed' : 'pending')}
+                                className="w-5 h-5 rounded border-neutral-300 text-black focus:ring-black"
+                            />
+                            <label htmlFor="status-check" className="font-medium text-neutral-1100 dark:text-white cursor-pointer select-none">
+                                {type === 'income' ? 'Recebido' : 'Pago'}
+                            </label>
+                            <span className="text-sm text-neutral-500 dark:text-neutral-400 ml-auto">
+                                {status === 'completed'
+                                    ? (type === 'income' ? 'Valor já entrou na conta' : 'Valor já saiu da conta')
+                                    : (type === 'income' ? 'Aguardando recebimento' : 'Agendado / Pendente')}
+                            </span>
                         </div>
 
                         {/* Category with Add/Remove */}

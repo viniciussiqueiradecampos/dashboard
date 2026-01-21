@@ -1,6 +1,7 @@
 import { CreditCard as CardIcon, Plus, ChevronRight, Banknote } from 'lucide-react';
 import { useState } from 'react';
 import { useFinance } from '@/contexts/FinanceContext';
+import { useSettings } from '@/contexts/SettingsContext';
 import { cn } from '@/utils/cn';
 import { CreditCard, BankAccount } from '@/types';
 import { CardDetailsModal } from '@/components/modals/CardDetailsModal';
@@ -8,26 +9,20 @@ import { AddAccountModal } from '@/components/modals/AddAccountModal';
 import { EditAccountModal } from '@/components/modals/EditAccountModal';
 
 interface CreditCardItemProps {
-    card: CreditCard & { currentBill: number };
+    card: CreditCard;
     onClick: () => void;
 }
 
 function CreditCardItem({ card, onClick }: CreditCardItemProps) {
-    const usagePercentage = card.limit > 0 ? Math.round((card.currentBill / card.limit) * 100) : 0;
-    const availableLimit = card.limit - card.currentBill;
+    const { formatCurrency } = useSettings();
+    const usagePercentage = card.limit > 0 ? Math.round((card.currentInvoice / card.limit) * 100) : 0;
+    const availableLimit = card.limit - card.currentInvoice;
 
     // Define colors based on usage percentage
     const getProgressColor = () => {
         if (usagePercentage >= 90) return 'bg-red-500';
         if (usagePercentage >= 70) return 'bg-orange-500';
         return 'bg-green-500';
-    };
-
-    const formatCurrency = (value: number) => {
-        return new Intl.NumberFormat('pt-BR', {
-            style: 'currency',
-            currency: 'BRL',
-        }).format(value);
     };
 
     // Bank logo colors
@@ -70,7 +65,7 @@ function CreditCardItem({ card, onClick }: CreditCardItemProps) {
 
             {/* Amount used */}
             <h3 className="text-2xl font-bold text-neutral-900 dark:text-white mb-1">
-                {formatCurrency(card.currentBill)}
+                {formatCurrency(card.currentInvoice)}
             </h3>
 
             {/* Due date */}
@@ -111,11 +106,7 @@ interface AccountItemProps {
 }
 
 function AccountItem({ account, isCash, onClick }: AccountItemProps) {
-    const formatCurrency = (value: number) => {
-        return new Intl.NumberFormat('pt-BR', {
-            style: 'currency', currency: 'BRL',
-        }).format(value);
-    };
+    const { formatCurrency } = useSettings();
 
     return (
         <div
@@ -125,12 +116,16 @@ function AccountItem({ account, isCash, onClick }: AccountItemProps) {
             {/* Header: Bank name */}
             <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                    <div className={cn(
-                        "w-6 h-6 rounded flex items-center justify-center",
-                        isCash ? "bg-green-500 text-white" : "bg-blue-500 text-white"
-                    )}>
-                        {isCash ? <Banknote size={14} /> : <span className="text-[10px] font-bold">{account.bankName.substring(0, 2).toUpperCase()}</span>}
-                    </div>
+                    {account.imageUrl ? (
+                        <img src={account.imageUrl} alt={account.bankName} className="w-6 h-6 rounded object-cover" />
+                    ) : (
+                        <div className={cn(
+                            "w-6 h-6 rounded flex items-center justify-center",
+                            isCash ? "bg-green-500 text-white" : "bg-blue-500 text-white"
+                        )}>
+                            {isCash ? <Banknote size={14} /> : <span className="text-[10px] font-bold">{account.bankName.substring(0, 2).toUpperCase()}</span>}
+                        </div>
+                    )}
                     <span className="text-sm font-medium text-neutral-900 dark:text-white">
                         {isCash ? 'Dinheiro' : account.bankName}
                     </span>
@@ -154,43 +149,13 @@ function AccountItem({ account, isCash, onClick }: AccountItemProps) {
 }
 
 export function CreditCardsWidget() {
-    const { creditCards, bankAccounts, transactions } = useFinance();
+    const { creditCards, bankAccounts } = useFinance();
     const [selectedCard, setSelectedCard] = useState<CreditCard | null>(null);
     const [selectedAccount, setSelectedAccount] = useState<BankAccount | null>(null);
 
     const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
     const [isEditAccountOpen, setIsEditAccountOpen] = useState(false);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-
-    // Calculate current bill for each card based on transactions
-    const enrichedCards = creditCards.map(card => {
-        const cardExpenses = transactions
-            .filter(t => t.cardId === card.id && t.type === 'expense')
-            .reduce((sum, t) => sum + t.amount, 0);
-        const cardPayments = transactions
-            .filter(t => t.cardId === card.id && t.type === 'income')
-            .reduce((sum, t) => sum + t.amount, 0);
-
-        return {
-            ...card,
-            currentBill: (card.currentInvoice || 0) + cardExpenses - cardPayments
-        };
-    });
-
-    // Calculate balance for each account based on transactions
-    const enrichedAccounts = bankAccounts.map(account => {
-        const income = transactions
-            .filter(t => t.accountId === account.id && t.type === 'income')
-            .reduce((sum, t) => sum + t.amount, 0);
-        const expense = transactions
-            .filter(t => t.accountId === account.id && t.type === 'expense')
-            .reduce((sum, t) => sum + t.amount, 0);
-
-        return {
-            ...account,
-            balance: (account.balance || 0) + income - expense
-        };
-    });
 
     const handleCardClick = (card: CreditCard) => {
         setSelectedCard(card);
@@ -232,7 +197,7 @@ export function CreditCardsWidget() {
 
                 {/* Cards List */}
                 <div className="space-y-0">
-                    {enrichedCards.map((card) => (
+                    {creditCards.map((card) => (
                         <CreditCardItem
                             key={card.id}
                             card={card}
@@ -240,7 +205,7 @@ export function CreditCardsWidget() {
                         />
                     ))}
 
-                    {enrichedAccounts.map((account) => (
+                    {bankAccounts.map((account) => (
                         <AccountItem
                             key={account.id}
                             account={account}
@@ -249,7 +214,7 @@ export function CreditCardsWidget() {
                         />
                     ))}
 
-                    {enrichedCards.length === 0 && enrichedAccounts.length === 0 && (
+                    {creditCards.length === 0 && bankAccounts.length === 0 && (
                         <div className="flex flex-col items-center justify-center py-12 border-2 border-dashed border-neutral-200 dark:border-neutral-800 rounded-2xl">
                             <CardIcon size={32} className="text-neutral-300 dark:text-neutral-700 mb-3" />
                             <p className="text-sm text-neutral-400 font-medium">Nenhum cartão ou conta cadastrado</p>

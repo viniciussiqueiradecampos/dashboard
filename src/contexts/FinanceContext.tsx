@@ -49,7 +49,7 @@ interface FinanceContextType {
     deleteCard: (id: string) => Promise<void>;
 
     // CRUD Accounts
-    addAccount: (a: Omit<BankAccount, 'id'> & { holderId?: string }) => Promise<void>;
+    addAccount: (a: Omit<BankAccount, 'id'> & { holderId?: string, imageUrl?: string }) => Promise<void>;
     updateAccount: (id: string, a: Partial<BankAccount>) => Promise<void>;
     deleteAccount: (id: string) => Promise<void>;
 
@@ -204,7 +204,8 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
                     name: a.name,
                     balance: Number(a.balance),
                     bankName: a.bank,
-                    color: a.color
+                    color: a.color,
+                    imageUrl: a.logo_url
                 })));
 
                 setCreditCards(cards.map((c: any) => ({
@@ -482,7 +483,8 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
             bank: a.bankName,
             balance: a.balance,
             color: a.color,
-            holder_id: a.holderId || null
+            holder_id: a.holderId || null,
+            logo_url: a.imageUrl || null
         });
         if (error) {
             console.error('Error adding account:', error);
@@ -494,7 +496,8 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         const { error } = await sb.from('accounts').update({
             name: a.name,
             bank: a.bankName,
-            balance: a.balance
+            balance: a.balance,
+            logo_url: a.imageUrl
         }).eq('id', id);
         if (!error) await refreshData();
     };
@@ -576,15 +579,8 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     }, [transactions, filters]);
 
     const totalBalance = useMemo(() => {
-        const totalIncome = transactions
-            .filter(t => t.type === 'income')
-            .reduce((acc, curr) => acc + curr.amount, 0);
-        const totalExpense = transactions
-            .filter(t => t.type === 'expense')
-            .reduce((acc, curr) => acc + curr.amount, 0);
-
-        return totalIncome - totalExpense;
-    }, [transactions]);
+        return bankAccounts.reduce((acc, account) => acc + account.balance, 0);
+    }, [bankAccounts]);
 
     const incomeForPeriod = useMemo(() => {
         return filteredTransactions

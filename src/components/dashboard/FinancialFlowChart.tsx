@@ -1,28 +1,14 @@
 import { TrendingUp } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useFinance } from '@/contexts/FinanceContext';
+import { useSettings } from '@/contexts/SettingsContext';
 import { useMemo } from 'react';
 import { parseISO, format as formatDateFns } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { ptBR, enUS } from 'date-fns/locale';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/utils/cn';
 
-const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-        style: 'currency',
-        currency: 'BRL',
-        maximumFractionDigits: 0,
-    }).format(value).replace('R$', 'R$ ');
-};
-
-const formatYAxis = (value: number) => {
-    if (value >= 1000) {
-        return `R$ ${(value / 1000).toFixed(value % 1000 === 0 ? 0 : 1)}k`;
-    }
-    return `R$ ${value}`;
-};
-
-const CustomTooltip = ({ active, payload, label }: any) => {
+const CustomTooltip = ({ active, payload, label, formatCurrency }: any) => {
     if (active && payload && payload.length) {
         return (
             <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-4 rounded-2xl shadow-xl outline-none">
@@ -44,6 +30,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 export function FinancialFlowChart() {
     const { transactions } = useFinance();
     const { theme } = useTheme();
+    const { formatCurrency, currency } = useSettings();
 
     const chartData = useMemo(() => {
         if (!transactions.length) return [];
@@ -51,7 +38,8 @@ export function FinancialFlowChart() {
         // Group by month
         const grouped = transactions.reduce((acc, t) => {
             const date = parseISO(t.date);
-            const monthName = formatDateFns(date, 'MMM', { locale: ptBR }).toUpperCase();
+            const locale = currency === 'BRL' ? ptBR : enUS;
+            const monthName = formatDateFns(date, 'MMM', { locale }).toUpperCase();
 
             if (!acc[monthName]) {
                 acc[monthName] = { month: monthName, receitas: 0, despesas: 0, timestamp: date.getTime() };
@@ -70,9 +58,17 @@ export function FinancialFlowChart() {
         return Object.values(grouped)
             .sort((a, b) => a.timestamp - b.timestamp)
             .map(({ month, receitas, despesas }) => ({ month, receitas, despesas }));
-    }, [transactions]);
+    }, [transactions, currency]);
 
     const expenseColor = theme === 'dark' ? '#FFFFFF' : '#080B12';
+
+    const formatYAxis = (value: number) => {
+        if (value >= 1000) {
+            // Simplesmente abrevia, o símbolo já é conhecido pelo contexto
+            return `${(value / 1000).toFixed(0)}k`;
+        }
+        return `${value}`;
+    };
 
     return (
         <div className="w-full bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-800 rounded-[32px] p-8 shadow-sm h-full flex flex-col transition-colors duration-300">
@@ -101,7 +97,7 @@ export function FinancialFlowChart() {
                     <ResponsiveContainer width="100%" height="100%">
                         <AreaChart
                             data={chartData}
-                            margin={{ top: 10, right: 10, left: 10, bottom: 0 }}
+                            margin={{ top: 10, right: 10, left: 10, bottom: 20 }}
                         >
                             <defs>
                                 <linearGradient id="colorReceitas" x1="0" y1="0" x2="0" y2="1">
@@ -134,11 +130,11 @@ export function FinancialFlowChart() {
                                 tickLine={false}
                                 tick={{ fill: theme === 'dark' ? '#94A3B8' : '#64748B', fontSize: 12, fontWeight: 700 }}
                                 tickFormatter={formatYAxis}
-                                width={60}
+                                width={40}
                             />
 
                             <Tooltip
-                                content={<CustomTooltip />}
+                                content={<CustomTooltip formatCurrency={formatCurrency} />}
                                 cursor={{ stroke: theme === 'dark' ? '#334155' : '#E5E7EB', strokeWidth: 1 }}
                             />
 

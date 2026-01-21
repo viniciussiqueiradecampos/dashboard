@@ -16,6 +16,7 @@ export interface BankAccount {
     balance: number;
     bankName: string;
     color?: string;
+    imageUrl?: string;
 }
 
 export interface CreditCard {
