@@ -300,8 +300,8 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
                 account_id: finalAccountId || null,
                 member_id: t.memberId || null,
                 frequency: 'MONTHLY',
-                day_of_month: parseISO(t.date).getDate(),
-                start_date: t.date,
+                day_of_month: !isNaN(parseISO(t.date).getTime()) ? parseISO(t.date).getDate() : 1,
+                start_date: t.date || new Date().toISOString().split('T')[0],
                 is_active: true
             }).select().maybeSingle();
             if (rt) recurringId = (rt as any).id;
@@ -312,7 +312,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
             description: t.description,
             amount: t.amount,
             type: t.type.toUpperCase(),
-            date: t.date,
+            date: t.date || new Date().toISOString().split('T')[0],
             status: t.status.toUpperCase(),
             category_id: catId,
             account_id: finalAccountId || null,

@@ -99,6 +99,14 @@ export function NewTransactionModal({ isOpen, onClose, defaultCardId }: NewTrans
             newErrors.amount = t('Valor deve ser maior que zero');
         }
 
+        if (!description.trim()) {
+            newErrors.description = t('Descrição é obrigatória');
+        }
+
+        if (!date) {
+            newErrors.date = t('Data é obrigatória');
+        }
+
         if (!categoryInput) {
             newErrors.category = t('Selecione uma categoria');
         }
@@ -228,8 +236,12 @@ export function NewTransactionModal({ isOpen, onClose, defaultCardId }: NewTrans
                                     type="date"
                                     value={date}
                                     onChange={(e) => setDate(e.target.value)}
-                                    className="w-full h-14 px-4 bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-2xl text-neutral-1100 dark:text-white focus:ring-2 focus:ring-black dark:focus:ring-[#D7FF00] focus:border-transparent transition-all outline-none"
+                                    className={cn(
+                                        "w-full h-14 px-4 bg-white dark:bg-neutral-800 border rounded-2xl text-neutral-1100 dark:text-white focus:ring-2 focus:ring-black dark:focus:ring-[#D7FF00] focus:border-transparent transition-all outline-none",
+                                        errors.date ? 'border-red-500' : 'border-neutral-300 dark:border-neutral-700'
+                                    )}
                                 />
+                                {errors.date && <p className="text-red-500 text-xs mt-1">{errors.date}</p>}
                             </div>
                         </div>
 
