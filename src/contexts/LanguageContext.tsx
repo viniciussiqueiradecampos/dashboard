@@ -124,11 +124,25 @@ const translations: Translations = {
     'Assinaturas': { 'pt-BR': 'Assinaturas', 'en-GB': 'Subscriptions' },
     'Compras': { 'pt-BR': 'Compras', 'en-GB': 'Shopping' },
 
-    // Settings
-    'settings.irreversible': { 'pt-BR': 'Esta ação é irreversível.', 'en-GB': 'This action is irreversible.' },
-    'settings.confirmReset': { 'pt-BR': 'Tem certeza que deseja apagar TUDO?', 'en-GB': 'Are you sure you want to delete EVERYTHING?' },
-    'settings.resetData': { 'pt-BR': 'Zerar Todos os Dados', 'en-GB': 'Reset All Data' },
+    'settings.restrictedAccess': { 'pt-BR': 'Acesso Restrito', 'en-GB': 'Restricted Access' },
+    'settings.restrictedMessage': { 'pt-BR': 'Você não tem permissão para acessar esta página.', 'en-GB': 'You do not have permission to access this page.' },
+    'settings.title': { 'pt-BR': 'Configurações', 'en-GB': 'Settings' },
+    'settings.subtitle': { 'pt-BR': 'Gerencie suas preferências e dados do sistema', 'en-GB': 'Manage your preferences and system data' },
+    'settings.adminMode': { 'pt-BR': 'Modo Administrador', 'en-GB': 'Admin Mode' },
+    'settings.currency': { 'pt-BR': 'Moeda Principal', 'en-GB': 'Primary Currency' },
+    'settings.language': { 'pt-BR': 'Idioma do Sistema', 'en-GB': 'System Language' },
+    'settings.menuItems': { 'pt-BR': 'Itens do Menu', 'en-GB': 'Menu Items' },
+    'settings.menuItemsSubtitle': { 'pt-BR': 'Ative ou desative widgets no dashboard', 'en-GB': 'Enable or disable widgets on the dashboard' },
+    'settings.widgetName': { 'pt-BR': 'Nome do Widget', 'en-GB': 'Widget Name' },
     'settings.dangerTitle': { 'pt-BR': 'Zona de Perigo', 'en-GB': 'Danger Zone' },
+    'settings.dangerDescription': { 'pt-BR': 'Ações críticas que podem apagar seus dados permanentemente.', 'en-GB': 'Critical actions that can permanently delete your data.' },
+    'settings.resetData': { 'pt-BR': 'Limpar Todos os Dados', 'en-GB': 'Reset All Data' },
+    'settings.irreversible': { 'pt-BR': 'Esta ação é irreversível.', 'en-GB': 'This action is irreversible.' },
+    'settings.confirmReset': { 'pt-BR': 'Tem certeza que deseja apagar TUDO? Esta ação não pode ser desfeita.', 'en-GB': 'Are you sure you want to delete EVERYTHING? This action cannot be undone.' },
+    'settings.resetBtn': { 'pt-BR': 'Zerar Histórico', 'en-GB': 'Reset Everything' },
+    'transactions.confirmDelete': { 'pt-BR': 'Confirmar Exclusão', 'en-GB': 'Confirm Deletion' },
+    'transactions.deleteMessage': { 'pt-BR': 'Tem certeza que deseja excluir esta transação? Esta ação não pode ser desfeita.', 'en-GB': 'Are you sure you want to delete this transaction? This action cannot be undone.' },
+    'transactions.recurrenceCancel': { 'pt-BR': 'Esta é uma transação recorrente. Deseja cancelar as próximas ocorrências também?', 'en-GB': 'This is a recurring transaction. Do you want to cancel future occurrences as well?' },
 };
 
 interface LanguageContextType {

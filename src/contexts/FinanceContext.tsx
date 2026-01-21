@@ -21,6 +21,7 @@ interface FinanceContextType {
     bankAccounts: BankAccount[];
     familyMembers: FamilyMember[];
     categories: Category[];
+    recurringTransactions: any[];
     isLoading: boolean;
 
     // Filters
@@ -93,6 +94,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);
     const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
+    const [recurringTransactions, setRecurringTransactions] = useState<any[]>([]);
 
     const [filters, setFilters] = useState<FinanceContextType['filters']>({
         selectedMember: null,
@@ -153,25 +155,30 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
                 }
             }
 
+            const results = await Promise.all([
+                sb.from('transactions').select('*, categories(name)').order('date', { ascending: false }),
+                sb.from('family_members').select('*'),
+                sb.from('accounts').select('*'),
+                sb.from('goals').select('*'),
+                sb.from('categories').select('*').eq('is_active', true),
+                sb.from('recurring_transactions').select('*').eq('is_active', true)
+            ]);
+
             const [
                 { data: transData, error: transError },
                 { data: membersData, error: membersError },
                 { data: accountsData, error: accountsError },
                 { data: goalsData, error: goalsError },
-                { data: categoriesData, error: categoriesError }
-            ] = await Promise.all([
-                sb.from('transactions').select('*, categories(name)').order('date', { ascending: false }),
-                sb.from('family_members').select('*'),
-                sb.from('accounts').select('*'),
-                sb.from('goals').select('*'),
-                sb.from('categories').select('*').eq('is_active', true)
-            ]);
+                { data: categoriesData, error: categoriesError },
+                { data: recurringData, error: recurringError }
+            ] = results;
 
             if (transError) console.error('Error loading transactions:', transError);
             if (membersError) console.error('Error loading members:', membersError);
             if (accountsError) console.error('Error loading accounts:', accountsError);
             if (goalsError) console.error('Error loading goals:', goalsError);
             if (categoriesError) console.error('Error loading categories:', categoriesError);
+            if (recurringError) console.error('Error loading recurring:', recurringError);
 
             if (goalsData) {
                 setGoals((goalsData as any[]).map((g: any) => ({
@@ -197,9 +204,10 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
 
             if (transData) setTransactions((transData as any[]).map(mapTransactionFromDB));
             if (membersData) setFamilyMembers((membersData as any[]).map(mapMemberFromDB));
+            if (recurringData) setRecurringTransactions(recurringData as any[]);
 
-            // Run recurrence engine in background
-            if (user) processRecurringTransactions(user.id);
+            // Run recurrence engine and WAIT for it if we just logged in or it's a manual refresh
+            if (user) await processRecurringTransactions(user.id);
 
             if (accountsData) {
                 const data = accountsData as any[];
@@ -360,31 +368,31 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     };
 
     const deleteTransaction = async (id: string) => {
-        const trans = transactions.find(t => t.id === id);
-        if (!trans) return;
+        try {
+            const trans = transactions.find(t => t.id === id);
+            if (!trans) return;
 
-        // Cancel future recurring transactions if applicable
-        if (trans.isRecurring && trans.recurringId) {
-            if (confirm(t('Esta é uma transação recorrente. Deseja cancelar as próximas ocorrências também?'))) {
-                await sb.from('recurring_transactions').update({ is_active: false }).eq('id', trans.recurringId);
+            // Cancel future recurring transactions if applicable
+            if (trans.isRecurring && trans.recurringId) {
+                if (confirm(t('transactions.recurrenceCancel'))) {
+                    await sb.from('recurring_transactions').update({ is_active: false }).eq('id', trans.recurringId);
+                }
             }
-        }
 
-        // If it belongs to an installment group, ensure the entire series is deleted
-        if (trans.parentTransactionId) {
-            await sb.from('transactions').delete().eq('parent_transaction_id', trans.parentTransactionId);
-            await sb.from('transactions').delete().eq('id', trans.parentTransactionId);
-        } else {
-            // Delete potential children and then the transaction itself
-            await sb.from('transactions').delete().eq('parent_transaction_id', id);
-            const { error } = await sb.from('transactions').delete().eq('id', id);
-            if (error) {
-                console.error('Error deleting transaction:', error);
-                alert(`Error: ${error.message}`);
+            // If it belongs to an installment group, ensure the entire series is deleted
+            if (trans.parentTransactionId) {
+                // Delete children and the parent
+                await sb.from('transactions').delete().or(`parent_transaction_id.eq.${trans.parentTransactionId},id.eq.${trans.parentTransactionId}`);
+            } else {
+                // It might be the parent itself
+                await sb.from('transactions').delete().or(`parent_transaction_id.eq.${id},id.eq.${id}`);
             }
-        }
 
-        await refreshData();
+            await refreshData();
+        } catch (err: any) {
+            console.error('Error deleting transaction:', err);
+            alert(`${t('Erro ao excluir')}: ${err.message}`);
+        }
     };
 
     const addGoal = async (g: Omit<Goal, 'id'>) => {
@@ -432,23 +440,28 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         const currentYear = now.getFullYear();
         const currentMonth = now.getMonth() + 1; // 1-12
 
+        let createdAny = false;
+
         for (const rt of recurring) {
-            // Check if already spawned this month
-            const startOfMonth = `${currentYear}-${String(currentMonth).padStart(2, '0')}-01`;
-            const endOfMonth = `${currentYear}-${String(currentMonth).padStart(2, '0')}-31`;
+            // Start and end of month for overlap check
+            const startOfM = new Date(currentYear, currentMonth - 1, 1);
+            const endOfM = new Date(currentYear, currentMonth, 0); // Last day of month
+
+            const startOfMonthStr = format(startOfM, 'yyyy-MM-dd');
+            const endOfMonthStr = format(endOfM, 'yyyy-MM-dd');
 
             const { count } = await sb.from('transactions')
                 .select('*', { count: 'exact', head: true })
                 .eq('recurring_transaction_id', rt.id)
-                .gte('date', startOfMonth)
-                .lte('date', endOfMonth);
+                .gte('date', startOfMonthStr)
+                .lte('date', endOfMonthStr);
 
             if (count === 0) {
                 // Spawn!
-                const day = Math.min(rt.day_of_month || 1, 28);
+                const day = Math.min(rt.day_of_month || 1, endOfM.getDate());
                 const spawnDate = `${currentYear}-${String(currentMonth).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 
-                await sb.from('transactions').insert({
+                const { error } = await sb.from('transactions').insert({
                     user_id: userId,
                     recurring_transaction_id: rt.id,
                     description: rt.description,
@@ -461,7 +474,15 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
                     status: 'PENDING',
                     is_recurring: true
                 });
+
+                if (!error) createdAny = true;
             }
+        }
+
+        // If we created anything, we need to RE-FETCH transactions to show them immediately
+        if (createdAny) {
+            const { data } = await sb.from('transactions').select('*, categories(name)').order('date', { ascending: false });
+            if (data) setTransactions(data.map(mapTransactionFromDB));
         }
     };
 
@@ -749,7 +770,8 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         savingsRate,
         refreshData,
         deleteMemberTransactions,
-        resetAllData
+        resetAllData,
+        recurringTransactions
     };
 
     return (

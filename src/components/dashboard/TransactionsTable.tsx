@@ -142,7 +142,7 @@ export function TransactionsTable() {
                 {/* Header */}
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
                     <h2 className="text-xl font-bold text-neutral-1100 dark:text-white tracking-tight">
-                        {t('Extrato detalhado')}
+                        {t('transactions.title')}
                     </h2>
 
                     <div className="flex flex-col sm:flex-row gap-3">

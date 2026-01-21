@@ -327,9 +327,9 @@ export function EditTransactionModal({ isOpen, onClose, transaction }: EditTrans
                 {showDeleteConfirm && (
                     <div className="absolute inset-0 bg-black/50 z-[60] flex items-center justify-center p-6 rounded-[32px]">
                         <div className="bg-white dark:bg-neutral-900 p-6 rounded-2xl shadow-xl max-w-sm w-full border border-neutral-200 dark:border-neutral-800">
-                            <h3 className="text-lg font-bold text-neutral-1100 dark:text-white mb-2">{t('Confirmar Exclusão')}</h3>
+                            <h3 className="text-lg font-bold text-neutral-1100 dark:text-white mb-2">{t('transactions.confirmDelete')}</h3>
                             <p className="text-neutral-600 dark:text-neutral-400 mb-6">
-                                {t('Tem certeza que deseja excluir esta transação? Esta ação não pode ser desfeita.')}
+                                {t('transactions.deleteMessage')}
                             </p>
                             <div className="flex gap-3">
                                 <button
