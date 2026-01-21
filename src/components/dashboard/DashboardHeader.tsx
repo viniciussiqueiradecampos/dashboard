@@ -3,6 +3,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/utils/cn';
 import { Search, SlidersHorizontal, Plus, Moon, Sun } from 'lucide-react';
 import { MemberFilter } from './MemberFilter';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { DateRangePicker } from './DateRangePicker';
 import { NewTransactionModal } from '@/components/modals/NewTransactionModal';
@@ -12,6 +13,7 @@ import { useState } from 'react';
 export function DashboardHeader() {
     const { filters, setFilters } = useFinance();
     const { theme, toggleTheme } = useTheme();
+    const { t } = useLanguage();
     const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
     const [isFiltersMobileOpen, setIsFiltersMobileOpen] = useState(false);
 
@@ -32,7 +34,7 @@ export function DashboardHeader() {
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[#080B12] dark:text-white" size={18} />
                         <input
                             type="text"
-                            placeholder="Pesquisar..."
+                            placeholder={t('dashboard.searchPlaceholder')}
                             value={filters.searchText}
                             onChange={handleSearchChange}
                             className="w-full h-12 pl-12 pr-4 bg-transparent border border-[#9CA3AF] dark:border-neutral-700 rounded-full text-[#080B12] dark:text-white placeholder:text-neutral-500 focus:ring-2 focus:ring-black dark:focus:ring-[#D7FF00] transition-all outline-none"
@@ -57,7 +59,7 @@ export function DashboardHeader() {
                         </PopoverTrigger>
                         <PopoverContent className="w-56 p-2 bg-[#080B12] dark:bg-neutral-900 border-neutral-800" align="start">
                             <div className="space-y-1">
-                                <p className="text-xs font-semibold text-neutral-400 px-3 py-2 uppercase tracking-wider">Tipo de Transação</p>
+                                <p className="text-xs font-semibold text-neutral-400 px-3 py-2 uppercase tracking-wider">{t('dashboard.transactionType')}</p>
                                 {(['all', 'income', 'expense'] as const).map((type) => (
                                     <button
                                         key={type}
@@ -69,7 +71,7 @@ export function DashboardHeader() {
                                                 : "text-neutral-300 hover:bg-neutral-800"
                                         )}
                                     >
-                                        {type === 'all' ? 'Todos' : type === 'income' ? 'Receitas' : 'Despesas'}
+                                        {type === 'all' ? t('dashboard.typeAll') : type === 'income' ? t('dashboard.typeIncome') : t('dashboard.typeExpense')}
                                     </button>
                                 ))}
                             </div>
@@ -80,7 +82,7 @@ export function DashboardHeader() {
                     <button
                         onClick={toggleTheme}
                         className="h-12 w-12 flex items-center justify-center rounded-full bg-transparent border border-[#9CA3AF] dark:border-neutral-700 text-[#080B12] dark:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-all active:scale-90 shrink-0"
-                        title={theme === 'light' ? 'Ativar modo escuro' : 'Ativar modo claro'}
+                        title={theme === 'light' ? t('theme.activateDark') : t('theme.activateLight')}
                     >
                         {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
                     </button>
@@ -99,7 +101,7 @@ export function DashboardHeader() {
                         className="h-12 px-8 flex items-center justify-center gap-2 bg-neutral-1100 dark:bg-[#D7FF00] text-white dark:text-[#080B12] rounded-full font-bold hover:scale-[1.02] active:scale-[0.98] transition-all whitespace-nowrap shadow-sm hover:shadow-md"
                     >
                         <Plus size={20} />
-                        Nova transação
+                        {t('dashboard.newTransaction')}
                     </button>
                 </div>
             </div>

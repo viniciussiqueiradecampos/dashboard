@@ -23,6 +23,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useSidebar } from '@/contexts/SidebarContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useSettings } from '@/contexts/SettingsContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { useState } from 'react';
 import { EditProfileModal } from '@/components/modals/EditProfileModal';
 
@@ -36,21 +37,37 @@ const NAV_ITEMS = [
 ];
 
 export function Sidebar() {
-    const { isCollapsed, toggleSidebar } = useSidebar();
     const { user, signOut } = useAuth();
+    const { isCollapsed, toggleSidebar } = useSidebar();
     const { theme, toggleTheme } = useTheme();
-    const { isMasterUser, menuItems, t } = useSettings();
+    const { isMasterUser, menuItems } = useSettings();
+    const { t } = useLanguage();
     const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
     const location = useLocation();
 
+    const handleLogout = async () => {
+        try {
+            await signOut();
+        } catch (error) {
+            console.error('Logout error:', error);
+        }
+    };
+
     // Filter nav items based on settings and master user status
-    const visibleNavItems = NAV_ITEMS.filter(item => {
-        // Check if it's master only and user is not master
-        if ((item as any).masterOnly && !isMasterUser) return false;
-        // Check if item is enabled in settings
+    const visibleNavItems = NAV_ITEMS.map(item => {
         const menuConfig = menuItems.find(m => m.id === item.id);
-        if (menuConfig && !menuConfig.enabled) return false;
-        return true;
+        const label = menuConfig
+            ? (menuConfig.name !== menuConfig.originalName ? menuConfig.name : t(menuConfig.originalName))
+            : t(item.label);
+
+        return {
+            ...item,
+            displayLabel: label,
+            enabled: menuConfig ? menuConfig.enabled : true
+        };
+    }).filter(item => {
+        if ((item as any).masterOnly && !isMasterUser) return false;
+        return item.enabled;
     });
 
     const SidebarContent = (
@@ -91,7 +108,7 @@ export function Sidebar() {
             <nav className="flex-1 mt-14 px-4 space-y-2">
                 {visibleNavItems.map((item) => {
                     const isActive = location.pathname === item.path;
-                    const label = t(item.label);
+                    const label = item.displayLabel;
 
                     const LinkContent = (
                         <NavLink
@@ -191,7 +208,7 @@ export function Sidebar() {
 
                 {/* Logout Button */}
                 <button
-                    onClick={signOut}
+                    onClick={handleLogout}
                     className={cn(
                         "w-full flex items-center gap-3 p-3 rounded-2xl transition-colors hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-600 dark:hover:text-red-400 text-neutral-600 dark:text-neutral-400",
                         isCollapsed ? "justify-center" : ""

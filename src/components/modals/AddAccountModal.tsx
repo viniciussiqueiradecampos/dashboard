@@ -1,9 +1,9 @@
-import { X, Upload, Loader2, Image as ImageIcon } from 'lucide-react';
-import { useState, useRef } from 'react';
+import { X } from 'lucide-react';
+import { useState } from 'react';
 import { useFinance } from '@/contexts/FinanceContext';
 import { cn } from '@/utils/cn';
 import { CreditCardTheme } from '@/types';
-import { uploadFile } from '@/lib/supabase';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface AddAccountModalProps {
     isOpen: boolean;
@@ -12,7 +12,7 @@ interface AddAccountModalProps {
 
 export function AddAccountModal({ isOpen, onClose }: AddAccountModalProps) {
     const { addAccount, addCard, familyMembers } = useFinance();
-    const fileInputRef = useRef<HTMLInputElement>(null);
+    const { t } = useLanguage();
 
     const [accountType, setAccountType] = useState<'account' | 'card'>('account');
     const [name, setName] = useState('');
@@ -30,59 +30,41 @@ export function AddAccountModal({ isOpen, onClose }: AddAccountModalProps) {
     const [brand, setBrand] = useState('');
     const [imageUrl, setImageUrl] = useState('');
 
-    const [isUploading, setIsUploading] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
-
-    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-
-        setIsUploading(true);
-        try {
-            const fileName = `${Date.now()}-${file.name}`;
-            const url = await uploadFile('logos', fileName, file);
-            setImageUrl(url);
-        } catch (error) {
-            console.error('Upload error:', error);
-            alert('Erro ao fazer upload da imagem. Certifique-se que o bucket "logos" existe no Supabase.');
-        } finally {
-            setIsUploading(false);
-        }
-    };
 
     const validate = () => {
         const newErrors: Record<string, string> = {};
 
         if (!name || name.length < 3) {
-            newErrors.name = 'Nome deve ter pelo menos 3 caracteres';
+            newErrors.name = t('Nome deve ter pelo menos 3 caracteres');
         }
 
         if (accountType === 'card' && !holderId) {
-            newErrors.holderId = 'Selecione o titular';
+            newErrors.holderId = t('Selecione o titular');
         }
 
         if (accountType === 'account') {
             if (!balance || parseFloat(balance) < 0) {
-                newErrors.balance = 'Saldo inicial é obrigatório';
+                newErrors.balance = t('Saldo inicial é obrigatório');
             }
         } else {
             const closing = parseInt(closingDay);
             const due = parseInt(dueDay);
 
             if (!closingDay || closing < 1 || closing > 31) {
-                newErrors.closingDay = 'Dia deve estar entre 1 e 31';
+                newErrors.closingDay = t('Dia deve estar entre 1 e 31');
             }
 
             if (!dueDay || due < 1 || due > 31) {
-                newErrors.dueDay = 'Dia deve estar entre 1 e 31';
+                newErrors.dueDay = t('Dia deve estar entre 1 e 31');
             }
 
             if (!limit || parseFloat(limit) <= 0) {
-                newErrors.limit = 'Limite deve ser maior que zero';
+                newErrors.limit = t('Limite deve ser maior que zero');
             }
 
             if (!brand) {
-                newErrors.brand = 'Informe o banco/bandeira';
+                newErrors.brand = t('Informe o banco/bandeira');
             }
         }
 
@@ -141,7 +123,9 @@ export function AddAccountModal({ isOpen, onClose }: AddAccountModalProps) {
             >
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b border-neutral-200 dark:border-neutral-800 shrink-0">
-                    <h2 className="text-xl font-bold text-neutral-1100 dark:text-white transition-colors">Adicionar Conta/Cartão</h2>
+                    <h2 className="text-xl font-bold text-neutral-1100 dark:text-white transition-colors">
+                        {t('cards.newCard')}
+                    </h2>
                     <button
                         onClick={onClose}
                         className="w-10 h-10 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center justify-center transition-colors dark:text-white"
@@ -163,7 +147,7 @@ export function AddAccountModal({ isOpen, onClose }: AddAccountModalProps) {
                                     : 'text-neutral-500 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-800'
                             )}
                         >
-                            Conta Bancária
+                            {t('Conta Bancária')}
                         </button>
                         <button
                             onClick={() => setAccountType('card')}
@@ -174,14 +158,14 @@ export function AddAccountModal({ isOpen, onClose }: AddAccountModalProps) {
                                     : 'text-neutral-500 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-800'
                             )}
                         >
-                            Cartão de Crédito
+                            {t('Cartão de Crédito')}
                         </button>
                     </div>
 
                     {/* Name */}
                     <div>
                         <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                            {accountType === 'account' ? 'Nome da Conta' : 'Nome do Cartão'}
+                            {accountType === 'account' ? t('Nome da Conta') : t('Nome do Cartão')}
                         </label>
                         <input
                             type="text"
@@ -191,7 +175,7 @@ export function AddAccountModal({ isOpen, onClose }: AddAccountModalProps) {
                                 "w-full h-12 px-4 bg-white dark:bg-neutral-800 border rounded-xl text-neutral-1100 dark:text-white focus:ring-2 focus:ring-black dark:focus:ring-[#D7FF00] focus:border-transparent transition-all outline-none",
                                 errors.name ? 'border-red-500' : 'border-neutral-300 dark:border-neutral-700'
                             )}
-                            placeholder={accountType === 'account' ? 'Ex: Nubank Conta' : 'Ex: Nubank Mastercard'}
+                            placeholder={accountType === 'account' ? t('Ex: Nubank Conta') : t('Ex: Nubank Mastercard')}
                         />
                         {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
                     </div>
@@ -199,7 +183,7 @@ export function AddAccountModal({ isOpen, onClose }: AddAccountModalProps) {
                     {/* Holder */}
                     <div>
                         <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                            Titular {accountType === 'card' && <span className="text-red-500">*</span>}
+                            {t('Titular')} {accountType === 'card' && <span className="text-red-500">*</span>}
                         </label>
                         <select
                             value={holderId}
@@ -209,14 +193,14 @@ export function AddAccountModal({ isOpen, onClose }: AddAccountModalProps) {
                                 errors.holderId ? 'border-red-500' : 'border-neutral-300 dark:border-neutral-700'
                             )}
                         >
-                            <option value="">{familyMembers.length > 0 ? "Selecione o titular" : "Nenhum membro cadastrado"}</option>
+                            <option value="">{familyMembers.length > 0 ? t('Selecione o titular') : t('Nenhum membro cadastrado')}</option>
                             {familyMembers.map(member => (
                                 <option key={member.id} value={member.id}>{member.name}</option>
                             ))}
                         </select>
                         {familyMembers.length === 0 && (
                             <p className="text-amber-600 dark:text-amber-500 text-[11px] mt-1 font-medium">
-                                Você precisa adicionar um membro da família no Perfil antes de criar um cartão.
+                                {t('Você precisa adicionar um membro da família no Perfil antes de criar um cartão.')}
                             </p>
                         )}
                         {errors.holderId && <p className="text-red-500 text-xs mt-1">{errors.holderId}</p>}
@@ -225,7 +209,7 @@ export function AddAccountModal({ isOpen, onClose }: AddAccountModalProps) {
                     {/* Account-specific fields */}
                     {accountType === 'account' && (
                         <div>
-                            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Saldo Inicial</label>
+                            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">{t('Saldo Inicial')}</label>
                             <div className="relative">
                                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500 dark:text-neutral-400">R$</span>
                                 <input
@@ -249,7 +233,7 @@ export function AddAccountModal({ isOpen, onClose }: AddAccountModalProps) {
                         <>
                             {/* Brand */}
                             <div>
-                                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Banco</label>
+                                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">{t('Banco')}</label>
                                 <input
                                     type="text"
                                     value={brand}
@@ -266,7 +250,7 @@ export function AddAccountModal({ isOpen, onClose }: AddAccountModalProps) {
                             {/* Last 4 Digits */}
                             <div>
                                 <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                                    Últimos 4 Dígitos (Opcional)
+                                    {t('Últimos 4 Dígitos (Opcional)')}
                                 </label>
                                 <input
                                     type="text"
@@ -280,7 +264,7 @@ export function AddAccountModal({ isOpen, onClose }: AddAccountModalProps) {
 
                             {/* Limit */}
                             <div>
-                                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Limite Total</label>
+                                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">{t('Limite Total')}</label>
                                 <div className="relative">
                                     <span className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500 dark:text-neutral-400">R$</span>
                                     <input
@@ -301,7 +285,7 @@ export function AddAccountModal({ isOpen, onClose }: AddAccountModalProps) {
                             {/* Closing & Due Days */}
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Dia de Fechamento</label>
+                                    <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">{t('Dia de Fechamento')}</label>
                                     <input
                                         type="number"
                                         min="1"
@@ -318,7 +302,7 @@ export function AddAccountModal({ isOpen, onClose }: AddAccountModalProps) {
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Dia de Vencimento</label>
+                                    <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">{t('Dia de Vencimento')}</label>
                                     <input
                                         type="number"
                                         min="1"
@@ -337,7 +321,7 @@ export function AddAccountModal({ isOpen, onClose }: AddAccountModalProps) {
 
                             {/* Theme */}
                             <div>
-                                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-3">Tema Visual</label>
+                                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-3">{t('Tema Visual')}</label>
                                 <div className="grid grid-cols-3 gap-3">
                                     <button
                                         type="button"
@@ -374,7 +358,7 @@ export function AddAccountModal({ isOpen, onClose }: AddAccountModalProps) {
 
                             {/* Logo Image URL */}
                             <div>
-                                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">URL do Logotipo (Opcional)</label>
+                                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">{t('URL do Logotipo (Opcional)')}</label>
                                 <input
                                     type="text"
                                     value={imageUrl}
@@ -382,7 +366,7 @@ export function AddAccountModal({ isOpen, onClose }: AddAccountModalProps) {
                                     className="w-full h-12 px-4 bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-xl text-neutral-1100 dark:text-white focus:ring-2 focus:ring-black dark:focus:ring-[#D7FF00] focus:border-transparent transition-all outline-none"
                                     placeholder="https://exemplo.com/logo.png"
                                 />
-                                <p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-1">Insira o link para a imagem do logotipo do banco.</p>
+                                <p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-1">{t('Insira o link para a imagem do logotipo do banco.')}</p>
                             </div>
                         </>
                     )}
@@ -394,13 +378,13 @@ export function AddAccountModal({ isOpen, onClose }: AddAccountModalProps) {
                         onClick={onClose}
                         className="px-6 py-2.5 rounded-full border border-neutral-300 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 font-medium hover:bg-white dark:hover:bg-neutral-800 transition-colors"
                     >
-                        Cancelar
+                        {t('common.cancel')}
                     </button>
                     <button
                         onClick={handleSubmit}
                         className="px-6 py-2.5 rounded-full bg-neutral-1100 dark:bg-[#D7FF00] text-white dark:text-[#080B12] font-bold hover:scale-[1.02] active:scale-[0.98] transition-all shadow-sm"
                     >
-                        Adicionar
+                        {t('common.add')}
                     </button>
                 </div>
             </div>

@@ -1,6 +1,8 @@
-import { useFinance } from '@/contexts/FinanceContext';
 import { Wallet, ArrowUpCircle, ArrowDownCircle } from 'lucide-react';
 import { cn } from '@/utils/cn';
+import { useSettings } from '@/contexts/SettingsContext';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useFinance } from '@/contexts/FinanceContext';
 
 interface SummaryCardProps {
     title: string;
@@ -11,12 +13,7 @@ interface SummaryCardProps {
 }
 
 function SummaryCard({ title, value, icon: Icon, iconColor, bgColor = "bg-white" }: SummaryCardProps) {
-    const formatCurrency = (val: number) => {
-        return new Intl.NumberFormat('pt-BR', {
-            style: 'currency',
-            currency: 'BRL',
-        }).format(val);
-    };
+    const { formatCurrency } = useSettings();
 
     return (
         <div className={cn(
@@ -43,23 +40,24 @@ function SummaryCard({ title, value, icon: Icon, iconColor, bgColor = "bg-white"
 
 export function SummaryCards() {
     const { totalBalance, incomeForPeriod, expensesForPeriod } = useFinance();
+    const { t } = useLanguage();
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-4 w-full">
             <SummaryCard
-                title="Saldo Total"
+                title={t('Saldo Total')}
                 value={totalBalance}
                 icon={Wallet}
                 iconColor="#2a89ef" // blue-600
             />
             <SummaryCard
-                title="Receitas"
+                title={t('Receitas')}
                 value={incomeForPeriod}
                 icon={ArrowUpCircle}
                 iconColor="#15be78" // green-600
             />
             <SummaryCard
-                title="Despesas"
+                title={t('Despesas')}
                 value={expensesForPeriod}
                 icon={ArrowDownCircle}
                 iconColor="#e61e32" // red-600

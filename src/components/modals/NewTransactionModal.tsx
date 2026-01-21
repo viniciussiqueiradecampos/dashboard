@@ -4,6 +4,8 @@ import { useFinance } from '@/contexts/FinanceContext';
 import { cn } from '@/utils/cn';
 import { TransactionType } from '@/types';
 import { CategorySelector } from '@/components/ui/CategorySelector';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useSettings } from '@/contexts/SettingsContext';
 
 interface NewTransactionModalProps {
     isOpen: boolean;
@@ -12,6 +14,8 @@ interface NewTransactionModalProps {
 }
 
 export function NewTransactionModal({ isOpen, onClose, defaultCardId }: NewTransactionModalProps) {
+    const { t } = useLanguage();
+    const { currency } = useSettings();
     const {
         addTransaction,
         familyMembers,
@@ -92,15 +96,15 @@ export function NewTransactionModal({ isOpen, onClose, defaultCardId }: NewTrans
 
         const numAmount = parseFloat(amount);
         if (!amount || numAmount <= 0) {
-            newErrors.amount = 'Valor deve ser maior que zero';
+            newErrors.amount = t('Valor deve ser maior que zero');
         }
 
         if (!categoryInput) {
-            newErrors.category = 'Selecione uma categoria';
+            newErrors.category = t('Selecione uma categoria');
         }
 
         if (!accountId && !isCreatingAccount) {
-            newErrors.accountId = 'Selecione uma conta, cartão ou método';
+            newErrors.accountId = t('Selecione uma conta, cartão ou método');
         }
 
         setErrors(newErrors);
@@ -158,8 +162,8 @@ export function NewTransactionModal({ isOpen, onClose, defaultCardId }: NewTrans
                             )}
                         </div>
                         <div>
-                            <h2 className="text-2xl font-bold text-neutral-1100 dark:text-white">Transações Recorrentes</h2>
-                            <p className="text-sm text-neutral-500 dark:text-neutral-400">Registre despesas e receitas fixas</p>
+                            <h2 className="text-2xl font-bold text-neutral-1100 dark:text-white">{t('Transações Recorrentes')}</h2>
+                            <p className="text-sm text-neutral-500 dark:text-neutral-400">{t('Registre despesas e receitas fixas')}</p>
                         </div>
                     </div>
                     <button
@@ -182,7 +186,7 @@ export function NewTransactionModal({ isOpen, onClose, defaultCardId }: NewTrans
                                     type === 'income' ? 'bg-white dark:bg-neutral-700 shadow-sm text-neutral-1100 dark:text-white' : 'text-neutral-500 dark:text-neutral-400'
                                 )}
                             >
-                                Receita
+                                {t('Receita')}
                             </button>
                             <button
                                 onClick={() => { setType('expense'); setCategoryInput(''); }}
@@ -191,7 +195,7 @@ export function NewTransactionModal({ isOpen, onClose, defaultCardId }: NewTrans
                                     type === 'expense' ? 'bg-white dark:bg-neutral-700 shadow-sm text-neutral-1100 dark:text-white' : 'text-neutral-500 dark:text-neutral-400'
                                 )}
                             >
-                                Despesa
+                                {t('Despesa')}
                             </button>
                         </div>
 
@@ -199,10 +203,10 @@ export function NewTransactionModal({ isOpen, onClose, defaultCardId }: NewTrans
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
-                                    Valor
+                                    {t('Valor')}
                                 </label>
                                 <div className="relative">
-                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500 dark:text-neutral-400">R$</span>
+                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500 dark:text-neutral-400">{currency === 'BRL' ? 'R$' : currency === 'EUR' ? '€' : currency === 'GBP' ? '£' : '$'}</span>
                                     <input
                                         type="number"
                                         step="0.01"
@@ -219,7 +223,7 @@ export function NewTransactionModal({ isOpen, onClose, defaultCardId }: NewTrans
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Data</label>
+                                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">{t('Data')}</label>
                                 <input
                                     type="date"
                                     value={date}
@@ -231,7 +235,7 @@ export function NewTransactionModal({ isOpen, onClose, defaultCardId }: NewTrans
 
                         {/* Description */}
                         <div>
-                            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Descrição</label>
+                            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">{t('Descrição')}</label>
                             <input
                                 type="text"
                                 value={description}
@@ -240,7 +244,7 @@ export function NewTransactionModal({ isOpen, onClose, defaultCardId }: NewTrans
                                     "w-full h-14 px-4 bg-white dark:bg-neutral-800 border rounded-2xl text-neutral-1100 dark:text-white focus:ring-2 focus:ring-black dark:focus:ring-[#D7FF00] focus:border-transparent transition-all outline-none",
                                     errors.description ? 'border-red-500' : 'border-neutral-300 dark:border-neutral-700'
                                 )}
-                                placeholder="Ex: Mercado"
+                                placeholder={t('Ex: Mercado')}
                             />
                             {errors.description && <p className="text-red-500 text-xs mt-1">{errors.description}</p>}
                         </div>
@@ -255,12 +259,12 @@ export function NewTransactionModal({ isOpen, onClose, defaultCardId }: NewTrans
                                 className="w-5 h-5 rounded border-neutral-300 text-black focus:ring-black"
                             />
                             <label htmlFor="status-check" className="font-medium text-neutral-1100 dark:text-white cursor-pointer select-none">
-                                {type === 'income' ? 'Recebido' : 'Pago'}
+                                {type === 'income' ? t('Recebido') : t('Pago')}
                             </label>
                             <span className="text-sm text-neutral-500 dark:text-neutral-400 ml-auto">
                                 {status === 'completed'
-                                    ? (type === 'income' ? 'Valor já entrou na conta' : 'Valor já saiu da conta')
-                                    : (type === 'income' ? 'Aguardando recebimento' : 'Agendado / Pendente')}
+                                    ? (type === 'income' ? t('Valor já entrou na conta') : t('Valor já saiu da conta'))
+                                    : (type === 'income' ? t('Aguardando recebimento') : t('Agendado / Pendente'))}
                             </span>
                         </div>
 
@@ -283,13 +287,13 @@ export function NewTransactionModal({ isOpen, onClose, defaultCardId }: NewTrans
                         {/* Account Select with Add Custom */}
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Membro</label>
+                                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">{t('Membro')}</label>
                                 <select
                                     value={memberId || ''}
                                     onChange={(e) => setMemberId(e.target.value || '')}
                                     className="w-full h-14 px-4 bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-2xl text-neutral-1100 dark:text-white focus:ring-2 focus:ring-black dark:focus:ring-[#D7FF00] focus:border-transparent transition-all outline-none"
                                 >
-                                    <option value="">Família (Geral)</option>
+                                    <option value="">{t('Família (Geral)')}</option>
                                     {familyMembers.map(member => (
                                         <option key={member.id} value={member.id}>{member.name}</option>
                                     ))}
@@ -297,16 +301,16 @@ export function NewTransactionModal({ isOpen, onClose, defaultCardId }: NewTrans
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Conta / Método</label>
+                                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">{t('Conta / Método')}</label>
                                 {isCreatingAccount ? (
                                     <div className="flex gap-1">
                                         <input
                                             value={newAccountName}
                                             onChange={e => setNewAccountName(e.target.value)}
-                                            placeholder="Nome (Ex: Pix)"
+                                            placeholder={t('Nome (Ex: Pix)')}
                                             className="flex-1 h-14 px-2 bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-l-2xl outline-none text-sm dark:text-white"
                                         />
-                                        <button onClick={handleCreateAccount} className="px-2 bg-black dark:bg-[#D7FF00] text-white dark:text-[#080B12] text-xs rounded-r-2xl font-bold">Criar</button>
+                                        <button onClick={handleCreateAccount} className="px-2 bg-black dark:bg-[#D7FF00] text-white dark:text-[#080B12] text-xs rounded-r-2xl font-bold">{t('Criar')}</button>
                                         <button onClick={() => setIsCreatingAccount(false)} className="px-2 border dark:border-neutral-700 rounded-2xl text-xs dark:text-white"><X size={14} /></button>
                                     </div>
                                 ) : (
@@ -321,17 +325,17 @@ export function NewTransactionModal({ isOpen, onClose, defaultCardId }: NewTrans
                                             errors.accountId ? 'border-red-500' : 'border-neutral-300 dark:border-neutral-700'
                                         )}
                                     >
-                                        <option value="">Selecione...</option>
-                                        <optgroup label="Contas / Métodos" className="dark:bg-neutral-800">
+                                        <option value="">{t('Selecione...')}</option>
+                                        <optgroup label={t('Contas / Métodos')} className="dark:bg-neutral-800">
                                             {bankAccounts.map(acc => (
                                                 <option key={acc.id} value={acc.id}>{acc.name}</option>
                                             ))}
                                             {!bankAccounts.some(a => a.name.toLowerCase() === 'dinheiro') && (
-                                                <option value="CASH">💵 Dinheiro (Espécie)</option>
+                                                <option value="CASH">💵 {t('Dinheiro (Espécie)')}</option>
                                             )}
-                                            <option value="NEW_ACCOUNT">+ Adicionar Modo/Conta</option>
+                                            <option value="NEW_ACCOUNT">{t('+ Adicionar Modo/Conta')}</option>
                                         </optgroup>
-                                        <optgroup label="Cartões de Crédito" className="dark:bg-neutral-800">
+                                        <optgroup label={t('Cartões de Crédito')} className="dark:bg-neutral-800">
                                             {creditCards.map(card => (
                                                 <option key={card.id} value={card.id}>{card.brand} {card.name}</option>
                                             ))}
@@ -345,7 +349,7 @@ export function NewTransactionModal({ isOpen, onClose, defaultCardId }: NewTrans
                         {/* Installments & Recurring */}
                         {showInstallments && (
                             <div className="animate-in slide-in-from-top-2 duration-300">
-                                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Parcelamento</label>
+                                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">{t('Parcelamento')}</label>
                                 <select
                                     value={installments}
                                     onChange={(e) => setInstallments(parseInt(e.target.value))}
@@ -373,12 +377,12 @@ export function NewTransactionModal({ isOpen, onClose, defaultCardId }: NewTrans
                                 />
                                 <div>
                                     <p className="font-bold text-neutral-1100 dark:text-white transition-colors">
-                                        {type === 'income' ? 'Receita Recorrente' : 'Despesa Recorrente'}
+                                        {type === 'income' ? t('Receita Recorrente') : t('Despesa Recorrente')}
                                     </p>
                                     <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-1 transition-colors">
                                         {type === 'income'
-                                            ? 'Salários, aluguéis recebidos ou bônus mensais'
-                                            : 'Contas mensais (Netflix, Internet, Aluguel)'}
+                                            ? t('Salários, aluguéis recebidos ou bônus mensais')
+                                            : t('Contas mensais (Netflix, Internet, Aluguel)')}
                                     </p>
                                 </div>
                             </label>
@@ -392,13 +396,13 @@ export function NewTransactionModal({ isOpen, onClose, defaultCardId }: NewTrans
                         onClick={onClose}
                         className="px-6 py-3 rounded-full border border-neutral-300 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 font-medium hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
                     >
-                        Cancelar
+                        {t('Cancelar')}
                     </button>
                     <button
                         onClick={handleSubmit}
                         className="px-8 py-3 rounded-full bg-neutral-1100 dark:bg-[#D7FF00] text-white dark:text-[#080B12] font-bold hover:scale-[1.02] active:scale-[0.98] transition-all shadow-sm"
                     >
-                        Salvar Transação
+                        {t('Salvar Transação')}
                     </button>
                 </div>
             </div>

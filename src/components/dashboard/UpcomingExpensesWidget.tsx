@@ -1,7 +1,8 @@
-import { Wallet, Plus, Check, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Wallet, Plus, Check } from 'lucide-react';
 import { useState, useMemo } from 'react';
 import { useFinance } from '@/contexts/FinanceContext';
 import { useSettings } from '@/contexts/SettingsContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { NewTransactionModal } from '@/components/modals/NewTransactionModal';
 import { cn } from '@/utils/cn';
 import { Transaction } from '@/types';
@@ -15,7 +16,8 @@ interface ExpenseItemProps {
 }
 
 function ExpenseItem({ expense, onMarkAsPaid, getAccountName }: ExpenseItemProps) {
-    const { formatCurrency, t } = useSettings();
+    const { formatCurrency } = useSettings();
+    const { t } = useLanguage();
     const [isHovered, setIsHovered] = useState(false);
     const [isPaying, setIsPaying] = useState(false);
 
@@ -78,32 +80,14 @@ function ExpenseItem({ expense, onMarkAsPaid, getAccountName }: ExpenseItemProps
 
 export function UpcomingExpensesWidget() {
     const { transactions, updateTransaction, bankAccounts, creditCards } = useFinance();
-    const { t } = useSettings();
+    const { t } = useLanguage();
     const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
-    const [currentPage, setCurrentPage] = useState(0);
-    const itemsPerPage = 2;
 
     const allUpcomingExpenses = useMemo(() => {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
         return transactions
             .filter(t => t.type === 'expense' && t.status === 'pending')
-            .filter(t => {
-                const dueDate = new Date(t.date);
-                return dueDate >= today;
-            })
             .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
     }, [transactions]);
-
-    const totalPages = Math.ceil(allUpcomingExpenses.length / itemsPerPage);
-    const currentExpenses = allUpcomingExpenses.slice(
-        currentPage * itemsPerPage,
-        (currentPage + 1) * itemsPerPage
-    );
-
-    const nextPage = () => setCurrentPage((prev) => (prev + 1 < totalPages ? prev + 1 : prev));
-    const prevPage = () => setCurrentPage((prev) => (prev > 0 ? prev - 1 : prev));
 
     const handleMarkAsPaid = (id: string) => {
         updateTransaction(id, { status: 'completed' });
@@ -142,35 +126,14 @@ export function UpcomingExpensesWidget() {
                         >
                             <Plus size={20} />
                         </button>
-                        {totalPages > 1 && (
-                            <div className="flex items-center ml-2 border border-neutral-200 dark:border-neutral-700 rounded-full bg-white dark:bg-neutral-800 p-1 shadow-sm transition-colors">
-                                <button
-                                    onClick={prevPage}
-                                    disabled={currentPage === 0}
-                                    className="p-1.5 text-neutral-400 hover:text-black dark:hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                                >
-                                    <ChevronLeft size={16} />
-                                </button>
-                                <span className="text-[11px] font-bold text-neutral-600 dark:text-neutral-400 px-1">
-                                    {currentPage + 1}/{totalPages}
-                                </span>
-                                <button
-                                    onClick={nextPage}
-                                    disabled={currentPage === totalPages - 1}
-                                    className="p-1.5 text-neutral-400 hover:text-black dark:hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                                >
-                                    <ChevronRight size={16} />
-                                </button>
-                            </div>
-                        )}
                     </div>
                 </div>
 
                 {/* Expenses List */}
-                <div className="flex-1 overflow-y-auto px-1">
-                    {currentExpenses.length > 0 ? (
+                <div className="flex-1 overflow-y-auto px-1 max-h-[400px] scrollbar-thin scrollbar-thumb-neutral-200 dark:scrollbar-thumb-neutral-800">
+                    {allUpcomingExpenses.length > 0 ? (
                         <div className="space-y-0">
-                            {currentExpenses.map((expense) => (
+                            {allUpcomingExpenses.map((expense) => (
                                 <ExpenseItem
                                     key={expense.id}
                                     expense={expense}

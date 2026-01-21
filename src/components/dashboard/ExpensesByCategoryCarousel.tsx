@@ -2,6 +2,8 @@ import { useRef, useState, useEffect } from 'react';
 import { useFinance } from '@/contexts/FinanceContext';
 import { cn } from '@/utils/cn';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useSettings } from '@/contexts/SettingsContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface CategoryDonutCardProps {
     category: string;
@@ -11,12 +13,8 @@ interface CategoryDonutCardProps {
 }
 
 function CategoryDonutCard({ category, value, percentage, color }: CategoryDonutCardProps) {
-    const formatCurrency = (val: number) => {
-        return new Intl.NumberFormat('pt-BR', {
-            style: 'currency',
-            currency: 'BRL',
-        }).format(val);
-    };
+    const { formatCurrency } = useSettings();
+    const { t } = useLanguage();
 
     // Donut settings - matching FIGMA dimensions
     const size = 64;
@@ -62,7 +60,7 @@ function CategoryDonutCard({ category, value, percentage, color }: CategoryDonut
 
             <div className="flex flex-col items-center text-center w-full">
                 <p className="text-[13px] text-neutral-500 dark:text-neutral-400 font-medium mb-1 truncate w-full">
-                    {category}
+                    {t(category)}
                 </p>
                 <h3 className="text-[16px] font-bold text-neutral-1100 dark:text-white whitespace-nowrap">
                     {formatCurrency(value)}

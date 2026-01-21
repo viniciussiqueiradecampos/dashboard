@@ -4,6 +4,7 @@ import { useFinance } from '@/contexts/FinanceContext';
 import { cn } from '@/utils/cn';
 import { Transaction, TransactionType, TransactionStatus } from '@/types';
 import { CategorySelector } from '@/components/ui/CategorySelector';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface EditTransactionModalProps {
     isOpen: boolean;
@@ -13,6 +14,7 @@ interface EditTransactionModalProps {
 
 export function EditTransactionModal({ isOpen, onClose, transaction }: EditTransactionModalProps) {
     const { updateTransaction, deleteTransaction, familyMembers, bankAccounts, creditCards, categories, addCategory, deleteCategory } = useFinance();
+    const { t } = useLanguage();
 
     const [type, setType] = useState<TransactionType>('expense');
     const [amount, setAmount] = useState('');
@@ -114,7 +116,7 @@ export function EditTransactionModal({ isOpen, onClose, transaction }: EditTrans
             >
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b border-neutral-200 dark:border-neutral-800 shrink-0">
-                    <h2 className="text-xl font-bold text-neutral-1100 dark:text-white">Editar Transação</h2>
+                    <h2 className="text-xl font-bold text-neutral-1100 dark:text-white">{t('common.edit')}</h2>
                     <button
                         onClick={onClose}
                         className="w-10 h-10 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center justify-center transition-colors text-neutral-500 dark:text-neutral-400"
@@ -136,7 +138,7 @@ export function EditTransactionModal({ isOpen, onClose, transaction }: EditTrans
                                     : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200'
                             )}
                         >
-                            Saída
+                            {t('Saída')}
                         </button>
                         <button
                             onClick={() => setType('income')}
@@ -147,13 +149,13 @@ export function EditTransactionModal({ isOpen, onClose, transaction }: EditTrans
                                     : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200'
                             )}
                         >
-                            Entrada
+                            {t('Entrada')}
                         </button>
                     </div>
 
                     {/* Amount */}
                     <div>
-                        <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Valor</label>
+                        <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">{t('Valor')}</label>
                         <div className="relative">
                             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500 font-bold">R$</span>
                             <input
@@ -173,7 +175,7 @@ export function EditTransactionModal({ isOpen, onClose, transaction }: EditTrans
 
                     {/* Description */}
                     <div>
-                        <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Descrição (Opcional)</label>
+                        <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">{t('Descrição (Opcional)')}</label>
                         <input
                             type="text"
                             value={description}
@@ -205,7 +207,7 @@ export function EditTransactionModal({ isOpen, onClose, transaction }: EditTrans
 
                     {/* Member */}
                     <div>
-                        <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Membro</label>
+                        <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">{t('Membro')}</label>
                         <select
                             value={memberId}
                             onChange={(e) => setMemberId(e.target.value)}
@@ -214,7 +216,7 @@ export function EditTransactionModal({ isOpen, onClose, transaction }: EditTrans
                                 errors.memberId ? 'border-red-500' : 'border-neutral-300 dark:border-neutral-700'
                             )}
                         >
-                            <option value="">Selecione um membro</option>
+                            <option value="">{t('Selecione um membro')}</option>
                             {familyMembers.map(member => (
                                 <option key={member.id} value={member.id}>{member.name}</option>
                             ))}
@@ -225,26 +227,26 @@ export function EditTransactionModal({ isOpen, onClose, transaction }: EditTrans
                     {/* Account / Card */}
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Conta (Opcional)</label>
+                            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">{t('Conta (Opcional)')}</label>
                             <select
                                 value={accountId}
                                 onChange={(e) => { setAccountId(e.target.value); setCardId(''); }}
                                 className="w-full h-14 px-4 bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-2xl text-neutral-1100 dark:text-white focus:ring-2 focus:ring-black dark:focus:ring-[#D7FF00] focus:border-transparent transition-all outline-none"
                             >
-                                <option value="">Nenhuma</option>
+                                <option value="">{t('Nenhuma')}</option>
                                 {bankAccounts.map(acc => (
                                     <option key={acc.id} value={acc.id}>{acc.name}</option>
                                 ))}
                             </select>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Cartão (Opcional)</label>
+                            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">{t('Cartão (Opcional)')}</label>
                             <select
                                 value={cardId}
                                 onChange={(e) => { setCardId(e.target.value); setAccountId(''); }}
                                 className="w-full h-14 px-4 bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-2xl text-neutral-1100 dark:text-white focus:ring-2 focus:ring-black dark:focus:ring-[#D7FF00] focus:border-transparent transition-all outline-none"
                             >
-                                <option value="">Nenhum</option>
+                                <option value="">{t('Nenhum')}</option>
                                 {creditCards.map(card => (
                                     <option key={card.id} value={card.id}>{card.brand} {card.name}</option>
                                 ))}
@@ -254,7 +256,7 @@ export function EditTransactionModal({ isOpen, onClose, transaction }: EditTrans
 
                     {/* Date */}
                     <div>
-                        <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Data</label>
+                        <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">{t('Datas')}</label>
                         <input
                             type="date"
                             value={date}
@@ -269,7 +271,7 @@ export function EditTransactionModal({ isOpen, onClose, transaction }: EditTrans
 
                     {/* Status */}
                     <div>
-                        <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Status</label>
+                        <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">{t('Status')}</label>
                         <div className="grid grid-cols-2 gap-2">
                             <button
                                 onClick={() => setStatus('completed')}
@@ -280,7 +282,7 @@ export function EditTransactionModal({ isOpen, onClose, transaction }: EditTrans
                                         : 'bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400'
                                 )}
                             >
-                                Pago
+                                {t('Pago')}
                             </button>
                             <button
                                 onClick={() => setStatus('pending')}
@@ -291,7 +293,7 @@ export function EditTransactionModal({ isOpen, onClose, transaction }: EditTrans
                                         : 'bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 text-neutral-600 dark:text-neutral-400'
                                 )}
                             >
-                                Pendente
+                                {t('Pendente')}
                             </button>
                         </div>
                     </div>
@@ -303,20 +305,20 @@ export function EditTransactionModal({ isOpen, onClose, transaction }: EditTrans
                         onClick={() => setShowDeleteConfirm(true)}
                         className="px-6 py-3 rounded-full border border-red-200 dark:border-red-900/30 text-red-600 dark:text-red-400 font-bold hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                     >
-                        Excluir
+                        {t('common.delete')}
                     </button>
                     <div className="flex gap-3">
                         <button
                             onClick={onClose}
                             className="px-6 py-3 rounded-full border border-neutral-300 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 font-bold hover:bg-white dark:hover:bg-neutral-800 transition-colors"
                         >
-                            Cancelar
+                            {t('common.cancel')}
                         </button>
                         <button
                             onClick={handleSubmit}
                             className="px-6 py-3 rounded-full bg-[#080B12] dark:bg-[#D7FF00] text-white dark:text-[#080B12] font-bold hover:opacity-90 transition-opacity"
                         >
-                            Salvar Alterações
+                            {t('common.save')}
                         </button>
                     </div>
                 </div>
@@ -325,22 +327,22 @@ export function EditTransactionModal({ isOpen, onClose, transaction }: EditTrans
                 {showDeleteConfirm && (
                     <div className="absolute inset-0 bg-black/50 z-[60] flex items-center justify-center p-6 rounded-[32px]">
                         <div className="bg-white dark:bg-neutral-900 p-6 rounded-2xl shadow-xl max-w-sm w-full border border-neutral-200 dark:border-neutral-800">
-                            <h3 className="text-lg font-bold text-neutral-1100 dark:text-white mb-2">Confirmar Exclusão</h3>
+                            <h3 className="text-lg font-bold text-neutral-1100 dark:text-white mb-2">{t('Confirmar Exclusão')}</h3>
                             <p className="text-neutral-600 dark:text-neutral-400 mb-6">
-                                Tem certeza que deseja excluir esta transação? Esta ação não pode ser desfeita.
+                                {t('Tem certeza que deseja excluir esta transação? Esta ação não pode ser desfeita.')}
                             </p>
                             <div className="flex gap-3">
                                 <button
                                     onClick={() => setShowDeleteConfirm(false)}
                                     className="flex-1 py-3 rounded-full border border-neutral-300 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 font-bold hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
                                 >
-                                    Cancelar
+                                    {t('common.cancel')}
                                 </button>
                                 <button
                                     onClick={handleDelete}
                                     className="flex-1 py-3 rounded-full bg-red-600 text-white font-bold hover:bg-red-700 transition-colors"
                                 >
-                                    Excluir
+                                    {t('common.delete')}
                                 </button>
                             </div>
                         </div>

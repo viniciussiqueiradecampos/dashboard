@@ -2,6 +2,7 @@ import { Search, ArrowUpCircle, ArrowDownCircle, User, ChevronLeft, ChevronRight
 import { useState, useMemo } from 'react';
 import { useFinance } from '@/contexts/FinanceContext';
 import { useSettings } from '@/contexts/SettingsContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { cn } from '@/utils/cn';
 import { Transaction } from '@/types';
 import { EditTransactionModal } from '@/components/modals/EditTransactionModal';
@@ -10,7 +11,8 @@ const ITEMS_PER_PAGE = 5;
 
 export function TransactionsTable() {
     const { getFilteredTransactions, familyMembers, bankAccounts, creditCards } = useFinance();
-    const { formatCurrency, t } = useSettings();
+    const { formatCurrency } = useSettings();
+    const { t, language } = useLanguage();
     const [localSearch, setLocalSearch] = useState('');
     const [localTypeFilter, setLocalTypeFilter] = useState<'all' | 'income' | 'expense'>('all');
     const [currentPage, setCurrentPage] = useState(1);
@@ -58,7 +60,7 @@ export function TransactionsTable() {
 
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);
-        return date.toLocaleDateString('pt-BR');
+        return date.toLocaleDateString(language === 'en-GB' ? 'en-GB' : 'pt-BR');
     };
 
     const getMemberAvatar = (memberId: string) => {
@@ -69,13 +71,13 @@ export function TransactionsTable() {
     const getAccountName = (transaction: Transaction) => {
         if (transaction.accountId) {
             const account = bankAccounts.find((a) => a.id === transaction.accountId);
-            return account?.name || 'Desconhecido';
+            return account?.name || t('Desconhecido');
         }
         if (transaction.cardId) {
             const card = creditCards.find((c) => c.id === transaction.cardId);
-            return card ? `${card.brand} ${card.name}` : 'Desconhecido';
+            return card ? `${card.brand} ${card.name}` : t('Desconhecido');
         }
-        return 'Desconhecido';
+        return t('Desconhecido');
     };
 
     const getInstallmentText = (transaction: Transaction) => {
@@ -252,7 +254,7 @@ export function TransactionsTable() {
                                         {/* Category */}
                                         <td className="py-4 px-4">
                                             <span className="inline-block px-3 py-1 bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 text-xs font-medium rounded-full">
-                                                {transaction.category}
+                                                {t(transaction.category)}
                                             </span>
                                         </td>
 

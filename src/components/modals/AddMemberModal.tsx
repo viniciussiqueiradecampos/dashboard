@@ -4,6 +4,7 @@ import { useFinance } from '@/contexts/FinanceContext';
 import { cn } from '@/utils/cn';
 import { uploadFile } from '@/lib/supabase';
 import { FamilyMember } from '@/types';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface AddMemberModalProps {
     isOpen: boolean;
@@ -14,7 +15,8 @@ interface AddMemberModalProps {
 const ROLE_SUGGESTIONS = ['Pai', 'Mãe', 'Filho', 'Filha', 'Avô', 'Avó', 'Tio', 'Tia'];
 
 export function AddMemberModal({ isOpen, onClose, editingMember }: AddMemberModalProps) {
-    const { addMember, updateMember } = useFinance();
+    const { addMember, updateMember, deleteMemberTransactions, refreshData } = useFinance();
+    const { t } = useLanguage();
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const [name, setName] = useState('');
@@ -117,24 +119,24 @@ export function AddMemberModal({ isOpen, onClose, editingMember }: AddMemberModa
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header */}
-                <div className="flex items-center justify-between p-6 border-b border-neutral-200">
-                    <h2 className="text-xl font-bold text-neutral-1100">
-                        {editingMember ? 'Editar Membro' : 'Adicionar Membro da Família'}
+                <div className="flex items-center justify-between p-6 border-b border-neutral-100 dark:border-neutral-800 bg-white dark:bg-neutral-900">
+                    <h2 className="text-xl font-bold text-neutral-1100 dark:text-white">
+                        {editingMember ? t('Editar Membro') : t('Adicionar Membro da Família')}
                     </h2>
                     <button
                         onClick={onClose}
-                        className="w-10 h-10 rounded-full hover:bg-neutral-100 flex items-center justify-center transition-colors"
+                        className="w-10 h-10 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center justify-center transition-colors dark:text-neutral-400"
                     >
                         <X size={20} />
                     </button>
                 </div>
 
                 {/* Content */}
-                <div className="p-6 space-y-5 overflow-y-auto max-h-[70vh]">
+                <div className="p-6 space-y-5 overflow-y-auto max-h-[70vh] bg-white dark:bg-neutral-900">
                     {/* Avatar Upload */}
                     <div className="flex flex-col items-center justify-center mb-4">
                         <div
-                            className="relative w-24 h-24 rounded-full bg-neutral-100 border-2 border-dashed border-neutral-300 flex items-center justify-center overflow-hidden group cursor-pointer"
+                            className="relative w-24 h-24 rounded-full bg-neutral-100 dark:bg-neutral-800 border-2 border-dashed border-neutral-300 dark:border-neutral-700 flex items-center justify-center overflow-hidden group cursor-pointer"
                             onClick={() => fileInputRef.current?.click()}
                         >
                             {isUploading ? (
@@ -142,7 +144,7 @@ export function AddMemberModal({ isOpen, onClose, editingMember }: AddMemberModa
                             ) : avatarUrl ? (
                                 <img src={avatarUrl} alt="Preview" className="w-full h-full object-cover" />
                             ) : (
-                                <Camera className="w-8 h-8 text-neutral-400 group-hover:text-neutral-600 transition-colors" />
+                                <Camera className="w-8 h-8 text-neutral-400 dark:text-neutral-500 group-hover:text-neutral-600 dark:group-hover:text-neutral-300 transition-colors" />
                             )}
 
                             <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
@@ -156,31 +158,31 @@ export function AddMemberModal({ isOpen, onClose, editingMember }: AddMemberModa
                             accept="image/*"
                             className="hidden"
                         />
-                        <p className="text-xs text-neutral-500 mt-2">Clique para carregar uma foto</p>
+                        <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-2">{t('Clique para carregar uma foto')}</p>
                     </div>
 
                     {/* Name */}
                     <div>
-                        <label className="block text-sm font-medium text-neutral-700 mb-2">
-                            Nome Completo
+                        <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                            {t('Nome Completo')}
                         </label>
                         <input
                             type="text"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
                             className={cn(
-                                "w-full h-12 px-4 bg-white border rounded-xl text-neutral-1100 focus:ring-2 focus:ring-black focus:border-transparent transition-all outline-none",
-                                errors.name ? 'border-red-500' : 'border-neutral-300'
+                                "w-full h-12 px-4 bg-white dark:bg-neutral-800 border rounded-xl text-neutral-1100 dark:text-white focus:ring-2 focus:ring-black dark:focus:ring-[#D7FF00] focus:border-transparent transition-all outline-none",
+                                errors.name ? 'border-red-500' : 'border-neutral-300 dark:border-neutral-700'
                             )}
-                            placeholder="Ex: João Silva"
+                            placeholder={t('Ex: João Silva')}
                         />
                         {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
                     </div>
 
                     {/* Role */}
                     <div>
-                        <label className="block text-sm font-medium text-neutral-700 mb-2">
-                            Função na Família
+                        <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                            {t('Função na Família')}
                         </label>
                         <input
                             type="text"
@@ -188,10 +190,10 @@ export function AddMemberModal({ isOpen, onClose, editingMember }: AddMemberModa
                             value={role}
                             onChange={(e) => setRole(e.target.value)}
                             className={cn(
-                                "w-full h-12 px-4 bg-white border rounded-xl text-neutral-1100 focus:ring-2 focus:ring-black focus:border-transparent transition-all outline-none",
-                                errors.role ? 'border-red-500' : 'border-neutral-300'
+                                "w-full h-12 px-4 bg-white dark:bg-neutral-800 border rounded-xl text-neutral-1100 dark:text-white focus:ring-2 focus:ring-black dark:focus:ring-[#D7FF00] focus:border-transparent transition-all outline-none",
+                                errors.role ? 'border-red-500' : 'border-neutral-300 dark:border-neutral-700'
                             )}
-                            placeholder="Ex: Pai, Mãe, Filho..."
+                            placeholder={t('Ex: Pai, Mãe, Filho...')}
                         />
                         <datalist id="role-suggestions">
                             {ROLE_SUGGESTIONS.map(suggestion => (
@@ -203,17 +205,17 @@ export function AddMemberModal({ isOpen, onClose, editingMember }: AddMemberModa
 
                     {/* Income */}
                     <div>
-                        <label className="block text-sm font-medium text-neutral-700 mb-2">
-                            Renda Mensal Estimada (Opcional)
+                        <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">
+                            {t('Renda Mensal Estimada (Opcional)')}
                         </label>
                         <div className="relative">
-                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500">R$</span>
+                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500 dark:text-neutral-400">R$</span>
                             <input
                                 type="number"
                                 step="0.01"
                                 value={income}
                                 onChange={(e) => setIncome(e.target.value)}
-                                className="w-full h-12 pl-12 pr-4 bg-white border border-neutral-300 rounded-xl text-neutral-1100 focus:ring-2 focus:ring-black focus:border-transparent transition-all outline-none"
+                                className="w-full h-12 pl-12 pr-4 bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-xl text-neutral-1100 dark:text-white focus:ring-2 focus:ring-black dark:focus:ring-[#D7FF00] focus:border-transparent transition-all outline-none"
                                 placeholder="0,00"
                             />
                         </div>
@@ -221,21 +223,39 @@ export function AddMemberModal({ isOpen, onClose, editingMember }: AddMemberModa
                 </div>
 
                 {/* Footer */}
-                <div className="flex items-center justify-end gap-3 p-6 border-t border-neutral-200 bg-neutral-50">
-                    <button
-                        onClick={onClose}
-                        className="px-6 py-2.5 rounded-full border border-neutral-300 text-neutral-700 font-medium hover:bg-white transition-colors"
-                    >
-                        Cancelar
-                    </button>
-                    <button
-                        onClick={handleSubmit}
-                        disabled={isSubmitting || isUploading}
-                        className="px-6 py-2.5 rounded-full bg-neutral-1100 text-white font-medium hover:bg-neutral-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                    >
-                        {(isSubmitting || isUploading) && <Loader2 size={18} className="animate-spin" />}
-                        {editingMember ? 'Salvar Alterações' : 'Adicionar Membro'}
-                    </button>
+                <div className="flex items-center justify-between p-6 border-t border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/50">
+                    <div>
+                        {editingMember && (
+                            <button
+                                onClick={async () => {
+                                    if (confirm(`${t('Tem certeza que deseja zerar todas as transações de')} ${editingMember.name}?`)) {
+                                        await deleteMemberTransactions(editingMember.id);
+                                        await refreshData();
+                                        onClose();
+                                    }
+                                }}
+                                className="px-4 py-2 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors font-medium border border-transparent hover:border-red-200 dark:hover:border-red-800"
+                            >
+                                {t('Zerar Dados')}
+                            </button>
+                        )}
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={onClose}
+                            className="px-6 py-2.5 rounded-full border border-neutral-300 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 font-medium hover:bg-white dark:hover:bg-neutral-800 transition-colors"
+                        >
+                            {t('Cancelar')}
+                        </button>
+                        <button
+                            onClick={handleSubmit}
+                            disabled={isSubmitting || isUploading}
+                            className="px-6 py-2.5 rounded-full bg-neutral-1100 dark:bg-[#D7FF00] text-white dark:text-[#080B12] font-semibold hover:bg-neutral-900 dark:hover:opacity-90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                        >
+                            {(isSubmitting || isUploading) && <Loader2 size={18} className="animate-spin" />}
+                            {editingMember ? t('Salvar Alterações') : t('Adicionar Membro')}
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

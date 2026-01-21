@@ -2,6 +2,7 @@ import { CreditCard as CardIcon, Plus, ChevronRight, Banknote } from 'lucide-rea
 import { useState } from 'react';
 import { useFinance } from '@/contexts/FinanceContext';
 import { useSettings } from '@/contexts/SettingsContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { cn } from '@/utils/cn';
 import { CreditCard, BankAccount } from '@/types';
 import { CardDetailsModal } from '@/components/modals/CardDetailsModal';
@@ -14,7 +15,8 @@ interface CreditCardItemProps {
 }
 
 function CreditCardItem({ card, onClick }: CreditCardItemProps) {
-    const { formatCurrency, t } = useSettings();
+    const { formatCurrency } = useSettings();
+    const { t } = useLanguage();
     const usagePercentage = card.limit > 0 ? Math.round((card.currentInvoice / card.limit) * 100) : 0;
     const availableLimit = card.limit - card.currentInvoice;
 
@@ -106,7 +108,8 @@ interface AccountItemProps {
 }
 
 function AccountItem({ account, isCash, onClick }: AccountItemProps) {
-    const { formatCurrency, t } = useSettings();
+    const { formatCurrency } = useSettings();
+    const { t } = useLanguage();
 
     return (
         <div
@@ -150,7 +153,7 @@ function AccountItem({ account, isCash, onClick }: AccountItemProps) {
 
 export function CreditCardsWidget() {
     const { creditCards, bankAccounts } = useFinance();
-    const { t } = useSettings();
+    const { t } = useLanguage();
     const [selectedCard, setSelectedCard] = useState<CreditCard | null>(null);
     const [selectedAccount, setSelectedAccount] = useState<BankAccount | null>(null);
 
@@ -177,7 +180,7 @@ export function CreditCardsWidget() {
                         <div className="p-2 bg-neutral-100 dark:bg-neutral-800 rounded-xl transition-colors">
                             <CardIcon size={20} className="text-neutral-900 dark:text-white" />
                         </div>
-                        <h2 className="text-xl font-bold text-neutral-900 dark:text-white tracking-tight">{t('Cards & contas')}</h2>
+                        <h2 className="text-xl font-bold text-neutral-900 dark:text-white tracking-tight">{t('cards.title')}</h2>
                     </div>
                     <div className="flex items-center gap-2">
                         <button
@@ -189,7 +192,7 @@ export function CreditCardsWidget() {
                         </button>
                         <button
                             className="w-10 h-10 flex items-center justify-center rounded-full border border-neutral-200 dark:border-neutral-700 text-neutral-900 dark:text-white hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-all"
-                            title="Ver todos"
+                            title={t('common.viewAll')}
                         >
                             <ChevronRight size={20} />
                         </button>

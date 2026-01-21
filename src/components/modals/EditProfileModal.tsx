@@ -2,6 +2,7 @@ import { X, Camera, Loader2 } from 'lucide-react';
 import { useState, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { uploadFile } from '@/lib/supabase';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface EditProfileModalProps {
     isOpen: boolean;
@@ -10,6 +11,7 @@ interface EditProfileModalProps {
 
 export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
     const { user, updateProfile } = useAuth();
+    const { t } = useLanguage();
     const [name, setName] = useState(user?.user_metadata?.name || '');
     const [avatarUrl, setAvatarUrl] = useState(user?.user_metadata?.avatar_url || '');
     const [isLoading, setIsLoading] = useState(false);
@@ -62,7 +64,7 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="flex items-center justify-between p-6 border-b border-neutral-100 dark:border-neutral-800">
-                    <h2 className="text-xl font-bold text-neutral-1100 dark:text-white">Editar Perfil</h2>
+                    <h2 className="text-xl font-bold text-neutral-1100 dark:text-white">{t('sidebar.profile')}</h2>
                     <button
                         onClick={onClose}
                         className="w-10 h-10 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center justify-center transition-colors dark:text-neutral-400"
@@ -99,24 +101,24 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
                             accept="image/*"
                             className="hidden"
                         />
-                        <p className="text-sm text-neutral-500 mt-2">Clique na foto para alterar</p>
+                        <p className="text-sm text-neutral-500 mt-2">{t('profile.clickToChange')}</p>
                     </div>
 
                     <div className="space-y-4">
                         <div>
-                            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">Nome</label>
+                            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">{t('register.name')}</label>
                             <input
                                 type="text"
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
                                 className="w-full h-12 px-4 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-2xl text-neutral-1100 dark:text-white focus:ring-2 focus:ring-black dark:focus:ring-[#D7FF00] outline-none"
-                                placeholder="Seu nome"
+                                placeholder={t('register.name')}
                                 required
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">URL do Avatar (Opcional)</label>
+                            <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2">{t('profile.avatarUrl')}</label>
                             <input
                                 type="text"
                                 value={avatarUrl}
@@ -135,7 +137,7 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
                             onClick={onClose}
                             className="flex-1 h-12 rounded-full border border-neutral-200 dark:border-neutral-700 font-bold dark:text-white hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
                         >
-                            Cancelar
+                            {t('common.cancel')}
                         </button>
                         <button
                             type="submit"
@@ -143,7 +145,7 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
                             className="flex-1 h-12 rounded-full bg-neutral-1100 dark:bg-[#D7FF00] text-white dark:text-[#080B12] font-bold hover:opacity-90 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                         >
                             {isLoading && <Loader2 size={18} className="animate-spin" />}
-                            Salvar
+                            {t('common.save')}
                         </button>
                     </div>
                 </form>

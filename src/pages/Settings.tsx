@@ -1,7 +1,8 @@
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
 import { useSettings, Currency } from '@/contexts/SettingsContext';
 import { useLanguage, Language } from '@/contexts/LanguageContext';
-import { DollarSign, Globe, Menu, Shield, AlertCircle } from 'lucide-react';
+import { DollarSign, Globe, Menu, Shield, AlertCircle, Trash2 } from 'lucide-react';
+import { useFinance } from '@/contexts/FinanceContext';
 import { cn } from '@/utils/cn';
 
 const CURRENCIES: { value: Currency; label: string; symbol: string }[] = [
@@ -17,8 +18,9 @@ const LANGUAGES: { value: Language; label: string; flag: string }[] = [
 ];
 
 export function Settings() {
-    const { currency, setCurrency, menuItems, toggleMenuItem, isMasterUser } = useSettings();
+    const { currency, setCurrency, menuItems, toggleMenuItem, renameMenuItem, isMasterUser } = useSettings();
     const { language, setLanguage, t } = useLanguage();
+    const { resetAllData } = useFinance();
 
     if (!isMasterUser) {
         return (
@@ -31,13 +33,10 @@ export function Settings() {
                             <Shield size={32} className="text-red-600 dark:text-red-400" />
                         </div>
                         <h2 className="text-2xl font-bold text-neutral-900 dark:text-white mb-2">
-                            {language === 'pt-BR' ? 'Acesso Restrito' : 'Restricted Access'}
+                            {t('settings.restrictedAccess')}
                         </h2>
                         <p className="text-neutral-500 dark:text-neutral-400">
-                            {language === 'pt-BR'
-                                ? 'Esta página é acessível apenas pelo administrador do sistema.'
-                                : 'This page is only accessible by the system administrator.'
-                            }
+                            {t('settings.restrictedMessage')}
                         </p>
                     </div>
                 </div>
@@ -55,16 +54,13 @@ export function Settings() {
                         {t('settings.title')}
                     </h2>
                     <p className="text-sm text-neutral-500 dark:text-neutral-400 transition-colors">
-                        {language === 'pt-BR'
-                            ? 'Configure as preferências do sistema'
-                            : 'Configure system preferences'
-                        }
+                        {t('settings.subtitle')}
                     </p>
                 </div>
 
                 <div className="flex items-center gap-2 px-4 py-2 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-full text-sm font-medium">
                     <AlertCircle size={16} />
-                    <span>{language === 'pt-BR' ? 'Modo Administrador' : 'Admin Mode'}</span>
+                    <span>{t('settings.adminMode')}</span>
                 </div>
             </div>
 
@@ -152,45 +148,80 @@ export function Settings() {
                         <div>
                             <h3 className="text-lg font-bold text-neutral-900 dark:text-white">{t('settings.menuItems')}</h3>
                             <p className="text-sm text-neutral-500 dark:text-neutral-400">
-                                {language === 'pt-BR'
-                                    ? 'Ative ou desative itens do menu lateral'
-                                    : 'Enable or disable sidebar menu items'
-                                }
+                                {t('settings.menuItemsSubtitle')}
                             </p>
                         </div>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                         {menuItems.map((item) => (
-                            <button
+                            <div
                                 key={item.id}
-                                onClick={() => toggleMenuItem(item.id)}
                                 className={cn(
-                                    "flex items-center justify-between p-4 rounded-xl transition-all",
+                                    "flex flex-col gap-3 p-4 rounded-xl transition-all border-2",
                                     item.enabled
-                                        ? "bg-green-50 dark:bg-green-900/20 border-2 border-green-500"
-                                        : "bg-neutral-50 dark:bg-neutral-800/50 border-2 border-neutral-200 dark:border-neutral-700"
+                                        ? "bg-green-50 dark:bg-green-900/10 border-green-500"
+                                        : "bg-neutral-50 dark:bg-neutral-800/50 border-neutral-200 dark:border-neutral-700"
                                 )}
                             >
-                                <span className={cn(
-                                    "font-medium",
-                                    item.enabled
-                                        ? "text-green-700 dark:text-green-400"
-                                        : "text-neutral-500 dark:text-neutral-400"
-                                )}>
-                                    {item.name}
-                                </span>
-                                <div className={cn(
-                                    "w-12 h-6 rounded-full transition-colors relative",
-                                    item.enabled ? "bg-green-500" : "bg-neutral-300 dark:bg-neutral-600"
-                                )}>
-                                    <div className={cn(
-                                        "absolute top-1 w-4 h-4 bg-white rounded-full transition-transform",
-                                        item.enabled ? "right-1" : "left-1"
-                                    )} />
+                                <div className="flex items-center justify-between">
+                                    <div className="flex flex-col">
+                                        <input
+                                            type="text"
+                                            defaultValue={item.name}
+                                            onBlur={(e) => renameMenuItem(item.id, e.target.value)}
+                                            className="bg-transparent font-bold text-neutral-900 dark:text-white border-b border-transparent focus:border-neutral-400 outline-none transition-all"
+                                            placeholder={item.originalName}
+                                        />
+                                        <span className="text-[10px] text-neutral-400 uppercase tracking-widest">{t('settings.widgetName')}</span>
+                                    </div>
+                                    <button
+                                        onClick={() => toggleMenuItem(item.id)}
+                                        className={cn(
+                                            "w-12 h-6 rounded-full transition-colors relative",
+                                            item.enabled ? "bg-green-500" : "bg-neutral-300 dark:bg-neutral-600"
+                                        )}
+                                    >
+                                        <div className={cn(
+                                            "absolute top-1 w-4 h-4 bg-white rounded-full transition-transform",
+                                            item.enabled ? "right-1" : "left-1"
+                                        )} />
+                                    </button>
                                 </div>
-                            </button>
+                            </div>
                         ))}
+                    </div>
+                </div>
+
+                {/* Danger Zone */}
+                <div className="bg-red-50 dark:bg-red-900/10 rounded-[24px] border border-red-200 dark:border-red-900/50 p-6 shadow-sm lg:col-span-2 mt-6">
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-xl">
+                            <Trash2 size={20} className="text-red-600 dark:text-red-400" />
+                        </div>
+                        <div>
+                            <h3 className="text-lg font-bold text-red-600 dark:text-red-400">{t('settings.dangerTitle')}</h3>
+                            <p className="text-sm text-red-500/80">
+                                {t('settings.dangerDescription')}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 bg-white dark:bg-neutral-900 rounded-2xl border border-red-100 dark:border-red-900/30">
+                        <div>
+                            <p className="font-bold text-neutral-900 dark:text-white">{t('settings.resetData')}</p>
+                            <p className="text-sm text-neutral-500 dark:text-neutral-400">{t('settings.irreversible')}</p>
+                        </div>
+                        <button
+                            onClick={async () => {
+                                if (confirm(t('settings.confirmReset'))) {
+                                    await resetAllData();
+                                }
+                            }}
+                            className="w-full sm:w-auto px-8 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-red-600/20"
+                        >
+                            {t('settings.resetBtn')}
+                        </button>
                     </div>
                 </div>
             </div>

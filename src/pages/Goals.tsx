@@ -5,9 +5,13 @@ import { useState } from 'react';
 import { NewGoalModal } from '@/components/modals/NewGoalModal';
 import { Goal } from '@/types';
 import { ConfirmDeleteModal } from '@/components/modals/ConfirmDeleteModal';
+import { useSettings } from '@/contexts/SettingsContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export function Goals() {
     const { goals, deleteGoal } = useFinance();
+    const { formatCurrency } = useSettings();
+    const { t } = useLanguage();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
     const [goalToDelete, setGoalToDelete] = useState<string | null>(null);
@@ -29,13 +33,13 @@ export function Goals() {
             <DashboardHeader />
 
             <div className="flex items-center justify-between mb-8 mt-4">
-                <h2 className="text-2xl font-bold text-neutral-1100">Meus Objetivos</h2>
+                <h2 className="text-2xl font-bold text-neutral-1100 dark:text-white transition-colors">{t('Meus Objetivos')}</h2>
                 <button
                     onClick={() => handleOpenModal()}
-                    className="flex items-center gap-2 px-4 py-2 bg-neutral-1100 text-white rounded-full hover:bg-neutral-800 transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 bg-neutral-1100 dark:bg-[#D7FF00] text-white dark:text-[#080B12] rounded-full hover:bg-neutral-800 transition-colors font-bold"
                 >
                     <Plus size={18} />
-                    <span>Novo Objetivo</span>
+                    <span>{t('Novo Objetivo')}</span>
                 </button>
             </div>
 
@@ -83,11 +87,11 @@ export function Goals() {
                             </div>
 
                             <div className="flex items-end gap-1 mb-4">
-                                <span className="text-2xl font-bold text-neutral-1100">
-                                    {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(goal.currentAmount)}
+                                <span className="text-2xl font-bold text-neutral-1100 dark:text-white">
+                                    {formatCurrency(goal.currentAmount)}
                                 </span>
-                                <span className="text-sm text-neutral-500 mb-1">
-                                    de {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(goal.targetAmount)}
+                                <span className="text-sm text-neutral-500 dark:text-neutral-400 mb-1">
+                                    {t('de')} {formatCurrency(goal.targetAmount)}
                                 </span>
                             </div>
                             <div className="w-full bg-neutral-100 h-2.5 rounded-full overflow-hidden mb-1">
@@ -106,17 +110,17 @@ export function Goals() {
                     ))}
                 </div>
             ) : (
-                <div className="flex flex-col items-center justify-center p-12 bg-white rounded-[32px] border border-dashed border-neutral-300">
-                    <div className="p-4 bg-neutral-50 rounded-full mb-4">
+                <div className="flex flex-col items-center justify-center p-12 bg-white dark:bg-neutral-900 rounded-[32px] border border-dashed border-neutral-300 dark:border-neutral-800 transition-colors">
+                    <div className="p-4 bg-neutral-50 dark:bg-neutral-800 rounded-full mb-4 transition-colors">
                         <Target size={32} className="text-neutral-400" />
                     </div>
-                    <h3 className="text-lg font-medium text-neutral-900 mb-1">Nenhum objetivo encontrado</h3>
-                    <p className="text-neutral-500 mb-6">Defina metas financeiras para realizar seus sonhos.</p>
+                    <h3 className="text-lg font-medium text-neutral-900 dark:text-white mb-1 transition-colors">{t('Nenhum objetivo encontrado')}</h3>
+                    <p className="text-neutral-500 dark:text-neutral-400 mb-6 transition-colors">{t('Defina metas financeiras para realizar seus sonhos.')}</p>
                     <button
                         onClick={() => handleOpenModal()}
-                        className="px-6 py-2 bg-neutral-1100 text-white rounded-full hover:bg-neutral-800 transition-colors"
+                        className="px-6 py-2 bg-neutral-1100 dark:bg-[#D7FF00] text-white dark:text-[#080B12] rounded-full hover:bg-neutral-800 transition-colors font-bold"
                     >
-                        Criar primeiro objetivo
+                        {t('Criar primeiro objetivo')}
                     </button>
                 </div>
             )}

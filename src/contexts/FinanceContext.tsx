@@ -6,6 +6,7 @@ import {
 import { supabase } from '@/lib/supabase';
 import { useAuth } from './AuthContext';
 import { isWithinInterval, parseISO, startOfMonth, endOfMonth, format } from 'date-fns';
+import { useLanguage } from './LanguageContext';
 
 interface DateRange {
     startDate: string;
@@ -72,6 +73,8 @@ interface FinanceContextType {
     getCategoryPercentage: (category: string) => number;
     savingsRate: number;
     refreshData: () => Promise<void>;
+    deleteMemberTransactions: (memberId: string) => Promise<void>;
+    resetAllData: () => Promise<void>;
 }
 
 const FinanceContext = createContext<FinanceContextType | undefined>(undefined);
@@ -81,6 +84,7 @@ const sb = supabase as any;
 
 export function FinanceProvider({ children }: { children: React.ReactNode }) {
     const { user } = useAuth();
+    const { t } = useLanguage();
     const [isLoading, setIsLoading] = useState(true);
 
     const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -112,6 +116,9 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         accountId: t.account_id,
         cardId: t.card_id,
         memberId: t.member_id,
+        parentTransactionId: t.parent_transaction_id,
+        isRecurring: t.is_recurring || false,
+        recurringId: t.recurring_id,
         installments: t.total_installments > 1 ? {
             current: t.installment_number || 1,
             total: t.total_installments
@@ -300,14 +307,41 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
             card_id: t.cardId || null,
             member_id: t.memberId || null,
             is_recurring: t.isRecurring || false,
-            recurring_transaction_id: recurringId
+            recurring_transaction_id: recurringId,
+            total_installments: t.installments?.total || 1,
+            installment_number: t.installments?.current || 1
         };
 
-        const { error } = await sb.from('transactions').insert(payload);
+        const { data: mainTrans, error } = await sb.from('transactions').insert(payload).select().single();
+
         if (error) {
             console.error('Error adding transaction:', error);
             alert(`Erro ao salvar transação: ${error.message}`);
+            return;
         }
+
+        // Handle installments
+        if (t.installments && t.installments.total > 1 && t.installments.current === 1) {
+            const installments = [];
+            const baseDate = parseISO(t.date);
+
+            for (let i = 2; i <= t.installments.total; i++) {
+                const installmentDate = new Date(baseDate);
+                installmentDate.setMonth(baseDate.getMonth() + (i - 1));
+
+                installments.push({
+                    ...payload,
+                    date: installmentDate.toISOString().split('T')[0],
+                    installment_number: i,
+                    parent_transaction_id: (mainTrans as any).id,
+                    status: 'PENDING'
+                });
+            }
+
+            const { error: instError } = await sb.from('transactions').insert(installments);
+            if (instError) console.error('Error adding installments:', instError);
+        }
+
         await refreshData();
     };
 
@@ -326,11 +360,30 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     };
 
     const deleteTransaction = async (id: string) => {
-        const { error } = await sb.from('transactions').delete().eq('id', id);
-        if (error) {
-            console.error('Error deleting transaction:', error);
-            alert(`Erro ao deletar transação: ${error.message}`);
+        const trans = transactions.find(t => t.id === id);
+        if (!trans) return;
+
+        // Cancel future recurring transactions if applicable
+        if (trans.isRecurring && trans.recurringId) {
+            if (confirm(t('Esta é uma transação recorrente. Deseja cancelar as próximas ocorrências também?'))) {
+                await sb.from('recurring_transactions').update({ is_active: false }).eq('id', trans.recurringId);
+            }
         }
+
+        // If it belongs to an installment group, ensure the entire series is deleted
+        if (trans.parentTransactionId) {
+            await sb.from('transactions').delete().eq('parent_transaction_id', trans.parentTransactionId);
+            await sb.from('transactions').delete().eq('id', trans.parentTransactionId);
+        } else {
+            // Delete potential children and then the transaction itself
+            await sb.from('transactions').delete().eq('parent_transaction_id', id);
+            const { error } = await sb.from('transactions').delete().eq('id', id);
+            if (error) {
+                console.error('Error deleting transaction:', error);
+                alert(`Error: ${error.message}`);
+            }
+        }
+
         await refreshData();
     };
 
@@ -405,7 +458,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
                     category_id: rt.category_id,
                     account_id: rt.account_id,
                     member_id: rt.member_id,
-                    status: 'COMPLETED',
+                    status: 'PENDING',
                     is_recurring: true
                 });
             }
@@ -527,7 +580,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         if (m.name !== undefined) payload.name = m.name;
         if (m.role !== undefined) payload.role = m.role;
         if (m.avatarUrl !== undefined) payload.avatar_url = m.avatarUrl;
-        if (m.income !== undefined) payload.income = m.income;
+        if (m.income !== undefined) payload.monthly_income = m.income;
 
         const { error } = await sb.from('family_members').update(payload).eq('id', id);
         if (error) {
@@ -540,6 +593,32 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     const deleteMember = async (id: string) => {
         const { error } = await sb.from('family_members').delete().eq('id', id);
         if (!error) await refreshData();
+    };
+
+    const deleteMemberTransactions = async (memberId: string) => {
+        const { error } = await sb.from('transactions').delete().eq('member_id', memberId);
+        if (error) {
+            console.error('Error deleting member transactions:', error);
+            alert(`Erro ao deletar transações do membro: ${error.message}`);
+        }
+        await refreshData();
+    };
+
+    const resetAllData = async () => {
+        if (!user) return;
+        const tables = ['transactions', 'recurring_transactions', 'goals', 'accounts', 'family_members', 'categories'];
+
+        try {
+            for (const table of tables) {
+                const { error } = await sb.from(table).delete().eq('user_id', user.id);
+                if (error) throw error;
+            }
+            alert('Todos os dados foram resetados com sucesso.');
+        } catch (error: any) {
+            console.error('Error resetting data:', error);
+            alert(`Erro ao resetar dados: ${error.message}`);
+        }
+        await refreshData();
     };
 
     const addCategory = async (c: Omit<Category, 'id'>) => {
@@ -579,8 +658,32 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     }, [transactions, filters]);
 
     const totalBalance = useMemo(() => {
-        return bankAccounts.reduce((acc, account) => acc + account.balance, 0);
-    }, [bankAccounts]);
+        // If we have bank accounts, use their balances
+        if (bankAccounts.length > 0) {
+            const banksTotal = bankAccounts.reduce((acc, account) => acc + account.balance, 0);
+            const cardsTotal = creditCards.reduce((acc, card) => acc + card.currentInvoice, 0);
+
+            // PROJECTED version: Bank - Card + Pending Income - Pending Expenses
+            const pendingIncome = transactions
+                .filter(t => t.status === 'pending' && t.type === 'income')
+                .reduce((acc, t) => acc + t.amount, 0);
+            const pendingExpenses = transactions
+                .filter(t => t.status === 'pending' && t.type === 'expense')
+                .reduce((acc, t) => acc + t.amount, 0);
+
+            return banksTotal - cardsTotal + pendingIncome - pendingExpenses;
+        }
+
+        // Fallback: Sum of all transactions (Income - Expenses)
+        const income = transactions
+            .filter(t => t.type === 'income')
+            .reduce((acc, t) => acc + t.amount, 0);
+        const expenses = transactions
+            .filter(t => t.type === 'expense')
+            .reduce((acc, t) => acc + t.amount, 0);
+
+        return income - expenses;
+    }, [bankAccounts, creditCards, transactions]);
 
     const incomeForPeriod = useMemo(() => {
         return filteredTransactions
@@ -644,7 +747,9 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         expensesByCategory,
         getCategoryPercentage,
         savingsRate,
-        refreshData
+        refreshData,
+        deleteMemberTransactions,
+        resetAllData
     };
 
     return (

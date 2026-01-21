@@ -44,6 +44,8 @@ export interface Transaction {
     cardId?: string;
     memberId: string;
     isRecurring?: boolean;
+    recurringId?: string;
+    parentTransactionId?: string;
     installments?: {
         current: number;
         total: number;

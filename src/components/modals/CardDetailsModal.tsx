@@ -1,6 +1,7 @@
 import { X, CreditCard as CardIcon } from 'lucide-react';
 import { useFinance } from '@/contexts/FinanceContext';
 import { useSettings } from '@/contexts/SettingsContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { CreditCard, Transaction } from '@/types';
 import { useState, useMemo } from 'react';
 import { cn } from '@/utils/cn';
@@ -16,6 +17,7 @@ interface CardDetailsModalProps {
 export function CardDetailsModal({ isOpen, onClose, card }: CardDetailsModalProps) {
     const { getFilteredTransactions } = useFinance();
     const { formatCurrency } = useSettings();
+    const { t, language } = useLanguage();
     const [currentPage, setCurrentPage] = useState(1);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isNewTransactionModalOpen, setIsNewTransactionModalOpen] = useState(false);
@@ -39,7 +41,7 @@ export function CardDetailsModal({ isOpen, onClose, card }: CardDetailsModalProp
 
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);
-        return date.toLocaleDateString('pt-BR');
+        return date.toLocaleDateString(language);
     };
 
     return (
@@ -63,7 +65,7 @@ export function CardDetailsModal({ isOpen, onClose, card }: CardDetailsModalProp
                         </div>
                         <div>
                             <h2 className="text-xl font-bold text-neutral-1100 dark:text-white transition-colors">{card.brand} {card.name}</h2>
-                            <p className="text-sm text-neutral-500 dark:text-neutral-400 Transition-colors">•••• {card.last4Digits}</p>
+                            <p className="text-sm text-neutral-500 dark:text-neutral-400 transition-colors">•••• {card.last4Digits}</p>
                         </div>
                     </div>
                     <button
@@ -79,40 +81,40 @@ export function CardDetailsModal({ isOpen, onClose, card }: CardDetailsModalProp
                     {/* Card Info Grid */}
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
                         <div className="bg-neutral-50 dark:bg-neutral-900 rounded-2xl p-4 border border-transparent dark:border-neutral-800 transition-colors">
-                            <p className="text-xs text-neutral-500 dark:text-neutral-400 font-medium mb-1">Limite Total</p>
+                            <p className="text-xs text-neutral-500 dark:text-neutral-400 font-medium mb-1">{t('Limite Total')}</p>
                             <p className="text-lg font-bold text-neutral-1100 dark:text-white transition-colors">{formatCurrency(card.limit)}</p>
                         </div>
 
                         <div className="bg-neutral-50 dark:bg-neutral-900 rounded-2xl p-4 border border-transparent dark:border-neutral-800 transition-colors">
-                            <p className="text-xs text-neutral-500 dark:text-neutral-400 font-medium mb-1">Fatura Atual</p>
+                            <p className="text-xs text-neutral-500 dark:text-neutral-400 font-medium mb-1">{t('Fatura Atual')}</p>
                             <p className="text-lg font-bold text-red-600 dark:text-red-400 transition-colors">{formatCurrency(card.currentInvoice)}</p>
                         </div>
 
                         <div className="bg-neutral-50 dark:bg-neutral-900 rounded-2xl p-4 border border-transparent dark:border-neutral-800 transition-colors">
-                            <p className="text-xs text-neutral-500 dark:text-neutral-400 font-medium mb-1">Disponível</p>
+                            <p className="text-xs text-neutral-500 dark:text-neutral-400 font-medium mb-1">{t('Disponível')}</p>
                             <p className="text-lg font-bold text-green-600 dark:text-green-400 transition-colors">{formatCurrency(availableLimit)}</p>
                         </div>
 
                         <div className="bg-neutral-50 dark:bg-neutral-900 rounded-2xl p-4 border border-transparent dark:border-neutral-800 transition-colors">
-                            <p className="text-xs text-neutral-500 dark:text-neutral-400 font-medium mb-1">Uso do Limite</p>
+                            <p className="text-xs text-neutral-500 dark:text-neutral-400 font-medium mb-1">{t('Uso do Limite')}</p>
                             <p className="text-lg font-bold text-neutral-1100 dark:text-white transition-colors">{usagePercentage.toFixed(1)}%</p>
                         </div>
 
                         <div className="bg-neutral-50 dark:bg-neutral-900 rounded-2xl p-4 border border-transparent dark:border-neutral-800 transition-colors">
-                            <p className="text-xs text-neutral-500 dark:text-neutral-400 font-medium mb-1">Fechamento</p>
-                            <p className="text-lg font-bold text-neutral-1100 dark:text-white transition-colors">Dia {card.closingDay}</p>
+                            <p className="text-xs text-neutral-500 dark:text-neutral-400 font-medium mb-1">{t('Fechamento')}</p>
+                            <p className="text-lg font-bold text-neutral-1100 dark:text-white transition-colors">{t('Dia')} {card.closingDay}</p>
                         </div>
 
                         <div className="bg-neutral-50 dark:bg-neutral-900 rounded-2xl p-4 border border-transparent dark:border-neutral-800 transition-colors">
-                            <p className="text-xs text-neutral-500 dark:text-neutral-400 font-medium mb-1">Vencimento</p>
-                            <p className="text-lg font-bold text-neutral-1100 dark:text-white transition-colors">Dia {card.dueDay}</p>
+                            <p className="text-xs text-neutral-500 dark:text-neutral-400 font-medium mb-1">{t('Vencimento')}</p>
+                            <p className="text-lg font-bold text-neutral-1100 dark:text-white transition-colors">{t('Dia')} {card.dueDay}</p>
                         </div>
                     </div>
 
                     {/* Usage Progress Bar */}
                     <div className="mb-8">
                         <div className="flex items-center justify-between mb-2">
-                            <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 transition-colors">Limite Utilizado</p>
+                            <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300 transition-colors">{t('Limite Utilizado')}</p>
                             <p className="text-sm font-bold text-neutral-1100 dark:text-white transition-colors">{usagePercentage.toFixed(1)}%</p>
                         </div>
                         <div className="h-3 bg-neutral-200 dark:bg-neutral-800 rounded-full overflow-hidden transition-colors">
@@ -128,7 +130,7 @@ export function CardDetailsModal({ isOpen, onClose, card }: CardDetailsModalProp
 
                     {/* Transactions Section */}
                     <div>
-                        <h3 className="text-lg font-bold text-neutral-1100 dark:text-white mb-4 transition-colors">Despesas neste Cartão</h3>
+                        <h3 className="text-lg font-bold text-neutral-1100 dark:text-white mb-4 transition-colors">{t('Despesas neste Cartão')}</h3>
 
                         {currentTransactions.length > 0 ? (
                             <>
@@ -167,24 +169,24 @@ export function CardDetailsModal({ isOpen, onClose, card }: CardDetailsModalProp
                                             disabled={currentPage === 1}
                                             className="px-4 py-2 rounded-lg border border-neutral-300 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-all font-medium"
                                         >
-                                            Anterior
+                                            {t('common.previous')}
                                         </button>
                                         <span className="text-sm text-neutral-600 dark:text-neutral-400">
-                                            Página {currentPage} de {totalPages}
+                                            {t('Página')} {currentPage} {t('de')} {totalPages}
                                         </span>
                                         <button
                                             onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                                             disabled={currentPage === totalPages}
                                             className="px-4 py-2 rounded-lg border border-neutral-300 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-all font-medium"
                                         >
-                                            Próxima
+                                            {t('common.next')}
                                         </button>
                                     </div>
                                 )}
                             </>
                         ) : (
                             <div className="text-center py-12 border-2 border-dashed border-neutral-200 dark:border-neutral-800 rounded-2xl transition-colors">
-                                <p className="text-neutral-400 dark:text-neutral-500 font-medium">Nenhuma despesa registrada neste cartão ainda.</p>
+                                <p className="text-neutral-400 dark:text-neutral-500 font-medium">{t('cards.noTransactions')}</p>
                             </div>
                         )}
                     </div>
@@ -196,20 +198,20 @@ export function CardDetailsModal({ isOpen, onClose, card }: CardDetailsModalProp
                         onClick={onClose}
                         className="px-6 py-2.5 rounded-full border border-neutral-300 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 font-medium hover:bg-white dark:hover:bg-neutral-800 transition-all"
                     >
-                        Fechar
+                        {t('common.close')}
                     </button>
                     <div className="flex gap-3">
                         <button
                             onClick={() => setIsEditModalOpen(true)}
                             className="px-6 py-2.5 rounded-full border border-neutral-300 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300 font-medium hover:bg-white dark:hover:bg-neutral-800 transition-all"
                         >
-                            Editar Cartão
+                            {t('common.edit')}
                         </button>
                         <button
                             onClick={() => setIsNewTransactionModalOpen(true)}
                             className="px-6 py-2.5 rounded-full bg-neutral-1100 dark:bg-[#D7FF00] text-white dark:text-[#080B12] font-bold hover:scale-[1.02] active:scale-[0.98] transition-all shadow-sm"
                         >
-                            Salvar
+                            {t('common.save')}
                         </button>
                     </div>
                 </div>
